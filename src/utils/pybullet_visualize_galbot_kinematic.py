@@ -1,0 +1,109 @@
+### usage: visualize galbot and bvh at the same time
+### specific to /data/SeG_dataset results
+### python pybullet_visualize_galbot_kinematic.py /home/pengyang/codebase/H1_RL/data/SeG_dataset/galbot_motion/ARMS_SELF_EMBRACE-1.pickle
+### todo: some variables have wrong name
+import pybullet as p
+import time
+import pickle 
+import sys
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+sys.path.append("/home/pengyang/codebase/H1_RL/src")
+
+from config.joint_mapping import GALBOT_CHARLIE_LINKS
+from utils.bvh_vis import Draw_bvh_frame, ProcessBVH
+
+np.set_printoptions(suppress=True)
+
+
+if len(sys.argv) != 2:
+    print('Call the function with the motion file')
+    quit()
+
+
+filename = sys.argv[1]
+
+bvh_path = os.path.join(os.path.abspath(os.path.join(filename, os.pardir, os.pardir, "bvh")), filename.split("/")[-1][:-7] + ".bvh")
+skeleton_data = ProcessBVH(bvh_path)
+
+# 连接物理引擎
+physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
+# p.setGravity(0, 0, -9.81)  # 设置重力
+
+### galbot charlie urdf
+robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/urdf/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf", [0, 0, 0], [0, 0, 0, 1])
+
+### h1 urdf (not functinoal)
+# robotId = p.loadURDF("//home/pengyang/codebase/H1_RL/data/urdf/h1/urdf/h1_add_hand_link_limit.urdf", [0, 0, 0], [0, 0, 0, 1])
+
+# 创建固定约束，将base链接固定在世界坐标系的原点
+constraint_id = p.createConstraint(
+    parentBodyUniqueId=robotId,
+    parentLinkIndex=-1,
+    childBodyUniqueId=-1,  # -1表示世界坐标系
+    childLinkIndex=-1,
+    jointType=p.JOINT_FIXED,  # 固定关节
+    jointAxis=[0, 0, 0],  # 固定关节不需要轴
+    parentFramePosition=[0, 0, 0],  # base链接的局部坐标系原点
+    childFramePosition=[0, 0, 0]  # 世界坐标系的原点
+)
+
+# 获取关节信息
+num_joints = p.getNumJoints(robotId)
+joint_indices = range(num_joints)
+joint_names = [p.getJointInfo(robotId, i)[1].decode("utf-8") for i in joint_indices]
+print("Joint Names:", joint_names)
+
+
+with open(filename, "rb") as file:
+    joint_global_pos = pickle.load(file)["angles"]
+
+# 创建滑块控件
+num_frames = joint_global_pos.shape[0]
+frame_slider = p.addUserDebugParameter("frame_id",  0, num_frames-1, 0)
+
+sliders = []
+for i in joint_indices:
+    joint_info = p.getJointInfo(robotId, i)
+    joint_name = joint_info[1].decode("utf-8")
+    lower_limit = joint_info[8]  # 关节下限
+    upper_limit = joint_info[9]  # 关节上限
+    slider = p.addUserDebugParameter(joint_name, lower_limit, upper_limit, 0)  # 初始值为0
+    sliders.append(slider)
+
+controllable_joints = []
+for i in range(num_joints):
+    joint_info = p.getJointInfo(robotId, i)
+    joint_type = joint_info[2]  # 关节类型
+    joint_name = joint_info[1].decode('utf-8')  # 关节名称
+
+    if joint_type in [p.JOINT_REVOLUTE, p.JOINT_PRISMATIC]:
+        controllable_joints.append((i, joint_name))
+        print(f"Controllable Joint {i}: {joint_name}")
+fig = plt.figure()
+
+# 主循环
+try:
+    while True:
+        frame_id = p.readUserDebugParameter(frame_slider)
+        target_angles = joint_global_pos[int(frame_id)]
+
+        for j, joint in enumerate(controllable_joints):
+            i, name = controllable_joints[j]
+            p.resetJointState(
+                bodyUniqueId=robotId,
+                jointIndex=joint_indices[i],
+                targetValue=target_angles[j],
+                targetVelocity=0
+            )
+
+        Draw_bvh_frame(*skeleton_data[:6], int(frame_id), fig)
+
+        
+        p.stepSimulation()
+except KeyboardInterrupt:
+    pass
+
+# 断开连接
+p.disconnect()

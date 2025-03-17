@@ -1,0 +1,136 @@
+### TODO: estimate global rotation and translation
+###     split locomotion and manipulation vel and accel loss
+import math
+import numpy as np
+import torch
+import os
+import torch.nn as nn
+import torch.optim as optim
+import pytorch_kinematics as pk
+
+from utils.kinematics import forward_kinematics
+from utils.diff_quat import vec6d_to_matrix
+
+from config.joint_mapping import GALBOT_CHARLIE_LINKS, SEG_GALBOT_CHARLIE_CORRESPONDENCE
+
+
+class Galbot_Charlie_Motion_Model(nn.Module):
+    def __init__(self, batch_size=1, global_rotations=None, global_translations=None, device="cuda:0"):
+        super(Galbot_Charlie_Motion_Model, self).__init__()
+
+        self.batch_size = batch_size
+        self.device = device
+        self.gt_joint_positions = None
+
+        self.dof = 21
+        self.init_angle = torch.tensor([
+            0.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0
+        ]).to(self.device)
+
+        if global_rotations is None:
+            self.global_rotations = nn.Parameter(torch.eye(3).unsqueeze(0).expand(batch_size, -1, -1)[..., :-1].to(device), requires_grad=True)  # (N, 3, 2)  # NOTE: 需要接近最优解的初始化
+        else:
+            self.global_rotations = nn.Parameter(global_rotations[..., :-1].to(device), requires_grad=True)  # (N, 3, 2)
+
+        if global_translations is None:
+            self.global_translations = nn.Parameter(torch.zeros(batch_size, 3).to(device), requires_grad=True)  # (N, 3)
+        else:
+            self.global_translations = nn.Parameter(global_translations.to(device), requires_grad=True)  # (N, 3)
+
+        self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
+
+        self.joint_correspondence = SEG_GALBOT_CHARLIE_CORRESPONDENCE
+
+        self.chain = None
+
+        self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
+        self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=False)
+        self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
+        
+    
+    def forward(self):
+        return {
+            "global_rotations": self.global_rotations,
+            "global_translations": self.global_translations,
+            "joint_angles": self.joint_angles,    
+        }
+
+    def load_urdf_as_chain(self, filename):
+        with open(filename, 'rb') as file:
+            self.chain = pk.build_chain_from_urdf(file.read())
+        self.chain = self.chain.to(dtype=torch.float32, device=self.device)
+
+    def set_global_matrix(self, data_dict):
+        self.global_trans = nn.Parameter(torch.tensor(data_dict["global_translation"]).to(self.device), requires_grad=True)
+        self.global_rot = nn.Parameter(torch.tensor(data_dict["global_rotation"]).to(self.device), requires_grad=True)
+        self.scale = nn.Parameter(torch.tensor(data_dict["scale"]).to(self.device), requires_grad=True)
+
+    def set_gt_joint_positions(self, gt_joint_positions):
+        self.gt_joint_positions = gt_joint_positions.to(self.device)
+
+    def set_angles(self, joint_angles, global_rotations=None, global_translations=None):
+        if global_rotations is not None:
+            self.global_rotations = nn.Parameter(global_rotations[..., :-1].to(self.device), requires_grad=True)  # (N, 3, 2)
+
+        if global_translations is not None:
+            self.global_translations = nn.Parameter(global_translations.to(self.device), requires_grad=True)  # (N, 3)
+
+        self.joint_angles = nn.Parameter(joint_angles.to(self.device), requires_grad=True)  # (N, dof)
+        return
+
+    def forward_kinematics(self):
+        """
+        chain: pytorch_kinematics.chain.Chain
+        joint_angle: (N, dof) 24D vector
+        global_translation: (N, 3) 3D vector, root_to_world
+        global_orientation: (N, 3) 3D axis-angle, root_to_world
+
+        return: a tensor contains the global poses of 52 links
+        """
+        R = vec6d_to_matrix(self.global_rot).repeat(self.batch_size, 1, 1) * self.scale.repeat(self.batch_size, 3, 1) # (N_frame, 3, 3)
+        t = self.global_trans.reshape(3, 1).repeat(self.batch_size, 1, 1) # (N_frame, 3, 1)
+        root_to_world = torch.cat((torch.cat((R, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
+
+        link_to_root_dict = self.chain.forward_kinematics(self.joint_angles)  # link to root
+        link_to_world_dict = []
+        for link_name in GALBOT_CHARLIE_LINKS:
+            T = link_to_root_dict[link_name].get_matrix()  # link to root
+            link_to_world_dict.append(torch.einsum('bij,bjk->bik', root_to_world, T))
+            # link_to_world_dict.append(T)
+        link_to_world_dict = torch.stack(link_to_world_dict, dim=1) # (N_frame, 52, 4, 4)
+        return link_to_world_dict
+
+    def init_angle_loss(self):
+        return (self.joint_angles[0, 3:] - self.init_angle[3:]).abs().sum(dim=-1).mean()
+
+    def joint_local_velocity_loss(self):
+        pred_joint_velocities = self.joint_angles[1:, 3:] - self.joint_angles[:-1, 3:]
+        pred_joint_accel = pred_joint_velocities[1:] - pred_joint_velocities[:-1]
+        return pred_joint_velocities.abs().sum(dim=-1).mean(), pred_joint_accel.abs().sum(dim=-1).mean()
+
+    def seg_retarget_joint_loss(self):
+        pred_link_global = self.forward_kinematics()
+        joint_global_position_loss = 0
+
+        # gt_pos = self.gt_joint_positions @ self.scale + torch.clamp(self.root_diff, -0.1, 0.1)
+        # print(self.scale, self.root_diff)
+        for joint_corr in self.joint_correspondence:
+            joint_global_position_loss += ((pred_link_global[:, joint_corr[1]][:, :3, 3] - self.gt_joint_positions[:, joint_corr[0]])**2).sum(dim=-1).mean() * joint_corr[2]
+        return joint_global_position_loss
+
+    def elbow_loss(self):
+        ### each elbow should be at least {threshold}m away from spine
+        threshold = 0.1
+        pred_link_global = self.forward_kinematics()
+        elbow_loss = 0.0
+        right_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 0, 3]
+
+        elbow_loss += (threshold - right_elbow_x[right_elbow_x < threshold]).sum()
+        left_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 0, 3]
+        elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
+
+        return elbow_loss
+
+
+
+
