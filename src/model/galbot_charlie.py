@@ -27,15 +27,15 @@ class Galbot_Charlie_Motion_Model(nn.Module):
             0.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0
         ]).to(self.device)
 
-        if global_rotations is None:
-            self.global_rotations = nn.Parameter(torch.eye(3).unsqueeze(0).expand(batch_size, -1, -1)[..., :-1].to(device), requires_grad=True)  # (N, 3, 2)  # NOTE: 需要接近最优解的初始化
-        else:
-            self.global_rotations = nn.Parameter(global_rotations[..., :-1].to(device), requires_grad=True)  # (N, 3, 2)
+        # if global_rotations is None:
+        #     self.global_rotations = nn.Parameter(torch.eye(3).unsqueeze(0).expand(batch_size, -1, -1)[..., :-1].to(device), requires_grad=True)  # (N, 3, 2)  # NOTE: 需要接近最优解的初始化
+        # else:
+        #     self.global_rotations = nn.Parameter(global_rotations[..., :-1].to(device), requires_grad=True)  # (N, 3, 2)
 
-        if global_translations is None:
-            self.global_translations = nn.Parameter(torch.zeros(batch_size, 3).to(device), requires_grad=True)  # (N, 3)
-        else:
-            self.global_translations = nn.Parameter(global_translations.to(device), requires_grad=True)  # (N, 3)
+        # if global_translations is None:
+        #     self.global_translations = nn.Parameter(torch.zeros(batch_size, 3).to(device), requires_grad=True)  # (N, 3)
+        # else:
+        #     self.global_translations = nn.Parameter(global_translations.to(device), requires_grad=True)  # (N, 3)
 
         self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
 
@@ -50,8 +50,8 @@ class Galbot_Charlie_Motion_Model(nn.Module):
     
     def forward(self):
         return {
-            "global_rotations": self.global_rotations,
-            "global_translations": self.global_translations,
+            # "global_rotations": self.global_rotations,
+            # "global_translations": self.global_translations,
             "joint_angles": self.joint_angles,    
         }
 
@@ -69,11 +69,11 @@ class Galbot_Charlie_Motion_Model(nn.Module):
         self.gt_joint_positions = gt_joint_positions.to(self.device)
 
     def set_angles(self, joint_angles, global_rotations=None, global_translations=None):
-        if global_rotations is not None:
-            self.global_rotations = nn.Parameter(global_rotations[..., :-1].to(self.device), requires_grad=True)  # (N, 3, 2)
+        # if global_rotations is not None:
+        #     self.global_rotations = nn.Parameter(global_rotations[..., :-1].to(self.device), requires_grad=True)  # (N, 3, 2)
 
-        if global_translations is not None:
-            self.global_translations = nn.Parameter(global_translations.to(self.device), requires_grad=True)  # (N, 3)
+        # if global_translations is not None:
+        #     self.global_translations = nn.Parameter(global_translations.to(self.device), requires_grad=True)  # (N, 3)
 
         self.joint_angles = nn.Parameter(joint_angles.to(self.device), requires_grad=True)  # (N, dof)
         return
