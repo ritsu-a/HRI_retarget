@@ -11,8 +11,8 @@ after this, you should generate a file as /home/pengyang/data/motion/galbot/SeG_
 
 
 visualize kinematic results:
-    python src/utils/kinematic_vis.py /home/pengyang/codebase/H1_RL/data_old/SeG_dataset/galbot_motion/ARMS_FOLD-1.pickle
+    python src/utils/vis/kinematic_vis.py /home/pengyang/codebase/H1_RL/data_old/SeG_dataset/galbot_motion/ARMS_FOLD-1.pickle
 
 visualize dynamic results via pybullet and position pd control:
-    python src/utils/pybullet_visualize_galbot_dynamic.py /home/pengyang/codebase/H1_RL/data_old/SeG_dataset/galbot_motion/ARMS_FOLD-1.pickle
+    python src/utils/vis/pybullet_visualize_galbot_dynamic.py /home/pengyang/codebase/H1_RL/data_old/SeG_dataset/galbot_motion/ARMS_FOLD-1.pickle
 

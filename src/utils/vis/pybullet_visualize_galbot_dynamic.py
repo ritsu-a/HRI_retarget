@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 from config.joint_mapping import GALBOT_CHARLIE_LINKS
-from utils.bvh_vis import Draw_bvh_frame, ProcessBVH
+from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH
 
 np.set_printoptions(suppress=True)
 

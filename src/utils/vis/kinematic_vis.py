@@ -15,7 +15,7 @@ import pytorch_kinematics as pk
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 from config.joint_mapping import GALBOT_CHARLIE_LINKS, SEG_LINKS
-from utils.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
+from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 
 

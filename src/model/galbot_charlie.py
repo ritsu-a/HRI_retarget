@@ -8,8 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 import pytorch_kinematics as pk
 
-from utils.kinematics import forward_kinematics
-from utils.diff_quat import vec6d_to_matrix
+from utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from config.joint_mapping import GALBOT_CHARLIE_LINKS, SEG_GALBOT_CHARLIE_CORRESPONDENCE
 

@@ -9,7 +9,7 @@ import numpy as np
 import time
 
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
-from utils.bvh_io import ProcessBVH
+from utils.io.bvh_io import ProcessBVH
 from config.joint_mapping import SEG_LINKS
 
 #rotation matrices

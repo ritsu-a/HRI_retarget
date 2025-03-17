@@ -2,7 +2,7 @@ import os
 import subprocess
 
 # 文件夹路径
-folder_path = "/home/pengyang/codebase/H1_RL/data/SeG_dataset/bvh"
+folder_path = "/home/data/motion/human/SeG_dataset/bvh"
 
 # 遍历文件夹及其子文件夹
 for root, dirs, files in os.walk(folder_path):

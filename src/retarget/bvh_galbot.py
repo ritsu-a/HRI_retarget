@@ -12,8 +12,8 @@ import torch
 from tqdm import tqdm
 import pickle
 
-from utils.bvh_vis import Get_bvh_joint_local_coord
-from utils.kinematic_vis import vis_kinematic_result
+from utils.vis.bvh_vis import Get_bvh_joint_local_coord
+from utils.vis.kinematic_vis import vis_kinematic_result
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 
 
