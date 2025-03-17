@@ -98,7 +98,7 @@ def vis_kinematic_result(filename):
         
 
     ### loading bvh data
-    bvh_path = os.path.join(os.path.abspath(os.path.join(filename, os.pardir, os.pardir, "bvh")), filename.split("/")[-1][:-7] + ".bvh")
+    bvh_path = os.path.join("/home/pengyang/data/motion/human/SeG_dataset/bvh", filename.split("/")[-1][:-7] + ".bvh")
     skeleton_data = ProcessBVH(bvh_path)
     bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path)
     num_frames = len(bvh_joint_local_coord)
@@ -106,7 +106,7 @@ def vis_kinematic_result(filename):
 
     ### loading galbot model 
     model = Galbot_Charlie_Motion_Model(num_frames)
-    model.load_urdf_as_chain("/home/pengyang/codebase/H1_RL/data/urdf/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
+    model.load_urdf_as_chain("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
 
     model.set_angles(torch.tensor(joints_angle))
     model.set_global_matrix(data_dict)

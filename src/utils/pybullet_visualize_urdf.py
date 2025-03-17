@@ -6,7 +6,7 @@ physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
 # p.setGravity(0, 0, -9.81)  # 设置重力
 
 ### galbot charlie urdf
-robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/urdf/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf", [0, 0, 0], [0, 0, 0, 1])
+robotId = p.loadURDF("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf", [0, 0, 0], [0, 0, 0, 1])
 
 ### h1 urdf (not functinoal)
 # robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/urdf/h1/urdf/h1_add_hand_link_limit.urdf", [0, 0, 0], [0, 0, 0, 1])

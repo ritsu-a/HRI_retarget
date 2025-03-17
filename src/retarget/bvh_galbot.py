@@ -39,7 +39,7 @@ if __name__ == "__main__":
     print("Num of frames: ", num_frames)
     
     model = Galbot_Charlie_Motion_Model(num_frames)
-    model.load_urdf_as_chain("/home/pengyang/codebase/H1_RL/data/urdf/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
+    model.load_urdf_as_chain("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
 
 
     
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join(os.path.abspath(os.path.join(filename, os.pardir, os.pardir, "galbot_motion")), filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join("/home/pengyang/data/motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
     
     # vis_kinematic_result(os.path.join(os.path.abspath(os.path.join(filename, os.pardir, os.pardir, "galbot_motion")), filename.split("/")[-1][:-4] + ".pickle"))
