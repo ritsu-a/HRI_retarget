@@ -10,11 +10,11 @@ import pytorch_kinematics as pk
 
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS, SEG_GALBOT_CHARLIE_CORRESPONDENCE
+from config.joint_mapping import GALBOT_CHARLIE_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE
 
 
 class Galbot_Charlie_Motion_Model(nn.Module):
-    def __init__(self, batch_size=1, global_rotations=None, global_translations=None, device="cuda:0"):
+    def __init__(self, batch_size=1, joint_correspondence=SG_GALBOT_CHARLIE_CORRESPONDENCE, device="cuda:0"):
         super(Galbot_Charlie_Motion_Model, self).__init__()
 
         self.batch_size = batch_size
@@ -38,13 +38,15 @@ class Galbot_Charlie_Motion_Model(nn.Module):
 
         self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
 
-        self.joint_correspondence = SEG_GALBOT_CHARLIE_CORRESPONDENCE
+        self.joint_correspondence = joint_correspondence
 
         self.chain = None
 
         self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
-        self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=False)
+        self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
+
+        self.load_urdf_as_chain("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
         
     
     def forward(self):
@@ -107,7 +109,7 @@ class Galbot_Charlie_Motion_Model(nn.Module):
         pred_joint_accel = pred_joint_velocities[1:] - pred_joint_velocities[:-1]
         return pred_joint_velocities.abs().sum(dim=-1).mean(), pred_joint_accel.abs().sum(dim=-1).mean()
 
-    def seg_retarget_joint_loss(self):
+    def retarget_joint_loss(self):
         pred_link_global = self.forward_kinematics()
         joint_global_position_loss = 0
 

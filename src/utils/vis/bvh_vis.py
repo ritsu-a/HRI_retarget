@@ -176,7 +176,7 @@ def Draw_bvh(joints, joints_offsets, joints_hierarchy, root_positions, joints_ro
 
     pass
 
-def Get_bvh_joint_local_coord(filename):
+def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
     skeleton_data = ProcessBVH(filename)
 
     joints = skeleton_data[0]
@@ -193,7 +193,7 @@ def Get_bvh_joint_local_coord(filename):
     """
     frame_skips = 1
 
-    joints_coord_full = torch.zeros(len(joints_rotations) // frame_skips, len(SEG_LINKS), 3)
+    joints_coord_full = torch.zeros(len(joints_rotations) // frame_skips, len(link_list), 3)
 
 
     for i in range(0,len(joints_rotations), frame_skips):
@@ -210,16 +210,16 @@ def Get_bvh_joint_local_coord(filename):
         local_pos = _calculate_frame_joint_positions_in_local_space(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, joints_hierarchy)
 
         #calculate world positions
-        world_pos = _calculate_frame_joint_positions_in_world_space(local_pos, root_positions[i], frame_joints_rotations[joints[0]], joints_saved_angles[joints[0]])
+        # world_pos = _calculate_frame_joint_positions_in_world_space(local_pos, root_positions[i], frame_joints_rotations[joints[0]], joints_saved_angles[joints[0]])
         
         joints_coord = []
-        for joint in SEG_LINKS:
+        for joint in link_list:
             joints_coord.append(torch.from_numpy(local_pos[joint]))
         joints_coord_full[0 + i * frame_skips] = torch.stack(joints_coord, dim=0)
         
     return joints_coord_full / 100
 
-def Get_bvh_joint_world_coord(filename):
+def Get_bvh_joint_world_coord(filename, link_list=SEG_LINKS):
     skeleton_data = ProcessBVH(filename)
 
     joints = skeleton_data[0]
@@ -236,7 +236,7 @@ def Get_bvh_joint_world_coord(filename):
     """
     frame_skips = 1
 
-    joints_coord_full = torch.zeros(len(joints_rotations) // frame_skips, len(SEG_LINKS), 3)
+    joints_coord_full = torch.zeros(len(joints_rotations) // frame_skips, len(link_list), 3)
 
 
     for i in range(0,len(joints_rotations), frame_skips):
@@ -256,7 +256,7 @@ def Get_bvh_joint_world_coord(filename):
         world_pos = _calculate_frame_joint_positions_in_world_space(local_pos, root_positions[i], frame_joints_rotations[joints[0]], joints_saved_angles[joints[0]])
         
         joints_coord = []
-        for joint in SEG_LINKS:
+        for joint in link_list:
             joints_coord.append(torch.from_numpy(world_pos[joint]))
         joints_coord_full[0 + i * frame_skips] = torch.stack(joints_coord, dim=0)
         

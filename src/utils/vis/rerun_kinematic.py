@@ -15,7 +15,7 @@ class RerunURDF():
         self.name = robot_type
         match robot_type:
             case 'g1':
-                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/retarget/data/resources/robots/g1/g1_29dof_rev_1_0.urdf', '/home/pengyang/codebase/retarget/data/resources/robots/g1', pin.JointModelFreeFlyer())
+                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/data/resources/robots/g1/g1_29dof_rev_1_0.urdf', '/home/pengyang/data/resources/robots/g1', pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
                                        -0.15,0,0,0.3,-0.15,0,
                                        -0.15,0,0,0.3,-0.15,0,
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     file_name = args.file_name
     robot_type = args.robot_type
     dataset = args.dataset
-    csv_files = "/home/pengyang/codebase/retarget/data/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
+    csv_files = "/home/pengyang/data/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
     # csv_files = "/home/pengyang/codebase/retarget/output.csv"
     data = np.genfromtxt(csv_files, delimiter=',')
 

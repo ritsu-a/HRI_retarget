@@ -26,9 +26,9 @@ from utils.isaac_utils.rotations import (
 
 def crop_csv(input_path, output_path):
     full_csv_data = np.genfromtxt(input_path, delimiter=',')
-    csv_data = full_csv_data[150:700, :]
+    csv_data = full_csv_data[170:700, :]
 
-    csv_goal = full_csv_data[0]
+    csv_goal = full_csv_data[170]
     csv_goal[:2] = csv_data[-38, :2]
     
     ### add end state
@@ -102,7 +102,7 @@ def crop_csv(input_path, output_path):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', type=str, help="File name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2_crop.csv")
+    parser.add_argument('--output', type=str, help="File name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2_crop1.csv")
     parser.add_argument('--input', type=str, help="csv file name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2.csv")
     args = parser.parse_args()
 

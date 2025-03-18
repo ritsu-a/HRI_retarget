@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS, SEG_LINKS
+from config.joint_mapping import GALBOT_CHARLIE_LINKS, SG_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 
@@ -32,7 +32,7 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain):
     """
     frame_skips = 1
 
-    figure_limit = 1 #used to set figure axis limits
+    figure_limit = 2 #used to set figure axis limits
 
     
     idx = 0
@@ -52,26 +52,31 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain):
         for joint in bvh_joints:
             if joint == bvh_joints[0]: continue #skip root joint
             parent_joint = bvh_joints_hierarchy[joint][0]
-            plt.plot(xs = [bvh_pos[SEG_LINKS.index(parent_joint)][0], bvh_pos[SEG_LINKS.index(joint)][0]],
-                     zs = [bvh_pos[SEG_LINKS.index(parent_joint)][1], bvh_pos[SEG_LINKS.index(joint)][1]],
-                     ys = [bvh_pos[SEG_LINKS.index(parent_joint)][2], bvh_pos[SEG_LINKS.index(joint)][2]], c = 'blue', lw = 2.5)
+            plt.plot(xs = [bvh_pos[SG_LINKS.index(parent_joint)][0], bvh_pos[SG_LINKS.index(joint)][0]],
+                     zs = [bvh_pos[SG_LINKS.index(parent_joint)][1], bvh_pos[SG_LINKS.index(joint)][1]],
+                     ys = [bvh_pos[SG_LINKS.index(parent_joint)][2], bvh_pos[SG_LINKS.index(joint)][2]], c = 'blue', lw = 2.5)
 
-
+            print(joint, bvh_pos[SG_LINKS.index(joint)][1]) 
         ### visualizing urdf 
         frames_to_draw = [GALBOT_CHARLIE_LINKS[0]]
         urdf_pos = urdf_link_pos[i].detach().cpu().numpy()
+
         while frames_to_draw != []:
             link = frames_to_draw[0]
             frames_to_draw.pop(0)
             for child_frame in urdf_chain.find_frame(link).children:
                 child_link = child_frame.name 
                 frames_to_draw.append(child_link)
-                plt.plot(xs = [urdf_pos[GALBOT_CHARLIE_LINKS.index(link)][1], urdf_pos[GALBOT_CHARLIE_LINKS.index(child_link)][1]],
-                         zs = [urdf_pos[GALBOT_CHARLIE_LINKS.index(link)][2] - 0.8, urdf_pos[GALBOT_CHARLIE_LINKS.index(child_link)][2] - 0.8],
+                plt.plot(xs = [urdf_pos[GALBOT_CHARLIE_LINKS.index(link)][1] + 0.5, urdf_pos[GALBOT_CHARLIE_LINKS.index(child_link)][1] + 0.5],
+                         zs = [urdf_pos[GALBOT_CHARLIE_LINKS.index(link)][2], urdf_pos[GALBOT_CHARLIE_LINKS.index(child_link)][2]],
                          ys = [urdf_pos[GALBOT_CHARLIE_LINKS.index(link)][0], urdf_pos[GALBOT_CHARLIE_LINKS.index(child_link)][0]],c = 'red', lw = 2.5)
 
 
-
+        ### visualizing corespondence
+        for i, j, v in SG_GALBOT_CHARLIE_CORRESPONDENCE:
+            plt.plot(xs = [urdf_pos[j][1] + 0.5, bvh_pos[i][0]],
+                    zs = [urdf_pos[j][2], bvh_pos[i][1]],
+                    ys = [urdf_pos[j][0], bvh_pos[i][2]],c = 'green', lw = 2.5)
 
             #uncomment here if you want to see the world coords. If nothing appears on screen, change the axis limits below!
             # plt.plot(xs = [world_pos[parent_joint][0], world_pos[joint][0]],
@@ -90,7 +95,7 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain):
     pass
 
 
-def vis_kinematic_result(filename):
+def vis_kinematic_result(filename, dataset="SG", robot="galbot", link_list=SG_LINKS):
     ### loading estimated joint angles
     with open(filename, "rb") as file:
         data_dict = pickle.load(file)
@@ -98,15 +103,14 @@ def vis_kinematic_result(filename):
         
 
     ### loading bvh data
-    bvh_path = os.path.join("/home/pengyang/data/motion/human/SeG_dataset/bvh", filename.split("/")[-1][:-7] + ".bvh")
+    bvh_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
     skeleton_data = ProcessBVH(bvh_path)
-    bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path)
+    bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=link_list)
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
 
     ### loading galbot model 
     model = Galbot_Charlie_Motion_Model(num_frames)
-    model.load_urdf_as_chain("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
 
     model.set_angles(torch.tensor(joints_angle))
     model.set_global_matrix(data_dict)

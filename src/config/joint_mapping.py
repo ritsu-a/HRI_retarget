@@ -1,3 +1,4 @@
+### dataset link names
 SEG_LINKS = ['Hips', 'Chest', 'Chest2', 'Neck', 'Head',
     'LeftCollar', 'LeftShoulder', 'LeftElbow', 'LeftWrist', 
     'LeftFinger0', 'LeftFinger01', 'LeftFinger02', 'LeftFinger1', 
@@ -11,6 +12,26 @@ SEG_LINKS = ['Hips', 'Chest', 'Chest2', 'Neck', 'Head',
     'RightFinger41', 'RightFinger42', 'LeftHip', 'LeftKnee', 
     'LeftAnkle', 'LeftToe', 'RightHip', 'RightKnee', 'RightAnkle', 'RightToe']
 
+SG_LINKS = ['Hips', 'RightUpLeg', 'RightLeg', 'RightFoot', 'LeftUpLeg',
+    'LeftLeg', 'LeftFoot', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Neck1', 
+    'Head', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand', 
+    'RightHandThumb1', 'RightHandThumb2', 'RightHandThumb3', 'RightInHandIndex', 
+    'RightHandIndex1', 'RightHandIndex2', 'RightHandIndex3', 'RightInHandMiddle', 
+    'RightHandMiddle1', 'RightHandMiddle2', 'RightHandMiddle3', 'RightInHandRing', 
+    'RightHandRing1', 'RightHandRing2', 'RightHandRing3', 'RightInHandPinky', 
+    'RightHandPinky1', 'RightHandPinky2', 'RightHandPinky3', 'LeftShoulder', 
+    'LeftArm', 'LeftForeArm', 'LeftHand', 'LeftHandThumb1', 'LeftHandThumb2', 
+    'LeftHandThumb3', 'LeftInHandIndex', 'LeftHandIndex1', 'LeftHandIndex2', 
+    'LeftHandIndex3', 'LeftInHandMiddle', 'LeftHandMiddle1', 'LeftHandMiddle2', 
+    'LeftHandMiddle3', 'LeftInHandRing', 'LeftHandRing1', 'LeftHandRing2', 'LeftHandRing3', 
+    'LeftInHandPinky', 'LeftHandPinky1', 'LeftHandPinky2', 'LeftHandPinky3']
+
+
+
+
+
+
+### robot link names
 GALBOT_CHARLIE_LINKS = ['mobile_base', 'base_link_x', 'base_link_y', 'base_link_z',
     'base_link', 'omni_chassis_base_link', 'omni_chassis_leg_mount_link', 'leg_base_link',
     'leg_link1', 'leg_link2', 'leg_link3', 'leg_link4', 
@@ -29,6 +50,8 @@ GALBOT_CHARLIE_LINKS = ['mobile_base', 'base_link_x', 'base_link_y', 'base_link_
     'left_gripper_r2_link', 'left_gripper_left_link', 'left_gripper_right_link', 'left_gripper_tcp_link', 
     'left_flange_link']
 
+
+### mapping from dataset to robot
 SEG_GALBOT_CHARLIE_CORRESPONDENCE = [
     [SEG_LINKS.index("Hips"), GALBOT_CHARLIE_LINKS.index("leg_link3"), 5],
     [SEG_LINKS.index("Neck"), GALBOT_CHARLIE_LINKS.index("head_link1"), 5],
@@ -40,4 +63,17 @@ SEG_GALBOT_CHARLIE_CORRESPONDENCE = [
     [SEG_LINKS.index("RightShoulder"), GALBOT_CHARLIE_LINKS.index("right_arm_link1"), 3],
     [SEG_LINKS.index("RightElbow"), GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 2],
     [SEG_LINKS.index("RightWrist"), GALBOT_CHARLIE_LINKS.index("right_arm_link5"), 3],
+]
+
+SG_GALBOT_CHARLIE_CORRESPONDENCE = [
+    # [SG_LINKS.index("Spine"), GALBOT_CHARLIE_LINKS.index("leg_link3"), 5],
+    # [SG_LINKS.index("Neck"), GALBOT_CHARLIE_LINKS.index(""), 5],
+
+    [SG_LINKS.index("LeftArm"), GALBOT_CHARLIE_LINKS.index("left_arm_link1"), 3],
+    [SG_LINKS.index("LeftForeArm"), GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 2],
+    [SG_LINKS.index("LeftHand"), GALBOT_CHARLIE_LINKS.index("left_arm_link5"), 3],
+    
+    [SG_LINKS.index("RightArm"), GALBOT_CHARLIE_LINKS.index("right_arm_link1"), 3],
+    [SG_LINKS.index("RightForeArm"), GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 2],
+    [SG_LINKS.index("RightHand"), GALBOT_CHARLIE_LINKS.index("right_arm_link5"), 3],
 ]
