@@ -1,6 +1,6 @@
 ### usage:
-### python bvh_galbot.py {path_to_bvh_file}
-### python bvh_galbot.py /home/pengyang/codebase/H1_RL/data/SeG_dataset/bvh/ARM_ENDEAVOR-1.bvh
+### python seg_galbot.py {path_to_bvh_file}
+### python seg_galbot.py /home/pengyang/data/motion/human/SeG_dataset/bvh/ARM_ENDEAVOR-1.bvh
 ### todo: 
 ###   tune magic numbers
 
@@ -84,6 +84,6 @@ if __name__ == "__main__":
 
     with open(os.path.join("/home/pengyang/data/motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
-        
+
     # vis_kinematic_result(os.path.join("/home/pengyang/data/motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", link_list=SEG_LINKS)
     

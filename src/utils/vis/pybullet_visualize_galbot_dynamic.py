@@ -25,8 +25,8 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 
-bvh_path = os.path.join("/home/pengyang/data/motion/human/SeG_dataset/bvh", filename.split("/")[-1][:-7] + ".bvh")
-skeleton_data = ProcessBVH(bvh_path)
+# bvh_path = os.path.join("/home/pengyang/codebase/H1_RL/data/motion/human/SG", filename.split("/")[-1][:-7] + ".bvh")
+# skeleton_data = ProcessBVH(bvh_path)
 
 
 # 连接物理引擎
@@ -135,6 +135,8 @@ try:
             # time.sleep(1)
             frame_id -= num_frames
             init_angles = joint_global_pos[0]
+            init_angles[0: 7] = [0, 0, 0, 0.5, 1.5, 1.0, 0.0]
+
             for j, joint in enumerate(controllable_joints):
 
                 i, name = controllable_joints[j]
@@ -160,6 +162,10 @@ try:
         print(np.stack([ np.array(range(len(target_angles))), np.array(joint_angle_now), np.array(target_angles),], axis=1))
         print("#" *50)
 
+
+
+        ### manually fix the bottom part
+        target_angles[0: 7] = [0, 0, 0, 0.5, 1.5, 1.0, 0.0]
 
 
         for j, joint in enumerate(controllable_joints):

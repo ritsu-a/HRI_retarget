@@ -1,6 +1,6 @@
 ### usage:
-### python bvh_galbot.py {path_to_bvh_file}
-### python bvh_galbot.py /home/pengyang/codebase/H1_RL/data/SeG_dataset/bvh/ARM_ENDEAVOR-1.bvh
+### python sg_galbot.py {path_to_bvh_file}
+### python sg_galbot.py /home/pengyang/data/human/SG/output.bvh
 ### todo: 
 ###   tune magic numbers
 
@@ -19,7 +19,7 @@ from config.joint_mapping import SG_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE
 
 
 ### magic numbers
-### transition from seg to galbot
+### transition from sg to galbot
 rot = torch.tensor([
     [0, 0, 1],
     [1, 0, 0],
