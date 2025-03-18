@@ -81,8 +81,8 @@ def csv_to_asap(csv_path, pkl_path):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pkl', type=str, help="File name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2_v2.pkl")
-    parser.add_argument('--csv', type=str, help="csv file name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2_crop1.csv")
+    parser.add_argument('--pkl', type=str, help="File name", default="/home/pengyang/data/motion/g1/LAFAN1/dance1_subject2_v2.pkl")
+    parser.add_argument('--csv', type=str, help="csv file name", default="/home/pengyang/data/motion/g1/LAFAN1/dance1_subject2_crop1.csv")
     args = parser.parse_args()
 
     # asap_to_csv(args.pkl, args.csv)

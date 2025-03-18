@@ -13,9 +13,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS
-from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH
-
 np.set_printoptions(suppress=True)
 
 if len(sys.argv) != 2:
@@ -25,8 +22,7 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 
-# bvh_path = os.path.join("/home/pengyang/codebase/H1_RL/data/motion/human/SG", filename.split("/")[-1][:-7] + ".bvh")
-# skeleton_data = ProcessBVH(bvh_path)
+
 
 
 # 连接物理引擎
@@ -36,8 +32,6 @@ p.setGravity(0, 0, -9.81)  # 设置重力
 ### galbot charlie urdf
 robotId = p.loadURDF("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf", [0, 0, 0], [0, 0, 0, 1])
 
-### h1 urdf (not functinoal)
-# robotId = p.loadURDF("//home/pengyang/codebase/H1_RL/data/urdf/h1/urdf/h1_add_hand_link_limit.urdf", [0, 0, 0], [0, 0, 0, 1])
 
 # 创建固定约束，将base链接固定在世界坐标系的原点
 constraint_id = p.createConstraint(
@@ -86,33 +80,11 @@ for i in range(num_joints):
         print(f"Controllable Joint {i}: {joint_name}")
 fig = plt.figure()
 
-# 主循环
-# try:
-#     while True:
-#         frame_id = p.readUserDebugParameter(frame_slider)
-#         target_angles = joint_global_pos[int(frame_id)]
-
-#         for j, joint in enumerate(controllable_joints):
-#             i, name = controllable_joints[j]
-            
-#             p.setJointMotorControl2(
-#                 bodyUniqueId=robotId,
-#                 jointIndex=joint_indices[i],
-#                 controlMode=p.POSITION_CONTROL,
-#                 targetPosition=target_angles[j]
-#             )
 
 
-#         Draw_bvh_frame(*skeleton_data[:6], int(frame_id), fig)
-
-        
-#         p.stepSimulation()
-
-### init angle
-# init_angles = np.array([
-#             0.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0
-#         ])
 init_angles = joint_global_pos[0]
+init_angles[0: 7] = [0, 0, 0, 0.5, 1.5, 1.0, 0.0]
+
 for j, joint in enumerate(controllable_joints):
     i, name = controllable_joints[j]
     p.resetJointState(
@@ -150,15 +122,12 @@ try:
             
         target_angles = joint_global_pos[int(frame_id)]
 
-        # target_angles[2:] += 2 * np.pi * (target_angles[2:] < - np.pi)
-        # target_angles[2:] -= 2 * np.pi * (target_angles[2:] > np.pi)
-
-
 
         joint_angle_now = []
         for j, joint in enumerate(controllable_joints):
             i, name = controllable_joints[j]
             joint_angle_now.append(p.getJointState(robotId, i)[0])
+
         print(np.stack([ np.array(range(len(target_angles))), np.array(joint_angle_now), np.array(target_angles),], axis=1))
         print("#" *50)
 
@@ -181,7 +150,6 @@ try:
             )
 
         time.sleep(0.05)
-        # Draw_bvh_frame(*skeleton_data[:6], int(frame_id), fig)
 
         p.stepSimulation()
 except KeyboardInterrupt:

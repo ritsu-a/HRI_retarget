@@ -40,7 +40,7 @@ def crop_csv(input_path, output_path):
     
     ### computing pose_aa 
     cfg = {
-        "assetRoot": "/home/pengyang/codebase/retarget/data/resources/robots/g1_asap",
+        "assetRoot": "/home/pengyang/data/resources/robots/g1_asap",
         "assetFileName": "g1_29dof_anneal_23dof_fitmotionONLY.xml",
         "extend_config": [{
                 "joint_name": "left_hand_link",
