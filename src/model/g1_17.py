@@ -21,7 +21,7 @@ class G1_17_Motion_Model(nn.Module):
         self.device = device
         self.gt_joint_positions = None
 
-        self.dof = 17
+        self.dof = 15
         ### TODO: update init angles
        
 
@@ -107,19 +107,19 @@ class G1_17_Motion_Model(nn.Module):
             joint_global_position_loss += ((pred_link_global[:, joint_corr[1]][:, :3, 3] - self.gt_joint_positions[:, joint_corr[0]])**2).sum(dim=-1).mean() * joint_corr[2]
         return joint_global_position_loss
 
-    def elbow_loss(self):
-        ### robot specific loss
-        ### each elbow should be at least {threshold}m away from spine
-        threshold = 0.1
-        pred_link_global = self.forward_kinematics()
-        elbow_loss = 0.0
-        right_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 0, 3]
+    # # def elbow_loss(self):
+    # #     ### robot specific loss
+    # #     ### each elbow should be at least {threshold}m away from spine
+    # #     threshold = 0.1
+    # #     pred_link_global = self.forward_kinematics()
+    # #     elbow_loss = 0.0
+    # #     right_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 0, 3]
 
-        elbow_loss += (threshold - right_elbow_x[right_elbow_x < threshold]).sum()
-        left_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 0, 3]
-        elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
+    # #     elbow_loss += (threshold - right_elbow_x[right_elbow_x < threshold]).sum()
+    # #     left_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 0, 3]
+    # #     elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
 
-        return elbow_loss
+    # #     return elbow_loss
 
 
 

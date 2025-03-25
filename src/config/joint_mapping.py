@@ -91,7 +91,7 @@ SG_GALBOT_CHARLIE_CORRESPONDENCE = [
 
 SG_G1_CORRESPONDENCE = [
     [SG_LINKS.index("Spine"), G1_LINKS.index("pelvis"), 1],
-    [SG_LINKS.index("Head"), G1_LINKS.index("d435_link"), 1],
+    [SG_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
 
     [SG_LINKS.index("LeftArm"), G1_LINKS.index("left_shoulder_pitch_link"), 3],
     # [SG_LINKS.index("LeftArm"), G1_LINKS.index("left_shoulder_roll_link"), 1],
