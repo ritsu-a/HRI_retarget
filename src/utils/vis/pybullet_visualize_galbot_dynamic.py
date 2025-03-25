@@ -121,7 +121,7 @@ try:
             p.stepSimulation()
             
         target_angles = joint_global_pos[int(frame_id)]
-
+        print(frame_id)
 
         joint_angle_now = []
         for j, joint in enumerate(controllable_joints):
@@ -149,7 +149,7 @@ try:
                 targetPosition=target_angles[j]
             )
 
-        time.sleep(0.05)
+        time.sleep(1 / 60)
 
         p.stepSimulation()
 except KeyboardInterrupt:

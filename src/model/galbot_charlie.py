@@ -93,6 +93,10 @@ class Galbot_Charlie_Motion_Model(nn.Module):
     def joint_local_velocity_loss(self):
         pred_joint_velocities = self.joint_angles[1:, 3:] - self.joint_angles[:-1, 3:]
         pred_joint_accel = pred_joint_velocities[1:] - pred_joint_velocities[:-1]
+
+        ### only regulate on too large vel
+        pred_joint_velocities *= (pred_joint_velocities.abs() > 0.2 )
+
         return pred_joint_velocities.abs().sum(dim=-1).mean(), pred_joint_accel.abs().sum(dim=-1).mean()
 
     def retarget_joint_loss(self):

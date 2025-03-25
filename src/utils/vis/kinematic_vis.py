@@ -73,10 +73,10 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain):
 
 
         ### visualizing corespondence
-        for i, j, v in SG_GALBOT_CHARLIE_CORRESPONDENCE:
-            plt.plot(xs = [urdf_pos[j][1] + 0.5, bvh_pos[i][0]],
-                    zs = [urdf_pos[j][2], bvh_pos[i][1]],
-                    ys = [urdf_pos[j][0], bvh_pos[i][2]],c = 'green', lw = 2.5)
+        for ii, jj, v in SG_GALBOT_CHARLIE_CORRESPONDENCE:
+            plt.plot(xs = [urdf_pos[jj][1] + 0.5, bvh_pos[ii][0]],
+                    zs = [urdf_pos[jj][2], bvh_pos[ii][1]],
+                    ys = [urdf_pos[jj][0], bvh_pos[ii][2]],c = 'green', lw = 2.5)
 
             #uncomment here if you want to see the world coords. If nothing appears on screen, change the axis limits below!
             # plt.plot(xs = [world_pos[parent_joint][0], world_pos[joint][0]],

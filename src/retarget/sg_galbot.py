@@ -64,7 +64,7 @@ if __name__ == "__main__":
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
 
-        loss = 1.0 * joint_global_position_loss + 0.0 * joint_local_velocity_loss + 0.0 * joint_local_accel_loss #+ 0.0 * init_angle_loss + 0.0 * elbow_loss
+        loss = 1.0 * joint_global_position_loss + 1.0 * joint_local_velocity_loss + 0.0 * joint_local_accel_loss #+ 0.0 * init_angle_loss + 0.0 * elbow_loss
         pbar.set_description(f"{loss.item()}, {joint_global_position_loss.item()}, {joint_local_velocity_loss.item()}")
 
 

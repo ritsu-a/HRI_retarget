@@ -66,7 +66,7 @@ SEG_GALBOT_CHARLIE_CORRESPONDENCE = [
 ]
 
 SG_GALBOT_CHARLIE_CORRESPONDENCE = [
-    # [SG_LINKS.index("Spine"), GALBOT_CHARLIE_LINKS.index("leg_link3"), 5],
+    [SG_LINKS.index("Spine"), GALBOT_CHARLIE_LINKS.index("leg_link3"), 5],
     # [SG_LINKS.index("Neck"), GALBOT_CHARLIE_LINKS.index(""), 5],
 
     [SG_LINKS.index("LeftArm"), GALBOT_CHARLIE_LINKS.index("left_arm_link1"), 3],
