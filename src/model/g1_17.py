@@ -10,22 +10,20 @@ import pytorch_kinematics as pk
 
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE
+from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
 
 
-class Galbot_Charlie_Motion_Model(nn.Module):
-    def __init__(self, batch_size=1, joint_correspondence=SG_GALBOT_CHARLIE_CORRESPONDENCE, device="cuda:0"):
-        super(Galbot_Charlie_Motion_Model, self).__init__()
+class G1_17_Motion_Model(nn.Module):
+    def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
+        super(G1_17_Motion_Model, self).__init__()
 
         self.batch_size = batch_size
         self.device = device
         self.gt_joint_positions = None
 
-        self.dof = 21
+        self.dof = 15
         ### TODO: update init angles
-        self.init_angle = torch.tensor([
-            0.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0
-        ]).to(self.device)
+       
 
 
         self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
@@ -34,13 +32,13 @@ class Galbot_Charlie_Motion_Model(nn.Module):
 
         self.chain = None
 
-        self.links = GALBOT_CHARLIE_LINKS
+        self.links = G1_LINKS
 
         self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
-        self.load_urdf_as_chain("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
+        self.load_urdf_as_chain("/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_17dof.urdf")
         
     
     def forward(self):
@@ -109,19 +107,19 @@ class Galbot_Charlie_Motion_Model(nn.Module):
             joint_global_position_loss += ((pred_link_global[:, joint_corr[1]][:, :3, 3] - self.gt_joint_positions[:, joint_corr[0]])**2).sum(dim=-1).mean() * joint_corr[2]
         return joint_global_position_loss
 
-    def elbow_loss(self):
-        ### robot specific loss
-        ### each elbow should be at least {threshold}m away from spine
-        threshold = 0.1
-        pred_link_global = self.forward_kinematics()
-        elbow_loss = 0.0
-        right_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 0, 3]
+    # # def elbow_loss(self):
+    # #     ### robot specific loss
+    # #     ### each elbow should be at least {threshold}m away from spine
+    # #     threshold = 0.1
+    # #     pred_link_global = self.forward_kinematics()
+    # #     elbow_loss = 0.0
+    # #     right_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 0, 3]
 
-        elbow_loss += (threshold - right_elbow_x[right_elbow_x < threshold]).sum()
-        left_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 0, 3]
-        elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
+    # #     elbow_loss += (threshold - right_elbow_x[right_elbow_x < threshold]).sum()
+    # #     left_elbow_x = pred_link_global[:, GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 0, 3]
+    # #     elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
 
-        return elbow_loss
+    # #     return elbow_loss
 
 
 
