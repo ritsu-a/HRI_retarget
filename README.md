@@ -26,3 +26,15 @@ visualize dynamic results via pybullet and position pd control:
     python src/utils/vis/pybullet_visualize_g1_dynamic.py /home/pengyang/data/motion/g1/SG/output.pickle
 
 
+
+### read here if you want to reproduce the speech+motion example:
+1. contact pengyang for SG data, urdf file, replace paths like /home/pengyang/data to your data directory
+2. run python src/retarget/sg_galbot.py {path_to_bvh_file} to generate a pickle file containing robot motion
+3. run python src/utils/vis/pybullet_visualize_galbot_dynamic.py {path_to_pickle_file} to visualize robot motion in pybullet
+4. find the corresponding audio file, and make your own video
+
+tips: you may need to change some paths for bvh and pickle files, it may take sometime to debug
+
+
+
+
