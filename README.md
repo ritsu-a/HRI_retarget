@@ -19,3 +19,10 @@ visualize dynamic results via pybullet and position pd control:
     python src/utils/vis/pybullet_visualize_galbot_dynamic.py   /home/pengyang/data/motion/galbot/SG/output.pickle
 
 
+### for g1:
+    python src/retarget/sg_g1.py /home/pengyang/data/motion/human/SG/output.bvh
+
+
+    python src/utils/vis/pybullet_visualize_g1_dynamic.py /home/pengyang/data/motion/g1/SG/output.pickle
+
+
