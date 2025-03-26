@@ -142,8 +142,10 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Call the function with the motion file')
-        quit()
-    filename = sys.argv[1]
+        filename = "/home/pengyang/data/motion/g1/SG/output.pickle"
+
+    else:
+        filename = sys.argv[1]
     vis_kinematic_result(filename)
 
 

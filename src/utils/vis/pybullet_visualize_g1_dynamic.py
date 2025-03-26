@@ -17,10 +17,10 @@ np.set_printoptions(suppress=True)
 
 if len(sys.argv) != 2:
     print('Call the function with the motion file')
-    quit()
+    filename = "/home/pengyang/data/motion/g1/SG/output.pickle"
 
-
-filename = sys.argv[1]
+else:
+    filename = sys.argv[1]
 
 
 
