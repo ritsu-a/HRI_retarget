@@ -1,3 +1,9 @@
+### from the official code example of https://github.com/unitreerobotics/unitree_sdk2_python
+### refer to unitree doc for network connect
+### usage example:(replace enp0s31f6 with net card name)
+###     python src/deploy/deploy_g1.py enp0s31f6
+
+
 import time
 import sys
 
