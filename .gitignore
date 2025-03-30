@@ -6,7 +6,7 @@ PHC/data
 PHC/output
 PHC/sample_data
 
-
+.gradio/
 *.json
 
 # Byte-compiled / optimized / DLL files

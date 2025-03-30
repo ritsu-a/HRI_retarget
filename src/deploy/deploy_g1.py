@@ -253,8 +253,7 @@ class Custom:
         self.lowcmd_publisher_.Write(self.low_cmd)
 
 
-if __name__ == '__main__':
-
+def deploy_g1():
     print("WARNING: Please ensure there are no obstacles around the robot while running this example.")
     # input("Press Enter to continue...")
 
@@ -273,3 +272,7 @@ if __name__ == '__main__':
 
     while True:
         time.sleep(1)
+
+
+if __name__ == '__main__':
+    deploy_g1()

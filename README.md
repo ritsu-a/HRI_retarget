@@ -36,5 +36,10 @@ visualize dynamic results via pybullet and position pd control:
 tips: you may need to change some paths for bvh and pickle files, it may take sometime to debug
 
 
+### use gradio for control robot with mobile phone
+1. sudo ufw allow 7990
+4. python src/utils/vis/gradio_test.py
+
+
 
 
