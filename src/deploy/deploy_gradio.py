@@ -1,3 +1,6 @@
+### warning: gradio may lost connection, pay attention!
+
+
 import sys 
 import os 
 os.environ["all_proxy"] = ''
