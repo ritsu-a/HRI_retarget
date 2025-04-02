@@ -23,6 +23,24 @@ class G1_17_Motion_Model(nn.Module):
 
         self.dof = 15
         ### TODO: update init angles
+
+        self.dof_limits = torch.from_numpy(np.array([
+            [-2.618, 2.618],#waist_yaw
+            [-0.52, 0.52],#waist_roll
+            [-0.52, 0.52],#waist_pitch
+            [-3.089, 2.670],#left_shoulder_pitch
+            [-1.588, 2.251],#left_should_roll
+            [-2.618, 2.618],#left_shoulder_yaw
+            [-1.047, 2.094],#left_elbow
+            [-1.972, 1.972],#left_wrist_roll
+            [-1.614, 1.614],#left_wrist_yaw
+            [-3.089, 2.670],#right_shoulder_pitch
+            [-2.251, 1.588],#right_should_roll
+            [-2.618, 2.618],#right_shoulder_yaw
+            [-1.047, 2.094],#right_elbow
+            [-1.942, 1.972],#rightt_wrist_roll
+            [-1.614, 1.614],#right_wrist_yaw
+        ])).repeat(self.batch_size, 1, 1).to(self.device)
        
 
 
@@ -106,6 +124,13 @@ class G1_17_Motion_Model(nn.Module):
         for joint_corr in self.joint_correspondence:
             joint_global_position_loss += ((pred_link_global[:, joint_corr[1]][:, :3, 3] - self.gt_joint_positions[:, joint_corr[0]])**2).sum(dim=-1).mean() * joint_corr[2]
         return joint_global_position_loss
+    
+
+    def dof_limit_loss(self):
+
+        loss =  (self.joint_angles < self.dof_limits[:, :, 0]) * (self.dof_limits[:, :, 0] - self.joint_angles) +\
+                (self.joint_angles > self.dof_limits[:, :, 1]) * (self.joint_angles - self.dof_limits[:, :, 1])
+        return loss.sum(dim=-1).mean()
 
     # # def elbow_loss(self):
     # #     ### robot specific loss

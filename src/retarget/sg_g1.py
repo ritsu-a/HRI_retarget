@@ -45,11 +45,8 @@ if __name__ == "__main__":
 
 
 
-
-    
-
-
     print(bvh_joint_local_coord.shape)
+
     # model.set_gt_joint_positions((bvh_joint_local_coord) @ rot.T @ scale + pos)
     model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
@@ -63,6 +60,7 @@ if __name__ == "__main__":
         
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
+        dof_limit_loss = model.dof_limit_loss()
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
 
@@ -71,6 +69,7 @@ if __name__ == "__main__":
             "joint_global_position_loss": [1.0, joint_global_position_loss],
             "joint_local_velocity_loss": [1.0, joint_local_velocity_loss],
             "joint_local_accel_loss": [0.0, joint_local_accel_loss],
+            "dof_limit_loss": [1.0, dof_limit_loss],
         }
 
         loss = 0
@@ -78,9 +77,8 @@ if __name__ == "__main__":
         for loss_name in loss_dict.keys():
             loss += loss_dict[loss_name][0] * loss_dict[loss_name][1]
             log_str += f"{loss_name}: {loss_dict[loss_name][0] * loss_dict[loss_name][1].item()}" + "\n"
-        # loss = 1.0 * joint_global_position_loss + 1.0 * joint_local_velocity_loss + 0.0 * joint_local_accel_loss #+ 0.0 * init_angle_loss + 0.0 * elbow_loss
-        pbar.set_description(log_str)
-        # pbar.set_description(f"{loss.item()}, {joint_global_position_loss.item()}, {joint_local_velocity_loss.item()}")
+        pbar.set_description(log_str)  
+        print("dof_limit_loss", dof_limit_loss.item())
 
 
         optimizer.zero_grad()

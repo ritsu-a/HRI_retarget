@@ -5,7 +5,7 @@ import sys
 import os 
 os.environ["all_proxy"] = ''
 os.environ["ALL_PROXY"] = ''
-
+sys.path.append("/home/pengyang/codebase/H1_RL/src")
 import gradio as gr
 import numpy as np
 import requests
@@ -13,7 +13,8 @@ import multiprocessing
 import threading
 import time
 
-from src.deploy.deploy_g1 import deploy_g1
+from deploy.deploy_g1 import deploy_g1
+from deploy.g1_low_level_example import deploy_low_cmd
 
 is_running = False
 thread_pool = []
@@ -36,7 +37,7 @@ def is_running_fn():
         idx += 1
         if t == None:
             if is_running:
-                t = multiprocessing.Process(target=deploy_g1)
+                t = multiprocessing.Process(target=deploy_low_cmd)
                 t.start()
         elif not is_running:
             t.terminate()

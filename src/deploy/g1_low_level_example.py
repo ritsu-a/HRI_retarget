@@ -12,7 +12,6 @@ from unitree_sdk2py.utils.thread import RecurrentThread
 from unitree_sdk2py.comm.motion_switcher.motion_switcher_client import MotionSwitcherClient
 
 import numpy as np
-import pickle
 
 G1_NUM_MOTOR = 29
 
@@ -31,7 +30,6 @@ Kd = [
     1, 1, 1, 1, 1, 1, 1,  # arms
     1, 1, 1, 1, 1, 1, 1   # arms 
 ]
-
 
 class G1JointIndex:
     LeftHipPitch = 0
@@ -71,28 +69,6 @@ class G1JointIndex:
     RightWristYaw = 28    # NOTE: INVALID for g1 23dof
 
 
-upperbody_indices = [
-    G1JointIndex.WaistRoll,
-    G1JointIndex.WaistPitch,
-    G1JointIndex.WaistYaw,
-    G1JointIndex.LeftShoulderPitch,
-    G1JointIndex.LeftShoulderRoll,
-    G1JointIndex.LeftShoulderYaw,
-    G1JointIndex.LeftElbow,
-    G1JointIndex.LeftWristRoll,
-    G1JointIndex.LeftWristPitch,
-    G1JointIndex.LeftWristYaw,
-    G1JointIndex.RightShoulderPitch,
-    G1JointIndex.RightShoulderRoll,
-    G1JointIndex.RightShoulderYaw,
-    G1JointIndex.RightElbow,
-    G1JointIndex.RightWristRoll,
-    G1JointIndex.RightWristPitch,
-    G1JointIndex.RightWristYaw,
-]
-print(upperbody_indices)
-
-
 class Mode:
     PR = 0  # Series Control for Pitch/Roll Joints
     AB = 1  # Parallel Control for A/B Joints
@@ -102,7 +78,6 @@ class Custom:
         self.time_ = 0.0
         self.control_dt_ = 0.002  # [2ms]
         self.duration_ = 3.0    # [3 s]
-        self.fps = 60
         self.counter_ = 0
         self.mode_pr_ = Mode.PR
         self.mode_machine_ = 0
@@ -111,12 +86,10 @@ class Custom:
         self.update_mode_machine_ = False
         self.crc = CRC()
 
-    def Init(self, joint_angles):
+    def Init(self):
         self.msc = MotionSwitcherClient()
         self.msc.SetTimeout(5.0)
         self.msc.Init()
-        self.joint_angles = joint_angles 
-        self.num_frames = joint_angles.shape[0]
 
         status, result = self.msc.CheckMode()
         while result['name']:
@@ -152,7 +125,7 @@ class Custom:
         self.counter_ +=1
         if (self.counter_ % 500 == 0) :
             self.counter_ = 0
-            # print(self.low_state.imu_state.rpy)
+            print(self.low_state.imu_state.rpy)
 
     def LowCmdWrite(self):
         self.time_ += self.control_dt_
@@ -170,71 +143,45 @@ class Custom:
                 self.low_cmd.motor_cmd[i].kp = Kp[i] 
                 self.low_cmd.motor_cmd[i].kd = Kd[i]
 
+        elif self.time_ < self.duration_ * 2 :
+            # [Stage 2]: swing ankle using PR mode
+            max_P = np.pi * 30.0 / 180.0
+            max_R = np.pi * 10.0 / 180.0
+            t = self.time_ - self.duration_
+            L_P_des = max_P * np.sin(2.0 * np.pi * t)
+            L_R_des = max_R * np.sin(2.0 * np.pi * t)
+            R_P_des = max_P * np.sin(2.0 * np.pi * t)
+            R_R_des = -max_R * np.sin(2.0 * np.pi * t)
 
-        elif self.time_ < self.duration_ * 2:
-            # [stage 2]: got robot init state
-            ratio = np.clip((self.time_ - self.duration_) / self.duration_, 0.0, 1.0)
-            self.low_cmd.motor_cmd[G1JointIndex.WaistYaw].q = self.joint_angles[0, 0] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.WaistRoll].q = self.joint_angles[0, 1] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.WaistPitch].q = self.joint_angles[0, 2] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.LeftShoulderPitch].q = self.joint_angles[0, 3] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.LeftShoulderRoll].q = self.joint_angles[0, 4] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.LeftShoulderYaw].q = self.joint_angles[0, 5] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.LeftElbow].q = self.joint_angles[0, 6] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.LeftWristRoll].q = self.joint_angles[0, 7] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.LeftWristYaw].q = self.joint_angles[0, 8] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.RightShoulderPitch].q = self.joint_angles[0, 9] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.RightShoulderRoll].q = self.joint_angles[0, 10] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.RightShoulderYaw].q = self.joint_angles[0, 11] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.RightElbow].q = self.joint_angles[0, 12] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.RightWristRoll].q = self.joint_angles[0, 13] * ratio
-            self.low_cmd.motor_cmd[G1JointIndex.RightWristYaw].q = self.joint_angles[0, 14] * ratio
+            self.low_cmd.mode_pr = Mode.PR
+            self.low_cmd.mode_machine = self.mode_machine_
+            self.low_cmd.motor_cmd[G1JointIndex.LeftAnklePitch].q = L_P_des
+            self.low_cmd.motor_cmd[G1JointIndex.LeftAnkleRoll].q = L_R_des
+            self.low_cmd.motor_cmd[G1JointIndex.RightAnklePitch].q = R_P_des
+            self.low_cmd.motor_cmd[G1JointIndex.RightAnkleRoll].q = R_R_des
 
-            ### set wrist pitch qpose to 0
-            self.low_cmd.motor_cmd[G1JointIndex.RightWristPitch].q = 0
-            self.low_cmd.motor_cmd[G1JointIndex.LeftWristPitch].q = 0
+        else :
+            # [Stage 3]: swing ankle using AB mode
+            max_A = np.pi * 30.0 / 180.0
+            max_B = np.pi * 10.0 / 180.0
+            t = self.time_ - self.duration_ * 2
+            L_A_des = max_A * np.sin(2.0 * np.pi * t)
+            L_B_des = max_B * np.sin(2.0 * np.pi * t + np.pi)
+            R_A_des = -max_A * np.sin(2.0 * np.pi * t)
+            R_B_des = -max_B * np.sin(2.0 * np.pi * t + np.pi)
 
-
-
-            for i in range(G1_NUM_MOTOR):
-                self.low_cmd.mode_pr = Mode.PR
-                self.low_cmd.mode_machine = self.mode_machine_
-
-                if i in upperbody_indices:
-                    self.low_cmd.motor_cmd[i].mode =  1 # 1:Enable, 0:Disable
-                else:
-                    self.low_cmd.motor_cmd[i].mode = 0
-                self.low_cmd.motor_cmd[i].tau = 0. 
-                self.low_cmd.motor_cmd[i].dq = 0. 
-                self.low_cmd.motor_cmd[i].kp = Kp[i] 
-                self.low_cmd.motor_cmd[i].kd = Kd[i]
-
-
-        elif self.time_ < self.duration_ * 2 + self.num_frames / self.fps:
-            # [Stage 3]: run g1 motion
-            frame_idx = int((self.time_ - self.duration_ * 2)  * self.fps)
-
-
-
-            self.low_cmd.motor_cmd[G1JointIndex.WaistYaw].q = self.joint_angles[frame_idx, 0]
-            self.low_cmd.motor_cmd[G1JointIndex.WaistRoll].q = self.joint_angles[frame_idx, 1]
-            self.low_cmd.motor_cmd[G1JointIndex.WaistPitch].q = self.joint_angles[frame_idx, 2]
-            self.low_cmd.motor_cmd[G1JointIndex.LeftShoulderPitch].q = self.joint_angles[frame_idx, 3]
-            self.low_cmd.motor_cmd[G1JointIndex.LeftShoulderRoll].q = self.joint_angles[frame_idx, 4]
-            self.low_cmd.motor_cmd[G1JointIndex.LeftShoulderYaw].q = self.joint_angles[frame_idx, 5]
-            self.low_cmd.motor_cmd[G1JointIndex.LeftElbow].q = self.joint_angles[frame_idx, 6]
-            self.low_cmd.motor_cmd[G1JointIndex.LeftWristRoll].q = self.joint_angles[frame_idx, 7]
-            self.low_cmd.motor_cmd[G1JointIndex.LeftWristYaw].q = self.joint_angles[frame_idx, 8]
-            self.low_cmd.motor_cmd[G1JointIndex.RightShoulderPitch].q = self.joint_angles[frame_idx, 9]
-            self.low_cmd.motor_cmd[G1JointIndex.RightShoulderRoll].q = self.joint_angles[frame_idx, 10]
-            self.low_cmd.motor_cmd[G1JointIndex.RightShoulderYaw].q = self.joint_angles[frame_idx, 11]
-            self.low_cmd.motor_cmd[G1JointIndex.RightElbow].q = self.joint_angles[frame_idx, 12]
-            self.low_cmd.motor_cmd[G1JointIndex.RightWristRoll].q = self.joint_angles[frame_idx, 13]
-            self.low_cmd.motor_cmd[G1JointIndex.RightWristYaw].q = self.joint_angles[frame_idx, 14]
-
-        else:
-            # goto stage 1
-            self.time_ = 0.0
+            self.low_cmd.mode_pr = Mode.AB
+            self.low_cmd.mode_machine = self.mode_machine_
+            self.low_cmd.motor_cmd[G1JointIndex.LeftAnkleA].q = L_A_des
+            self.low_cmd.motor_cmd[G1JointIndex.LeftAnkleB].q = L_B_des
+            self.low_cmd.motor_cmd[G1JointIndex.RightAnkleA].q = R_A_des
+            self.low_cmd.motor_cmd[G1JointIndex.RightAnkleB].q = R_B_des
+            
+            max_WristYaw = np.pi * 30.0 / 180.0
+            L_WristYaw_des = max_WristYaw * np.sin(2.0 * np.pi * t)
+            R_WristYaw_des = max_WristYaw * np.sin(2.0 * np.pi * t)
+            self.low_cmd.motor_cmd[G1JointIndex.LeftWristRoll].q = L_WristYaw_des
+            self.low_cmd.motor_cmd[G1JointIndex.RightWristRoll].q = R_WristYaw_des
     
 
         self.low_cmd.crc = self.crc.Crc(self.low_cmd)
@@ -243,21 +190,13 @@ class Custom:
 
    
 def deploy_low_cmd():
-
-
-
-    with open("/home/pengyang/codebase/H1_RL/output.pickle", "rb") as file:
-        joint_angles = pickle.load(file)["angles"]
-    print(joint_angles.shape)
-    
-
     if len(sys.argv)>1:
         ChannelFactoryInitialize(0, sys.argv[1])
     else:
         ChannelFactoryInitialize(0)
 
     custom = Custom()
-    custom.Init(joint_angles)
+    custom.Init()
     custom.Start()
 
     while True:        
