@@ -13,9 +13,9 @@ from utils.torch_utils.diff_quat import vec6d_to_matrix
 from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
 
 
-class G1_17_Motion_Model(nn.Module):
+class G1_15_Motion_Model(nn.Module):
     def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
-        super(G1_17_Motion_Model, self).__init__()
+        super(G1_15_Motion_Model, self).__init__()
 
         self.batch_size = batch_size
         self.device = device

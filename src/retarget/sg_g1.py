@@ -14,7 +14,7 @@ import pickle
 
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
-from model.g1_17 import G1_17_Motion_Model
+from src.model.g1_15 import G1_15_Motion_Model
 from config.joint_mapping import SG_LINKS, SG_G1_CORRESPONDENCE
 
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
     
-    model = G1_17_Motion_Model(batch_size=num_frames, joint_correspondence=SG_G1_CORRESPONDENCE)
+    model = G1_15_Motion_Model(batch_size=num_frames, joint_correspondence=SG_G1_CORRESPONDENCE)
 
 
 
