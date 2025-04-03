@@ -1,8 +1,6 @@
 ### usage: visualize galbot and bvh at the same time
 ### specific to /data/SeG_dataset results
 ### python kinematic_vis.py /home/pengyang/codebase/H1_RL/data/SeG_dataset/galbot_motion/ARMS_SELF_EMBRACE-1.pickle
-### todo: 
-###   sort magic numbers in aligning bvh and galbot
 
 import torch
 import time

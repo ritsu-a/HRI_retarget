@@ -2,7 +2,7 @@
 ### usage:
 #        python src/utils/vis/rerun_kinematic.py --file_name dance1_subject2
 ### todo:
-#       now only support g1
+#       change IO to normal standard
 import argparse
 import numpy as np
 import pinocchio as pin

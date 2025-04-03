@@ -1,5 +1,5 @@
-### TODO: estimate global rotation and translation
-###     split locomotion and manipulation vel and accel loss
+### TODO: collision loss
+###         update limit loss to hard constraints + inverse-like loss
 import math
 import numpy as np
 import torch
@@ -22,7 +22,8 @@ class G1_15_Motion_Model(nn.Module):
         self.gt_joint_positions = None
 
         self.dof = 15
-        ### TODO: update init angles
+
+        self.init_angles = torch.zeros(self.batch_size, self.dof)
 
         self.dof_limits = torch.from_numpy(np.array([
             [-2.618, 2.618],#waist_yaw

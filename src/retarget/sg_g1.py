@@ -1,8 +1,6 @@
 ### usage:
-### python sg_galbot.py {path_to_bvh_file}
-### python sg_galbot.py /home/pengyang/data/human/SG/output.bvh
-### todo: 
-###   tune magic numbers
+### python sg_g1.py {path_to_bvh_file}
+### python sg_g1.py /home/pengyang/data/human/SG/output.bvh
 
 import sys
 import os
@@ -25,8 +23,7 @@ rot = torch.tensor([
     [1, 0, 0],
     [0, 1, 0],
 ], dtype=torch.float)
-# # pos = torch.tensor([0, 0, 0.8], dtype=torch.float)
-# scale = 1.5
+
 
 if __name__ == "__main__":
 
@@ -47,7 +44,6 @@ if __name__ == "__main__":
 
     print(bvh_joint_local_coord.shape)
 
-    # model.set_gt_joint_positions((bvh_joint_local_coord) @ rot.T @ scale + pos)
     model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
 

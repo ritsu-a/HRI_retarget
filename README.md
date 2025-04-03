@@ -41,5 +41,17 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
 4. python src/utils/vis/gradio_test.py
 
 
+### real deployment pipeline:
+1. retarget to generate the raw motion 
+    src/retarget/sg_g1.py 
+2. apply clipping and filter of the raw motion
+    src/deploy/filter_motion.py #TODO change IO
+3. visualize motion either via pybullet(dynamic) or rerun (kinamatic)
+    src/utils/vis/rerun_kinematic.py 
+    src/utils/vis/pybullet_visualize_g1_dynamic.py  #TODO change IO
+4. deploy on real G1 
+    src/deploy/deploy_g1.py
+
+
 
 
