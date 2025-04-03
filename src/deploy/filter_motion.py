@@ -21,18 +21,36 @@ for idx in range(15):
 
 print(angles["angles"].shape)
 
+dof_names = [
+    "waist_yaw_joint",
+    "waist_roll_joint",
+    "waist_pitch_joint",
+    "left_shoulder_pitch_joint",
+    "left_shoulder_roll_joint",
+    "left_shoulder_yaw_joint",
+    "left_elbow_joint",
+    "left_wrist_roll_joint",
+    "left_wrist_yaw_joint",
+    "right_shoulder_pitch_joint",
+    "right_shoulder_roll_joint",
+    "right_shoulder_yaw_joint",
+    "right_elbow_joint",
+    "right_wrist_roll_joint",
+    "right_wrist_yaw_joint",
+]
 
-x = np.arange(400)  # 或使用实际横坐标，如时间序列
+
+x = np.arange(angles["angles"].shape[0])  # 或使用实际横坐标，如时间序列
 
 # 绘制15条折线
 plt.figure(figsize=(10, 6))
 for i in range(angles["angles"].shape[1]):  # 遍历每一列
-    plt.plot(x, angles["angles"][:, i], label=f'Line {i+1}')  # 用label添加图例
+    plt.plot(x, angles["angles"][:, i], label=f'{dof_names[i]}')  # 用label添加图例
 
 # 添加标签和标题
 plt.xlabel('X-axis (e.g., Time)')
 plt.ylabel('Y-axis (e.g., Value)')
-plt.title('15 Lines from (500, 15) Array')
+plt.title('QPose')
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')  # 图例放在外侧
 plt.grid(True)
 plt.tight_layout()  # 防止图例遮挡
