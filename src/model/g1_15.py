@@ -25,7 +25,7 @@ class G1_15_Motion_Model(nn.Module):
 
         self.init_angles = torch.zeros(self.batch_size, self.dof)
 
-        self.dof_limits = torch.from_numpy(np.array([
+        self.dof_max_limits = torch.from_numpy(np.array([
             [-2.618, 2.618],#waist_yaw
             [-0.52, 0.52],#waist_roll
             [-0.52, 0.52],#waist_pitch
@@ -41,7 +41,10 @@ class G1_15_Motion_Model(nn.Module):
             [-1.047, 2.094],#right_elbow
             [-1.942, 1.972],#rightt_wrist_roll
             [-1.614, 1.614],#right_wrist_yaw
-        ])).repeat(self.batch_size, 1, 1).to(self.device)
+        ])).repeat(self.batch_size, 1, 1).to(dtype=torch.float32, device=self.device)
+
+        ### soft threshold
+        self.dof_limits = self.dof_max_limits * 0.9
        
 
 
@@ -64,6 +67,7 @@ class G1_15_Motion_Model(nn.Module):
         return {
             "joint_angles": self.joint_angles,    
         }
+    
 
     def load_urdf_as_chain(self, filename):
         with open(filename, 'rb') as file:
@@ -112,7 +116,7 @@ class G1_15_Motion_Model(nn.Module):
         pred_joint_accel = pred_joint_velocities[1:] - pred_joint_velocities[:-1]
 
         ### only regulate on too large vel
-        pred_joint_velocities *= (pred_joint_velocities.abs() > 0.2 )
+        pred_joint_velocities *= (pred_joint_velocities.abs() > 0.05 )
 
         return pred_joint_velocities.abs().sum(dim=-1).mean(), pred_joint_accel.abs().sum(dim=-1).mean()
 
@@ -132,6 +136,8 @@ class G1_15_Motion_Model(nn.Module):
         loss =  (self.joint_angles < self.dof_limits[:, :, 0]) * (self.dof_limits[:, :, 0] - self.joint_angles) +\
                 (self.joint_angles > self.dof_limits[:, :, 1]) * (self.joint_angles - self.dof_limits[:, :, 1])
         return loss.sum(dim=-1).mean()
+    
+
 
     # # def elbow_loss(self):
     # #     ### robot specific loss
@@ -146,6 +152,11 @@ class G1_15_Motion_Model(nn.Module):
     # #     elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
 
     # #     return elbow_loss
+
+    def clip_angles(self):
+        ### clip angles within max limits
+        self.joint_angles[self.joint_angles < self.dof_max_limits[:, :, 0]] = self.dof_max_limits[:, :, 0][self.joint_angles < self.dof_max_limits[:, :, 0]]
+        self.joint_angles[self.joint_angles > self.dof_max_limits[:, :, 1]] = self.dof_max_limits[:, :, 1][self.joint_angles > self.dof_max_limits[:, :, 1]]
 
 
 

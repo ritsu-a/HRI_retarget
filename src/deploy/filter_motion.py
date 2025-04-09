@@ -1,5 +1,8 @@
 import pickle 
 from scipy.ndimage import gaussian_filter1d
+import matplotlib
+matplotlib.use('Agg')  # 使用最简单的后端 
+### TODO: why plt fail here?
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
@@ -8,7 +11,7 @@ with open("/home/pengyang/codebase/H1_RL/data/motion/g1/SG/output.pickle", "rb")
     angles = pickle.load(file)
 
 print(len(angles["angles"]))
-angles["angles"] = angles["angles"][100:500]
+# angles["angles"] = angles["angles"][100:500]
 # angles["angles"] = gaussian_filter1d(angles["angles"], sigma=2)
 
 

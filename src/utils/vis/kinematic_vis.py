@@ -8,6 +8,9 @@ import pickle
 import sys
 import os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # 使用最简单的后端 
+### TODO: why plt fail here?
 import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
@@ -22,7 +25,7 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
 
     bvh_joints = bvh_skeleton_data[0]
     bvh_joints_hierarchy = bvh_skeleton_data[2]
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8, 6), dpi=80)
     ax = fig.add_subplot(111, projection='3d')
    
 

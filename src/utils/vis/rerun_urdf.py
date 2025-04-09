@@ -15,11 +15,20 @@ class RerunURDF():
         self.name = robot_type
         match robot_type:
             case 'g1':
+                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/H1_RL/data/resources/robots/g1/g1_29dof_rev_1_0.urdf', '/home/pengyang/data/resources/robots/g1', pin.JointModelFreeFlyer())
+                self.Tpose = np.array([0,0,0.785,0,0,0,1,
+                                       -0.15,0,0,0.3,-0.15,0,
+                                       -0.15,0,0,0.3,-0.15,0,
+                                       0,0,0,
+                                       0, 1.57,0,1.57,0,0,0,
+                                       0,-1.57,0,1.57,0,0,0]).astype(np.float32)
+            case 'g1_retarget':
                 self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf', '/home/pengyang/data/resources/robots/g1_asap', pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
                                        0,0,0,
                                        0, 1.57,0,1.57,0,0,
                                        0,-1.57,0,1.57,0,0]).astype(np.float32)
+
             case 'h1_2':
                 self.robot = pin.RobotWrapper.BuildFromURDF('robot_description/h1_2/h1_2_wo_hand.urdf', 'robot_description/h1_2', pin.JointModelFreeFlyer())
                 assert self.robot.model.nq == 7 + 12+1+14
@@ -91,8 +100,8 @@ class RerunURDF():
                    static=True)
             
             rr.log(f'urdf_{self.name}/{parent_joint_name}/{frame_name}_transform',
-                   rr.Transform3D(translation=frame_tf.translation,
-                                  mat3x3=frame_tf.rotation,
+                   rr.Transform3D(translation=relative_tf.translation,
+                                  mat3x3=relative_tf.rotation,
                                   axis_length=0.01))
     
     def update(self, configuration = None):
@@ -112,7 +121,7 @@ class RerunURDF():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--file_name', type=str, help="File name", default='dance1_subject2')
-    parser.add_argument('--robot_type', type=str, help="Robot type", default='g1')
+    parser.add_argument('--robot_type', type=str, help="Robot type", default='g1_retarget')
     parser.add_argument('--dataset', type=str, help="dataset", default='LAFAN1')
 
     args = parser.parse_args()
@@ -123,9 +132,9 @@ if __name__ == "__main__":
     file_name = args.file_name
     robot_type = args.robot_type
     dataset = args.dataset
-    csv_files = "/home/pengyang/data/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
-    # csv_files = "/home/pengyang/codebase/retarget/output.csv"
-    data = np.genfromtxt(csv_files, delimiter=',')
+    # csv_files = "/home/pengyang/data/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
+    # # csv_files = "/home/pengyang/codebase/retarget/output.csv"
+    # data = np.genfromtxt(csv_files, delimiter=',')
 
     rerun_urdf = RerunURDF(robot_type)
   

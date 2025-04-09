@@ -57,8 +57,8 @@ G1_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_ro
             'torso_link', 'logo_link', 'head_link', 'waist_support_link', 'imu_link', 'd435_link', 
             'mid360_link', 'left_shoulder_pitch_link', 'left_shoulder_roll_link', 'left_shoulder_yaw_link', 
             'left_elbow_link', 'left_wrist_roll_link', 'left_wrist_pitch_link', 'left_wrist_yaw_link', 
-            'left_rubber_hand', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 'right_shoulder_yaw_link', 
-            'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 'right_wrist_yaw_link', 'right_rubber_hand']
+            'left_rubber_hand', 'left_mid_finger_link', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 'right_shoulder_yaw_link', 
+            'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 'right_wrist_yaw_link', 'right_rubber_hand', 'right_mid_finger_link']
 
 
 ### robot DOF names
@@ -121,25 +121,25 @@ SG_G1_CORRESPONDENCE = [
     [SG_LINKS.index("Spine"), G1_LINKS.index("pelvis"), 1],
     [SG_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
 
-    [SG_LINKS.index("LeftArm"), G1_LINKS.index("left_shoulder_pitch_link"), 3],
+    [SG_LINKS.index("LeftArm"), G1_LINKS.index("left_shoulder_roll_link"), 3],
     # [SG_LINKS.index("LeftArm"), G1_LINKS.index("left_shoulder_roll_link"), 1],
     # [SG_LINKS.index("LeftArm"), G1_LINKS.index("left_shoulder_yaw_link"), 1],
     [SG_LINKS.index("LeftForeArm"), G1_LINKS.index("left_elbow_link"), 3],
     # [SG_LINKS.index("LeftHand"), G1_LINKS.index("left_wrist_roll_link"), 1],
-    [SG_LINKS.index("LeftHand"), G1_LINKS.index("left_wrist_pitch_link"), 3],
+    [SG_LINKS.index("LeftHand"), G1_LINKS.index("left_rubber_hand"), 3],
     # [SG_LINKS.index("LeftHand"), G1_LINKS.index("left_wrist_yaw_link"), 1],
-    [SG_LINKS.index("LeftHandMiddle3"), G1_LINKS.index("left_rubber_hand"), 3],
+    [SG_LINKS.index("LeftHandMiddle3"), G1_LINKS.index("left_mid_finger_link"), 3],
 
     
 
-    [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_pitch_link"), 3],
+    [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_roll_link"), 3],
     # [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_roll_link"), 1],
     # [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_yaw_link"), 1],
     [SG_LINKS.index("RightForeArm"), G1_LINKS.index("right_elbow_link"), 3],
     # [SG_LINKS.index("RightHand"), G1_LINKS.index("right_wrist_roll_link"), 1],
-    [SG_LINKS.index("RightHand"), G1_LINKS.index("right_wrist_pitch_link"), 3],
+    [SG_LINKS.index("RightHand"), G1_LINKS.index("right_rubber_hand"), 3],
     # [SG_LINKS.index("RightHand"), G1_LINKS.index("right_wrist_yaw_link"), 1],
-    [SG_LINKS.index("RightHandMiddle3"), G1_LINKS.index("right_rubber_hand"), 3],
+    [SG_LINKS.index("RightHandMiddle3"), G1_LINKS.index("right_mid_finger_link"), 3],
 
 ]
 

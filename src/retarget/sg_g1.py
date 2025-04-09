@@ -75,15 +75,19 @@ if __name__ == "__main__":
         for loss_name in loss_dict.keys():
             loss += loss_dict[loss_name][0] * loss_dict[loss_name][1]
             log_str += f"{loss_name}: {loss_dict[loss_name][0] * loss_dict[loss_name][1].item()}" + "\n"
-        pbar.set_description(log_str)  
-        print("dof_limit_loss", dof_limit_loss.item())
+        # pbar.set_description(log_str)  
+        # print("dof_limit_loss", dof_limit_loss.item())
 
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        with torch.no_grad():
+            model.clip_angles()
+        
 
     with torch.no_grad():
+        
         pred_joint_angles = model.joint_angles.detach().cpu().numpy()
         global_rotation = model.global_rot.detach().cpu().numpy()
         global_translation = model.global_trans.detach().cpu().numpy()
