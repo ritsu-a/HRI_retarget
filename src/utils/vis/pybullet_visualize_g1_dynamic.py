@@ -79,7 +79,7 @@ for i in range(num_joints):
     if joint_type in [p.JOINT_REVOLUTE, p.JOINT_PRISMATIC]:
         controllable_joints.append((i, joint_name))
         print(f"Controllable Joint {i}: {joint_name}")
-fig = plt.figure()
+# fig = plt.figure()
 
 
 
