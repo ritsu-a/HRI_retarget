@@ -59,6 +59,7 @@ if __name__ == "__main__":
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
+        collision_loss = model.collision_loss()
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
 
@@ -68,6 +69,7 @@ if __name__ == "__main__":
             "joint_local_velocity_loss": [1.0, joint_local_velocity_loss],
             "joint_local_accel_loss": [0.0, joint_local_accel_loss],
             "dof_limit_loss": [1.0, dof_limit_loss],
+            "collision_loss": [1.0, collision_loss],
         }
 
         loss = 0
@@ -76,7 +78,8 @@ if __name__ == "__main__":
             loss += loss_dict[loss_name][0] * loss_dict[loss_name][1]
             log_str += f"{loss_name}: {loss_dict[loss_name][0] * loss_dict[loss_name][1].item()}" + "\n"
         # pbar.set_description(log_str)  
-        # print("dof_limit_loss", dof_limit_loss.item())
+        print("dof_limit_loss", dof_limit_loss.item())
+        print("collision_loss", collision_loss.item())
 
 
         optimizer.zero_grad()
@@ -103,4 +106,4 @@ if __name__ == "__main__":
     with open(os.path.join("/home/pengyang/data/motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
     
-    vis_kinematic_result(os.path.join("/home/pengyang/data/motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)
+    # vis_kinematic_result(os.path.join("/home/pengyang/data/motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)

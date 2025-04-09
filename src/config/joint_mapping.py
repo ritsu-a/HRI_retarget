@@ -88,6 +88,22 @@ G1_15_DOFS = [
 ]
 
 
+### robot self collision config
+
+G1_COLLISION_CYLINDER = {
+    ### name: link1, link2, radius
+    "left_thigh": [G1_LINKS.index("left_hip_roll_link"), G1_LINKS.index("left_knee_link"), 0.08],
+    "left_hand": [G1_LINKS.index("left_rubber_hand"), G1_LINKS.index("left_mid_finger_link"), 0.04],
+
+    "right_thigh": [G1_LINKS.index("right_hip_roll_link"), G1_LINKS.index("right_knee_link"), 0.08],
+    "right_hand": [G1_LINKS.index("right_rubber_hand"), G1_LINKS.index("right_mid_finger_link"), 0.04],
+}
+
+G1_COLLISION = [
+    ["left_thigh", "left_hand"],
+    ["right_thigh", "right_hand"],
+    ["left_hand", "right_hand"]
+]
 
 
 ### mapping from dataset to robot

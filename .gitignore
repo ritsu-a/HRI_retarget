@@ -6,6 +6,8 @@ PHC/data
 PHC/output
 PHC/sample_data
 
+output.pickle
+
 .gradio/
 *.json
 

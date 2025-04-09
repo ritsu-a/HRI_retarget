@@ -11,7 +11,7 @@ import pytorch_kinematics as pk
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
-
+from config.joint_mapping import G1_COLLISION_CYLINDER, G1_COLLISION
 
 class G1_15_Motion_Model(nn.Module):
     def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
@@ -45,6 +45,9 @@ class G1_15_Motion_Model(nn.Module):
 
         ### soft threshold
         self.dof_limits = self.dof_max_limits * 0.9
+
+        ### sampled ptx on cylinder axis 
+        self.collision_sample_num = 10
        
 
 
@@ -138,6 +141,34 @@ class G1_15_Motion_Model(nn.Module):
         return loss.sum(dim=-1).mean()
     
 
+    def collision_loss(self):
+        ### TODO: cuda acceleration
+        pred_link_global = self.forward_kinematics()
+
+        loss = 0
+
+        def sample_ptx(body):
+            link1, link2, radius = G1_COLLISION_CYLINDER[body]
+            ratio = (torch.arange(self.collision_sample_num + 1) / self.collision_sample_num).to(dtype=torch.float32, device=self.device)
+
+            sampled_ptx =   pred_link_global[:, link1][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * ratio[None, :, None].repeat(self.batch_size, 1, 3) +\
+                            pred_link_global[:, link2][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * (1 - ratio[None, :, None].repeat(self.batch_size, 1, 3))
+            return sampled_ptx, radius
+        
+        for body1, body2 in G1_COLLISION:
+            sampled_pts1, r1 = sample_ptx(body1)
+            sampled_pts2, r2 = sample_ptx(body2)
+        
+            pairwised_euc_dist = sampled_pts1.unsqueeze(1).repeat(1,self.collision_sample_num+1,1,1) -\
+                                 sampled_pts2.unsqueeze(2).repeat(1,1,self.collision_sample_num+1,1)
+            pairwised_dist = torch.norm(pairwised_euc_dist, dim=-1).view(self.batch_size, -1)
+            penetrate_dist = (r1 + r2 - pairwised_dist).clamp(min=0)
+            loss += (penetrate_dist ** 2).sum(dim=-1).mean()
+        
+        return loss
+
+
+
 
     # # def elbow_loss(self):
     # #     ### robot specific loss
@@ -155,6 +186,7 @@ class G1_15_Motion_Model(nn.Module):
 
     def clip_angles(self):
         ### clip angles within max limits
+        ### TODO: torch.clamp on nn.parameter
         self.joint_angles[self.joint_angles < self.dof_max_limits[:, :, 0]] = self.dof_max_limits[:, :, 0][self.joint_angles < self.dof_max_limits[:, :, 0]]
         self.joint_angles[self.joint_angles > self.dof_max_limits[:, :, 1]] = self.dof_max_limits[:, :, 1][self.joint_angles > self.dof_max_limits[:, :, 1]]
 
