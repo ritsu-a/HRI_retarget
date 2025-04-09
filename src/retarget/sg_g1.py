@@ -12,7 +12,7 @@ import pickle
 
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
-from src.model.g1_15 import G1_15_Motion_Model
+from model.g1_15 import G1_15_Motion_Model
 from config.joint_mapping import SG_LINKS, SG_G1_CORRESPONDENCE
 
 
@@ -51,6 +51,8 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-2)
     model.train()
 
+
+    
     pbar = tqdm(range(2000))
     for epoch in pbar:
         

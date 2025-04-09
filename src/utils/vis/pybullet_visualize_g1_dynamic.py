@@ -28,6 +28,7 @@ else:
 # 连接物理引擎
 physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
 p.setGravity(0, 0, -9.81)  # 设置重力
+# p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1) # collision
 
 ### galbot charlie urdf
 robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_17dof.urdf", [0, 0, 0], [0, 0, 0, 1])
