@@ -15,7 +15,7 @@ class RerunURDF():
         self.name = robot_type
         match robot_type:
             case 'g1':
-                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_17dof.urdf', '/home/pengyang/data/resources/robots/g1_asap', pin.JointModelFreeFlyer())
+                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf', '/home/pengyang/data/resources/robots/g1_asap', pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
                                        0,0,0,
                                        0, 1.57,0,1.57,0,0,

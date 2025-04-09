@@ -57,7 +57,7 @@ class G1_15_Motion_Model(nn.Module):
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
-        self.load_urdf_as_chain("/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_17dof.urdf")
+        self.load_urdf_as_chain("/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf")
         
     
     def forward(self):
