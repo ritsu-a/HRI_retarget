@@ -1,5 +1,7 @@
 ### TODO: collision loss
 ###         update limit loss to hard constraints + inverse-like loss
+###         the current collision loss is totally nonsense
+###             try with better approximation
 import math
 import numpy as np
 import torch
