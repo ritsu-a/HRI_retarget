@@ -26,6 +26,33 @@ SG_LINKS = ['Hips', 'RightUpLeg', 'RightLeg', 'RightFoot', 'LeftUpLeg',
     'LeftHandMiddle3', 'LeftInHandRing', 'LeftHandRing1', 'LeftHandRing2', 'LeftHandRing3', 
     'LeftInHandPinky', 'LeftHandPinky1', 'LeftHandPinky2', 'LeftHandPinky3']
 
+SMPL_LINKS = [
+    'Pelvis', # 0
+    'L_Hip', # 1
+    'R_Hip', # 2
+    'Spine1', # 3
+    'L_Knee', # 4
+    'R_Knee', # 5
+    'Spine2', # 6
+    'L_Ankle', # 7
+    'R_Ankle', # 8
+    'Spine3', # 9
+    'L_Foot', # 10
+    'R_Foot', # 11
+    'Neck', # 12
+    'L_Collar', # 13
+    'R_Collar', # 14
+    'Head', # 15
+    'L_Shoulder', # 16
+    'R_Shoulder', # 17
+    'L_Elbow', # 18
+    'R_Elbow', # 19
+    'L_Wrist', # 20
+    'R_Wrist', # 21
+    # 'L_Hand', # 22
+    # 'R_Hand', # 23
+]
+
 
 
 
@@ -145,9 +172,6 @@ SG_G1_CORRESPONDENCE = [
     [SG_LINKS.index("LeftHand"), G1_LINKS.index("left_rubber_hand"), 3],
     # [SG_LINKS.index("LeftHand"), G1_LINKS.index("left_wrist_yaw_link"), 1],
     [SG_LINKS.index("LeftHandMiddle3"), G1_LINKS.index("left_mid_finger_link"), 3],
-
-    
-
     [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_roll_link"), 3],
     # [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_roll_link"), 1],
     # [SG_LINKS.index("RightArm"), G1_LINKS.index("right_shoulder_yaw_link"), 1],
@@ -158,4 +182,22 @@ SG_G1_CORRESPONDENCE = [
     [SG_LINKS.index("RightHandMiddle3"), G1_LINKS.index("right_mid_finger_link"), 3],
 
 ]
+
+SMPL_G1_CORRESPONDENCE = [
+    [SMPL_LINKS.index("Pelvis"), G1_LINKS.index("pelvis"), 1],
+    [SMPL_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
+
+    [SMPL_LINKS.index("L_Shoulder"), G1_LINKS.index("left_shoulder_roll_link"), 3],
+    [SMPL_LINKS.index("L_Elbow"), G1_LINKS.index("left_elbow_link"), 3],
+    [SMPL_LINKS.index("L_Wrist"), G1_LINKS.index("left_rubber_hand"), 3],
+    # [SMPL_LINKS.index("LeftHandMiddle3"), G1_LINKS.index("left_mid_finger_link"), 3],
+
+    
+    [SMPL_LINKS.index("R_Shoulder"), G1_LINKS.index("right_shoulder_roll_link"), 3],
+    [SMPL_LINKS.index("R_Elbow"), G1_LINKS.index("right_elbow_link"), 3],
+    [SMPL_LINKS.index("R_Wrist"), G1_LINKS.index("right_rubber_hand"), 3],
+    # [SMPL_LINKS.index("RightHandMiddle3"), G1_LINKS.index("right_mid_finger_link"), 3],
+]
+
+
 

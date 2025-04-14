@@ -147,7 +147,7 @@ try:
                 targetPosition=target_angles[j]
             )
 
-        time.sleep(1 / 60)
+        time.sleep(1 / 20)
 
         p.stepSimulation()
 except KeyboardInterrupt:

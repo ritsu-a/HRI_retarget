@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE, SG_G1_CORRESPONDENCE
+from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LINKS, SMPL_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE, SG_G1_CORRESPONDENCE
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 from model.g1_15 import G1_15_Motion_Model
@@ -109,9 +109,9 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         reference_link = SG_LINKS 
     elif dataset == "SeG":
         reference_link = SEG_LINKS
-        
 
     ### loading bvh data
+
     bvh_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
     skeleton_data = ProcessBVH(bvh_path)
     bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
