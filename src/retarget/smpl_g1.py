@@ -17,6 +17,13 @@ from utils.vis.kinematic_vis import vis_kinematic_result
 from model.g1_15 import G1_15_Motion_Model
 from config.joint_mapping import SMPL_G1_CORRESPONDENCE
 
+### magic numbers
+### transition from sg to galbot
+rot = torch.tensor([
+    [0, 0, 1],
+    [1, 0, 0],
+    [0, 1, 0],
+], dtype=torch.float)
 
 
 
@@ -40,7 +47,7 @@ if __name__ == "__main__":
 
     print(bvh_joint_local_coord.shape)
 
-    model.set_gt_joint_positions(bvh_joint_local_coord)
+    model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
 
     
@@ -102,4 +109,6 @@ if __name__ == "__main__":
     with open(os.path.join("/home/pengyang/data/motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
     
-    # vis_kinematic_result(os.path.join("/home/pengyang/data/motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="SMPL", robot="g1", correspondence=SMPL_G1_CORRESPONDENCE)
+
+    ### visualize results
+    vis_kinematic_result(os.path.join("/home/pengyang/data/motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1", correspondence=SMPL_G1_CORRESPONDENCE)

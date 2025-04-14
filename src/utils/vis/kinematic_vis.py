@@ -8,14 +8,11 @@ import pickle
 import sys
 import os
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')  # 使用最简单的后端 
-### TODO: why plt fail here?
 import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
 sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LINKS, SMPL_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE, SG_G1_CORRESPONDENCE
+from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LINKS, SMPL_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 from model.g1_15 import G1_15_Motion_Model
@@ -42,7 +39,10 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
         idx += 1
         i = idx % len(bvh_link_pos) 
         
-        bvh_pos = bvh_link_pos[i].detach().cpu().numpy()
+        if isinstance(bvh_link_pos[i], torch.Tensor):
+            bvh_pos = bvh_link_pos[i].detach().cpu().numpy()
+        else:
+            bvh_pos = bvh_link_pos[i]
         #calculate the limits of the figure. Usually the last joint in the dictionary is one of the feet.
         if figure_limit == None:
             lim_min = np.abs(np.min(bvh_pos[-1]))
@@ -50,15 +50,16 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
             lim = lim_min if lim_min > lim_max else lim_max
             figure_limit = lim
         
+        
         ### visualizeing bvh
         for joint in bvh_joints:
+        
             if joint == bvh_joints[0]: continue #skip root joint
             parent_joint = bvh_joints_hierarchy[joint][0]
             plt.plot(xs = [bvh_pos[reference_link.index(parent_joint)][0], bvh_pos[reference_link.index(joint)][0]],
                      zs = [bvh_pos[reference_link.index(parent_joint)][1], bvh_pos[reference_link.index(joint)][1]],
                      ys = [bvh_pos[reference_link.index(parent_joint)][2], bvh_pos[reference_link.index(joint)][2]], c = 'blue', lw = 2.5)
 
-            print(joint, bvh_pos[reference_link.index(joint)][1]) 
         ### visualizing urdf 
         frames_to_draw = [robot_link[0]]
         urdf_pos = urdf_link_pos[i].detach().cpu().numpy()
@@ -97,6 +98,7 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
     pass
 
 
+
 def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE):
     ### loading estimated joint angles
     with open(filename, "rb") as file:
@@ -109,16 +111,31 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         reference_link = SG_LINKS 
     elif dataset == "SeG":
         reference_link = SEG_LINKS
+    elif dataset == "MDM":
+        reference_link = SMPL_LINKS
 
     ### loading bvh data
+    if dataset in ["SG", "SeG"]:
+        bvh_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+        skeleton_data = ProcessBVH(bvh_path)
+        bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
+        num_frames = len(bvh_joint_local_coord)
+        print("Num of frames: ", num_frames)
 
-    bvh_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
-    skeleton_data = ProcessBVH(bvh_path)
-    bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
-    num_frames = len(bvh_joint_local_coord)
-    print("Num of frames: ", num_frames)
-
-
+    elif dataset in ["MDM"]:
+        ### creating pseudo skeleton for smpl-like joints
+        npy_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        joint_data = np.load(npy_path)
+        skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
+        skeleton = {}
+        for chain in skeleton_chain:
+            for idx, link_idx in enumerate(chain):
+                if idx == 0:
+                    continue
+                skeleton[SMPL_LINKS[chain[idx]]] = [SMPL_LINKS[chain[idx-1]]]
+        skeleton_data = [SMPL_LINKS, None, skeleton]
+        num_frames = len(joint_data)
+        bvh_joint_local_coord = joint_data
 
 
     ### loading galbot model 

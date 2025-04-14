@@ -1,8 +1,5 @@
 import pickle 
 from scipy.ndimage import gaussian_filter1d
-import matplotlib
-matplotlib.use('Agg')  # 使用最简单的后端 
-### TODO: why plt fail here?
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
