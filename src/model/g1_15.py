@@ -14,6 +14,7 @@ from utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
 from config.joint_mapping import G1_COLLISION_CYLINDER, G1_COLLISION
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 class G1_15_Motion_Model(nn.Module):
     def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
@@ -65,7 +66,8 @@ class G1_15_Motion_Model(nn.Module):
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
-        self.load_urdf_as_chain("/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf")
+        urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
+        self.load_urdf_as_chain(os.path.join(DATA_ROOT,urdf_rel_path))
         
     
     def forward(self):

@@ -1,12 +1,14 @@
 ### usage:
 ### python seg_galbot.py {path_to_bvh_file}
-### python seg_galbot.py /home/pengyang/data/motion/human/SeG_dataset/bvh/ARM_ENDEAVOR-1.bvh
+### python seg_galbot.py data/motion/human/SeG_dataset/bvh/ARM_ENDEAVOR-1.bvh
 ### todo: 
 ###   tune magic numbers
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
 
 import torch
 from tqdm import tqdm
@@ -82,8 +84,8 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join("/home/pengyang/data/motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
 
-    # vis_kinematic_result(os.path.join("/home/pengyang/data/motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", link_list=SEG_LINKS)
+    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/galbot/SeG_dataset", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", link_list=SEG_LINKS)
     

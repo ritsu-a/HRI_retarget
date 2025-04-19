@@ -1,10 +1,12 @@
 ### usage:
 ### python smpl_g1.py {path_to_npy_file}
-### python smpl_g1.py /home/pengyang/data/motion/human/HumanML3D/new_joints/000000.npy
+### python smpl_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 import torch
 from tqdm import tqdm
@@ -106,9 +108,9 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join("/home/pengyang/data/motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
     
 
     ### visualize results
-    vis_kinematic_result(os.path.join("/home/pengyang/data/motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1", correspondence=SMPL_G1_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1", correspondence=SMPL_G1_CORRESPONDENCE)

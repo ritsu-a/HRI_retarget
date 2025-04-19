@@ -1,6 +1,6 @@
 ### usage: visualize galbot and bvh at the same time
 ### specific to /data/SeG_dataset results
-### python kinematic_vis.py /home/pengyang/codebase/H1_RL/data/SeG_dataset/galbot_motion/ARMS_SELF_EMBRACE-1.pickle
+### python kinematic_vis.py data/SeG_dataset/galbot_motion/ARMS_SELF_EMBRACE-1.pickle
 
 import torch
 import time
@@ -10,7 +10,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LINKS, SMPL_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
@@ -120,7 +122,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 
     ### loading bvh data
     if dataset in ["SG", "SeG"]:
-        bvh_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+        bvh_path = os.path.join(DATA_ROOT,f"/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
         skeleton_data = ProcessBVH(bvh_path)
         bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
         num_frames = len(bvh_joint_local_coord)
@@ -128,7 +130,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 
     elif dataset in ["MDM"]:
         ### creating pseudo skeleton for smpl-like joints
-        npy_path = os.path.join(f"/home/pengyang/data/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        npy_path = os.path.join(DATA_ROOT,f"/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
         joint_data = np.load(npy_path)
         skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
         skeleton = {}
@@ -164,7 +166,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Call the function with the motion file')
-        filename = "/home/pengyang/data/motion/g1/SG/output.pickle"
+        filename = os.path.join(DATA_ROOT,"motion/g1/SG/output.pickle")
 
     else:
         filename = sys.argv[1]

@@ -2,10 +2,12 @@
 
 
 import sys 
-import os 
+import os
 os.environ["all_proxy"] = ''
 os.environ["ALL_PROXY"] = ''
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+
+from HRI_retarget import SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
 import gradio as gr
 import numpy as np
 import requests

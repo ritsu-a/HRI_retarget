@@ -5,7 +5,9 @@
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/retarget/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/retarget/src")
 
 
 import joblib
@@ -32,7 +34,8 @@ def asap_to_csv(input_path, output_path):
     root_rot_vec = torch.from_numpy(sRot.from_quat(data[key]["root_rot"]).as_rotvec()).float()
 
     cfg = {
-        "assetRoot": "/home/pengyang/codebase/retarget/data/resources/robots/g1_asap",
+        # "assetRoot": "/home/pengyang/codebase/retarget/data/resources/robots/g1_asap",
+        "assetRoot": os.path.join(DATA_ROOT,"resources/robots/g1_asap"),
         "assetFileName": "g1_29dof_anneal_23dof_fitmotionONLY.xml",
         "extend_config": [{
                 "joint_name": "left_hand_link",
@@ -90,8 +93,8 @@ def csv_to_asap(csv_path, pkl_path):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pkl', type=str, help="File name", default="/home/pengyang/codebase/retarget/data/motion/g1/cr7/asap.pkl")
-    parser.add_argument('--csv', type=str, help="csv file name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2.csv")
+    parser.add_argument('--pkl', type=str, help="File name", default=os.path.join(DATA_ROOT,"motion/g1/cr7/asap.pkl"))
+    parser.add_argument('--csv', type=str, help="csv file name", default=os.path.join(DATA_ROOT,"motion/g1/LAFAN1/dance1_subject2.csv"))
     args = parser.parse_args()
 
     asap_to_csv(args.pkl, args.csv)

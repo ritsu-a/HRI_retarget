@@ -3,11 +3,12 @@ import os
 import numpy as np
  
 import pinocchio as pin
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
  
-pinocchio_model_dir = "/home/pengyang/codebase/H1_RL/data/resources/robots/g1"
+pinocchio_model_dir = os.path.join(DATA_ROOT,"resources/robots/g1")
  
-model_path = "/home/pengyang/codebase/H1_RL/data/resources/robots/g1"
-mesh_dir = "/home/pengyang/codebase/H1_RL/data/resources/robots/g1/meshes"
+model_path = os.path.join(DATA_ROOT,"resources/robots/g1")
+mesh_dir = os.path.join(DATA_ROOT,"resources/robots/g1/meshes")
 urdf_filename = "g1_29dof_rev_1_0.urdf"
 urdf_model_path = os.path.join(model_path, urdf_filename)
  

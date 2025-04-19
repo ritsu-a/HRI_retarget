@@ -2,6 +2,7 @@ import numpy as np
 import argparse
 
 import os 
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 
 def split_npy(folder_pth):
@@ -19,7 +20,7 @@ def split_npy(folder_pth):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, help="File name", default="/home/pengyang/codebase/H1_RL/data/motion/human/MDM")
+    parser.add_argument('--path', type=str, help="File name", default=os.path.join(DATA_ROOT,"motion/human/MDM"))
     args = parser.parse_args()
 
     split_npy(args.path)
