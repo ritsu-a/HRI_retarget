@@ -183,6 +183,9 @@ SG_G1_CORRESPONDENCE = [
 
 ]
 
+
+
+
 SMPL_G1_CORRESPONDENCE = [
     [SMPL_LINKS.index("Pelvis"), G1_LINKS.index("pelvis"), 1],
     [SMPL_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
@@ -204,5 +207,30 @@ SMPL_G1_CORRESPONDENCE = [
 
 ]
 
+SMPL_G1_FULLBODY_CORRESPONDENCE = [
+    [SMPL_LINKS.index("Pelvis"), G1_LINKS.index("pelvis"), 1],
+    [SMPL_LINKS.index("L_Hip"), G1_LINKS.index("left_hip_pitch_link"), 1],
+    [SMPL_LINKS.index("R_Hip"), G1_LINKS.index("right_hip_pitch_link"), 1],
+    # [SMPL_LINKS.index("Spine1"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Spine2"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Spine3"), G1_LINKS.index(""), 1],  
+    [SMPL_LINKS.index("L_Knee"), G1_LINKS.index("left_knee_link"), 1],
+    [SMPL_LINKS.index("R_Knee"), G1_LINKS.index("right_knee_link"), 1],
+    [SMPL_LINKS.index("L_Ankle"), G1_LINKS.index("left_ankle_roll_link"), 1],
+    [SMPL_LINKS.index("R_Ankle"), G1_LINKS.index("right_ankle_roll_link"), 1],
+    #[SMPL_LINKS.index("L_Foot"), G1_LINKS.index(""), 1],
+    #[SMPL_LINKS.index("R_Foot"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Neck"), G1_LINKS.index(""), 1],
+    [SMPL_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
 
+    # [SMPL_LINKS.index("L_Collar"), G1_LINKS.index(""), 3],
+    # [SMPL_LINKS.index("R_Collar"), G1_LINKS.index(""), 3],
+    [SMPL_LINKS.index("L_Shoulder"), G1_LINKS.index("left_shoulder_roll_link"), 3],
+    [SMPL_LINKS.index("R_Shoulder"), G1_LINKS.index("right_shoulder_roll_link"), 3],
+    [SMPL_LINKS.index("L_Elbow"), G1_LINKS.index("left_elbow_link"), 3],
+    [SMPL_LINKS.index("R_Elbow"), G1_LINKS.index("right_elbow_link"), 3],
+    [SMPL_LINKS.index("L_Wrist"), G1_LINKS.index("left_rubber_hand"), 3],
+    [SMPL_LINKS.index("R_Wrist"), G1_LINKS.index("right_rubber_hand"), 3],
+
+]
 

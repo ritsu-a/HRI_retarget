@@ -18,6 +18,7 @@ from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LI
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 from model.g1_15 import G1_15_Motion_Model
+from model.g1_29 import G1_29_Motion_Model
 
 
 def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, reference_link=SG_LINKS, robot_link=G1_LINKS, correspondence=SG_G1_CORRESPONDENCE):
@@ -122,7 +123,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 
     ### loading bvh data
     if dataset in ["SG", "SeG"]:
-        bvh_path = os.path.join(DATA_ROOT,f"/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+        bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
         skeleton_data = ProcessBVH(bvh_path)
         bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
         num_frames = len(bvh_joint_local_coord)
@@ -130,7 +131,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 
     elif dataset in ["MDM"]:
         ### creating pseudo skeleton for smpl-like joints
-        npy_path = os.path.join(DATA_ROOT,f"/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
         joint_data = np.load(npy_path)
         skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
         skeleton = {}
@@ -144,15 +145,22 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         bvh_joint_local_coord = joint_data
 
 
-    ### loading galbot model 
-    if "galbot" in robot:
-        model = Galbot_Charlie_Motion_Model(num_frames)
-        robot_link = GALBOT_CHARLIE_LINKS
-    elif "g1" in robot:
-        model = G1_15_Motion_Model(num_frames)
-        robot_link = G1_LINKS
-    else:
-        print("wrong robot name in kinematic vis")
+    ### loading robot model 
+    match robot:
+        case "galbot":
+            model = Galbot_Charlie_Motion_Model(num_frames)
+            robot_link = GALBOT_CHARLIE_LINKS
+        case "g1":
+            model = G1_15_Motion_Model(num_frames)
+            robot_link = G1_LINKS
+        case "g1_29":
+            model = G1_29_Motion_Model(num_frames)
+            robot_link = G1_LINKS
+        case _:
+            print("wrong robot name in kinematic vis")
+            quit()
+   
+    
 
     model.set_angles(torch.tensor(joints_angle))
     model.set_global_matrix(data_dict)

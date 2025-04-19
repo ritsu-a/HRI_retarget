@@ -10,7 +10,7 @@ write current folder path into bashrc, then
     git checkout g1
 
 
-the environment is tested with cuda12.1 with python=3.8 
+the environment is tested with cuda12.1 with python=3.10
     pip install -r requirements.txt
 
 contact pengyang for data
@@ -69,6 +69,10 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
     src/utils/vis/pybullet_visualize_g1_dynamic.py  #TODO change IO
 4. deploy on real G1 
     src/deploy/deploy_g1.py
+
+
+### 0419 retarget humanml3d 
+    src/retarget/
 
 
 

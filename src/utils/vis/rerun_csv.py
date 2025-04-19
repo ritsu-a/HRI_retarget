@@ -24,14 +24,6 @@ class RerunURDF():
                                        0,0,0,
                                        0, 1.57,0,1.57,0,0,0,
                                        0,-1.57,0,1.57,0,0,0]).astype(np.float32)
-            case 'g1_29':
-                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_asap/g1_29dof.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_asap'), pin.JointModelFreeFlyer())
-                self.Tpose = np.array([0,0,0.785,0,0,0,1,
-                                       -0.15,0,0,0.3,-0.15,0,
-                                       -0.15,0,0,0.3,-0.15,0,
-                                       0,0,0,
-                                       0, 1.57,0,1.57,0,0,0,
-                                       0,-1.57,0,1.57,0,0,0]).astype(np.float32)
             case 'h1_2':
                 self.robot = pin.RobotWrapper.BuildFromURDF('robot_description/h1_2/h1_2_wo_hand.urdf', 'robot_description/h1_2', pin.JointModelFreeFlyer())
                 assert self.robot.model.nq == 7 + 12+1+14
