@@ -171,7 +171,6 @@ class G1_15_Motion_Model(nn.Module):
 
 
 
-
     # # def elbow_loss(self):
     # #     ### robot specific loss
     # #     ### each elbow should be at least {threshold}m away from spine

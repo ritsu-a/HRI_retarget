@@ -197,6 +197,11 @@ SMPL_G1_CORRESPONDENCE = [
     [SMPL_LINKS.index("R_Elbow"), G1_LINKS.index("right_elbow_link"), 3],
     [SMPL_LINKS.index("R_Wrist"), G1_LINKS.index("right_rubber_hand"), 3],
     # [SMPL_LINKS.index("RightHandMiddle3"), G1_LINKS.index("right_mid_finger_link"), 3],
+
+    ### used for standing straight
+    [SMPL_LINKS.index("L_Ankle"), G1_LINKS.index("left_ankle_roll_link"), 1],
+    [SMPL_LINKS.index("R_Ankle"), G1_LINKS.index("right_ankle_roll_link"), 1],
+
 ]
 
 

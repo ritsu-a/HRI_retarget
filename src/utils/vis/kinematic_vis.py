@@ -33,6 +33,9 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
 
     figure_limit = 2 #used to set figure axis limits
 
+    offset = 0.0 ### seperate two bvhs when offset > 0m
+
+
     
     idx = 0
     while True:
@@ -70,14 +73,15 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
             for child_frame in urdf_chain.find_frame(link).children:
                 child_link = child_frame.name 
                 frames_to_draw.append(child_link)
-                plt.plot(xs = [urdf_pos[robot_link.index(link)][1] + 0.5, urdf_pos[robot_link.index(child_link)][1] + 0.5],
+                ### by default apply rotation on robot frame
+                plt.plot(xs = [urdf_pos[robot_link.index(link)][1] + offset, urdf_pos[robot_link.index(child_link)][1] + offset],
                          zs = [urdf_pos[robot_link.index(link)][2], urdf_pos[robot_link.index(child_link)][2]],
                          ys = [urdf_pos[robot_link.index(link)][0], urdf_pos[robot_link.index(child_link)][0]],c = 'red', lw = 2.5)
 
 
         ### visualizing corespondence
         for ii, jj, v in correspondence:
-            plt.plot(xs = [urdf_pos[jj][1] + 0.5, bvh_pos[ii][0]],
+            plt.plot(xs = [urdf_pos[jj][1] + offset, bvh_pos[ii][0]],
                     zs = [urdf_pos[jj][2], bvh_pos[ii][1]],
                     ys = [urdf_pos[jj][0], bvh_pos[ii][2]],c = 'green', lw = 2.5)
 
