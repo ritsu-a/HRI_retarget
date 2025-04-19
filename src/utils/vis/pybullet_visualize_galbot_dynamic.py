@@ -1,6 +1,6 @@
 ### usage: visualize galbot and bvh at the same time
 ### specific to /data/SeG_dataset results
-### python pybullet_visualize_galbot_dynamic.py /home/pengyang/codebase/H1_RL/data/SeG_dataset/galbot_motion/HAND_FAN-3.pickle
+### python pybullet_visualize_galbot_dynamic.py data/SeG_dataset/galbot_motion/HAND_FAN-3.pickle
 ### todo: some variables have wrong name
 ###    bug! cannot show bvh !too laggy
 ###    
@@ -11,13 +11,16 @@ import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# s
 
 np.set_printoptions(suppress=True)
 
 if len(sys.argv) != 2:
     print('Call the function with the motion file')
-    filename = "/home/pengyang/data/motion/galbot/SG/output.pickle"
+    # filename = "/home/pengyang/data/motion/galbot/SG/output.pickle"
+    filename = os.path.join(DATA_ROOT,"motion/galbot/SG/output.pickle")
 
 else:
     filename = sys.argv[1]
@@ -30,7 +33,8 @@ physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
 p.setGravity(0, 0, -9.81)  # 设置重力
 
 ### galbot charlie urdf
-robotId = p.loadURDF("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf", [0, 0, 0], [0, 0, 0, 1])
+urdf_rel_path = "resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf"
+robotId = p.loadURDF(os.path.join(DATA_ROOT,urdf_rel_path), [0, 0, 0], [0, 0, 0, 1])
 
 
 # 创建固定约束，将base链接固定在世界坐标系的原点

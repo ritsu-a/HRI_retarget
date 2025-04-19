@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
-with open("/home/pengyang/codebase/H1_RL/data/motion/g1/SG/output.pickle", "rb") as file:
+import os
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+
+
+with open(os.path.join(DATA_ROOT,"motion/g1/SG/output.pickle"), "rb") as file:
     angles = pickle.load(file)
 
 print(len(angles["angles"]))
@@ -59,6 +63,6 @@ plt.show()
 
 
 
-with open("/home/pengyang/codebase/H1_RL/output.pickle", "wb") as file:
+with open(os.path.join(ROOT,"output.pickle"), "wb") as file:
     pickle.dump(angles, file)
 

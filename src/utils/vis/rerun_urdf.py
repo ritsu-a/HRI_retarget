@@ -8,6 +8,8 @@ import numpy as np
 import pinocchio as pin
 import rerun as rr
 import trimesh
+import os
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 
 class RerunURDF():
@@ -15,7 +17,7 @@ class RerunURDF():
         self.name = robot_type
         match robot_type:
             case 'g1':
-                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/H1_RL/data/resources/robots/g1/g1_29dof_rev_1_0.urdf', '/home/pengyang/data/resources/robots/g1', pin.JointModelFreeFlyer())
+                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1/g1_29dof_rev_1_0.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1'), pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
                                        -0.15,0,0,0.3,-0.15,0,
                                        -0.15,0,0,0.3,-0.15,0,
@@ -23,7 +25,7 @@ class RerunURDF():
                                        0, 1.57,0,1.57,0,0,0,
                                        0,-1.57,0,1.57,0,0,0]).astype(np.float32)
             case 'g1_retarget':
-                self.robot = pin.RobotWrapper.BuildFromURDF('/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf', '/home/pengyang/data/resources/robots/g1_asap', pin.JointModelFreeFlyer())
+                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_asap'), pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
                                        0,0,0,
                                        0, 1.57,0,1.57,0,0,

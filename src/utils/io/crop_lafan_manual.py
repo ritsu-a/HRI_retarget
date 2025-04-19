@@ -4,7 +4,9 @@
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/retarget/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/retarget/src")
 
 import joblib
 import numpy as np
@@ -40,7 +42,8 @@ def crop_csv(input_path, output_path):
     
     ### computing pose_aa 
     cfg = {
-        "assetRoot": "/home/pengyang/data/resources/robots/g1_asap",
+        # "assetRoot": "/home/pengyang/data/resources/robots/g1_asap",
+        "assetRoot": os.path.join(DATA_ROOT,"resources/robots/g1_asap"),
         "assetFileName": "g1_29dof_anneal_23dof_fitmotionONLY.xml",
         "extend_config": [{
                 "joint_name": "left_hand_link",
@@ -102,8 +105,8 @@ def crop_csv(input_path, output_path):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', type=str, help="File name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2_crop1.csv")
-    parser.add_argument('--input', type=str, help="csv file name", default="/home/pengyang/codebase/retarget/data/motion/g1/LAFAN1/dance1_subject2.csv")
+    parser.add_argument('--output', type=str, help="File name", default=os.path.join(DATA_ROOT,"motion/g1/LAFAN1/dance1_subject2_crop1.csv"))
+    parser.add_argument('--input', type=str, help="csv file name", default=os.path.join(DATA_ROOT,"motion/g1/LAFAN1/dance1_subject2.csv"))
     args = parser.parse_args()
 
     # asap_to_csv(args.pkl, args.csv)

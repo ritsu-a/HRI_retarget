@@ -1,10 +1,12 @@
 ### usage:
 ### python sg_g1.py {path_to_bvh_file}
-### python sg_g1.py /home/pengyang/data/human/SG/output.bvh
+### python sg_g1.py data/human/SG/output.bvh
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 import torch
 from tqdm import tqdm
@@ -103,7 +105,7 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join("/home/pengyang/data/motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
     
-    # vis_kinematic_result(os.path.join("/home/pengyang/data/motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)
+    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)

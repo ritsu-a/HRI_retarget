@@ -7,8 +7,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
 
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 from utils.io.bvh_io import ProcessBVH
 from config.joint_mapping import SEG_LINKS
 

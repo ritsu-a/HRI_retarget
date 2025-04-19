@@ -1,5 +1,7 @@
 import pybullet as p
 import time
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+import os
 
 # 连接物理引擎
 physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
@@ -8,7 +10,8 @@ p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1) # collision
 
 
 ### galbot charlie urdf
-robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf", [0, 0, 0], [0, 0, 0, 1])
+urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
+robotId = p.loadURDF(os.path.join(DATA_ROOT,urdf_rel_path), [0, 0, 0], [0, 0, 0, 1])
 
 ### h1 urdf (not functinoal)
 # robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/urdf/h1/urdf/h1_add_hand_link_limit.urdf", [0, 0, 0], [0, 0, 0, 1])

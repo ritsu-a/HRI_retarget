@@ -11,6 +11,7 @@ import pytorch_kinematics as pk
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from config.joint_mapping import GALBOT_CHARLIE_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 
 class Galbot_Charlie_Motion_Model(nn.Module):
@@ -40,7 +41,8 @@ class Galbot_Charlie_Motion_Model(nn.Module):
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
-        self.load_urdf_as_chain("/home/pengyang/data/resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf")
+        urdf_rel_path = "resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf"
+        self.load_urdf_as_chain(os.path.join(DATA_ROOT,urdf_rel_path))
         
     
     def forward(self):

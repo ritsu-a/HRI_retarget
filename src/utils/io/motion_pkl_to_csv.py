@@ -4,7 +4,9 @@
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 import joblib
 import numpy as np
@@ -38,8 +40,8 @@ def pkl_to_csv(input_path, output_path):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pkl', type=str, help="File name", default="/home/pengyang/codebase/H1_RL/data/motion/g1/SG/output.pickle")
-    parser.add_argument('--csv', type=str, help="csv file name", default="/home/pengyang/codebase/H1_RL/data/motion/g1/SG/output.csv")
+    parser.add_argument('--pkl', type=str, help="File name", default=os.path.join(DATA_ROOT,"motion/g1/SG/output.pickle"))
+    parser.add_argument('--csv', type=str, help="csv file name", default=os.path.join(DATA_ROOT,"motion/g1/SG/output.csv"))
     args = parser.parse_args()
 
     pkl_to_csv(args.pkl, args.csv)

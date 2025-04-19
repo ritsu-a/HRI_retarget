@@ -1,12 +1,14 @@
 ### usage:
 ### python sg_galbot.py {path_to_bvh_file}
-### python sg_galbot.py /home/pengyang/data/human/SG/output.bvh
+### python sg_galbot.py data/human/SG/output.bvh
 ### todo: 
 ###   tune magic numbers
 
 import sys
 import os
-sys.path.append("/home/pengyang/codebase/H1_RL/src")
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 import torch
 from tqdm import tqdm
@@ -85,7 +87,7 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join("/home/pengyang/data/motion/galbot/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/galbot/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
     
-    vis_kinematic_result(os.path.join("/home/pengyang/data/motion/galbot/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="galbot", correspondence=SG_GALBOT_CHARLIE_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/galbot/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="galbot", correspondence=SG_GALBOT_CHARLIE_CORRESPONDENCE)
