@@ -2,6 +2,24 @@
 
 1. retarget for galbot from seg_dataset
 
+
+# preparation
+write current folder path into bashrc, then
+    git clone git@github.com:ritsu-a/HRI_retarget.git
+    cd HRI_retarget
+    git checkout g1
+
+
+the environment is tested with cuda12.1 with python=3.8 
+    pip install -r requirements.txt
+
+contact pengyang for data
+then create a soft link to HRI_retarget/data
+
+
+    
+
+
 # Basic usage:
 you may search for /home/pengyang/data and replace it with your directory
 
