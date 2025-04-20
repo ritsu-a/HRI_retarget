@@ -2,6 +2,11 @@
 
 1. retarget for galbot from seg_dataset
 
+### TODO LIST:
+- change sample-based collision loss into analytical loss 
+- change clip_angles in retarget files to normalize (follow model/g1_29.py and retarget/smpl_g1_29.py)
+- change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
+
 
 # preparation
 write current folder path into bashrc, then

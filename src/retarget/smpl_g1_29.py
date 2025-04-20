@@ -63,6 +63,10 @@ if __name__ == "__main__":
     pbar = tqdm(range(200))
     for epoch in pbar:
         
+        ### normalize
+        with torch.no_grad():
+            model.normalize()
+    
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
@@ -93,8 +97,7 @@ if __name__ == "__main__":
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        with torch.no_grad():
-            model.clip_angles()
+
         
 
     with torch.no_grad():
