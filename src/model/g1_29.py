@@ -86,9 +86,10 @@ class G1_29_Motion_Model(nn.Module):
         self.lower_body_links = G1_LOWERBODY_LINKS
 
         ### apply scale and transformation on robot frame
+        ### full body retargeting should have different rot and trans for each frame
         self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
-        self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
-        self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
+        self.global_rot = nn.Parameter(torch.eye(3)[:, :2].repeat(self.batch_size, 1, 1).to(device), requires_grad=True)
+        self.global_trans = nn.Parameter(torch.zeros(3).reshape(3, 1).repeat(self.batch_size, 1, 1).to(device), requires_grad=True)
 
         ### modify lowerbody scale to match robot and human shape
         self.lower_body_scale = torch.ones(3).requires_grad_(False).to(device)
@@ -124,11 +125,11 @@ class G1_29_Motion_Model(nn.Module):
 
         return: a tensor contains the global poses of 52 links
         """
-        R = vec6d_to_matrix(self.global_rot).repeat(self.batch_size, 1, 1) * self.scale.repeat(self.batch_size, 3, 1) # (N_frame, 3, 3)
-        t = self.global_trans.reshape(3, 1).repeat(self.batch_size, 1, 1) # (N_frame, 3, 1)
+        R = vec6d_to_matrix(self.global_rot) * self.scale.repeat(self.batch_size, 3, 1) # (N_frame, 3, 3)
+        t = self.global_trans # (N_frame, 3, 1)
         root_to_world = torch.cat((torch.cat((R, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
         
-        R_lower_body = vec6d_to_matrix(self.global_rot).repeat(self.batch_size, 1, 1) * self.scale.repeat(self.batch_size, 3, 1) * self.lower_body_scale.repeat(self.batch_size, 3, 1)# (N_frame, 3, 3)
+        R_lower_body = vec6d_to_matrix(self.global_rot) * self.scale.repeat(self.batch_size, 3, 1) * self.lower_body_scale.repeat(self.batch_size, 3, 1)# (N_frame, 3, 3)
         lower_body_root_to_world = torch.cat((torch.cat((R_lower_body, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
         
 

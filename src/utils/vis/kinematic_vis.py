@@ -118,7 +118,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         reference_link = SG_LINKS 
     elif dataset == "SeG":
         reference_link = SEG_LINKS
-    elif dataset == "MDM":
+    elif dataset == "MDM" or "HumanML3D":
         reference_link = SMPL_LINKS
 
     ### loading bvh data
@@ -132,6 +132,21 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
     elif dataset in ["MDM"]:
         ### creating pseudo skeleton for smpl-like joints
         npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        joint_data = np.load(npy_path)
+        skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
+        skeleton = {}
+        for chain in skeleton_chain:
+            for idx, link_idx in enumerate(chain):
+                if idx == 0:
+                    continue
+                skeleton[SMPL_LINKS[chain[idx]]] = [SMPL_LINKS[chain[idx-1]]]
+        skeleton_data = [SMPL_LINKS, None, skeleton]
+        num_frames = len(joint_data)
+        bvh_joint_local_coord = joint_data
+    
+    elif dataset == 'HumanML3D':
+         ### creating pseudo skeleton for smpl-like joints
+        npy_path = os.path.join(DATA_ROOT, f"motion/human/HumanML3D/new_joints", filename.split("/")[-1][:-7] + ".npy")
         joint_data = np.load(npy_path)
         skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
         skeleton = {}

@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     history_losses = []
     
-    pbar = tqdm(range(200))
+    pbar = tqdm(range(2000))
     for epoch in pbar:
         
         ### normalize
@@ -131,4 +131,4 @@ if __name__ == "__main__":
     plt.show()
     
     ### vis motion
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
