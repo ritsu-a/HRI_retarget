@@ -6,6 +6,18 @@
 - change sample-based collision loss into analytical loss 
 - change clip_angles in retarget files to normalize (follow model/g1_29.py and retarget/smpl_g1_29.py)
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
+- online version of retarget
+- humanml3d retarget & joint representation design
+- unstable bug:
+    change          self.joint_scales_min = 0.7
+                    self.joint_scales_max = 1.3
+                in model/g1_29.py 
+    then run python src/retarget/smpl_g1_29.py /home/pengyang/codebase/HRI_retarget/data/motion/human/MDM/00000.npy
+    the right leg is lifted into the air, which is undesired behavior
+- use different scale parameter for upperbody and lower body
+    there is commented experimental code in model/g1_29.py
+    but learning on xyz scale of lowerbody will lead robot foot floating
+    i want to learn xy and fix z, but the code have some bug now
 
 
 # preparation

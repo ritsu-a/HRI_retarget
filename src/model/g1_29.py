@@ -12,7 +12,7 @@ import pytorch_kinematics as pk
 
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
-from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
+from config.joint_mapping import G1_LINKS, G1_LOWERBODY_LINKS, SG_G1_CORRESPONDENCE
 from config.joint_mapping import G1_COLLISION_CYLINDER, G1_COLLISION
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
@@ -83,10 +83,15 @@ class G1_29_Motion_Model(nn.Module):
         self.chain = None
 
         self.links = G1_LINKS
+        self.lower_body_links = G1_LOWERBODY_LINKS
 
+        ### apply scale and transformation on robot frame
         self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
+
+        ### modify lowerbody scale to match robot and human shape
+        self.lower_body_scale = torch.ones(3).requires_grad_(False).to(device)
 
         urdf_rel_path = "resources/robots/g1_asap/g1_29dof.urdf"
         self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
@@ -122,12 +127,20 @@ class G1_29_Motion_Model(nn.Module):
         R = vec6d_to_matrix(self.global_rot).repeat(self.batch_size, 1, 1) * self.scale.repeat(self.batch_size, 3, 1) # (N_frame, 3, 3)
         t = self.global_trans.reshape(3, 1).repeat(self.batch_size, 1, 1) # (N_frame, 3, 1)
         root_to_world = torch.cat((torch.cat((R, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
-        print(self.joint_scales)
+        
+        R_lower_body = vec6d_to_matrix(self.global_rot).repeat(self.batch_size, 1, 1) * self.scale.repeat(self.batch_size, 3, 1) * self.lower_body_scale.repeat(self.batch_size, 3, 1)# (N_frame, 3, 3)
+        lower_body_root_to_world = torch.cat((torch.cat((R_lower_body, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
+        
+
         link_to_root_dict = self.chain.forward_kinematics(self.joint_angles, self.joint_scales)  # link to root
         link_to_world_dict = []
         for link_name in self.links:
             T = link_to_root_dict[link_name].get_matrix()  # link to root
-            link_to_world_dict.append(torch.einsum('bij,bjk->bik', root_to_world, T))
+            if link_name in self.lower_body_links:
+                link_to_world_dict.append(torch.einsum('bij,bjk->bik', lower_body_root_to_world, T))
+            else:
+                link_to_world_dict.append(torch.einsum('bij,bjk->bik', root_to_world, T))
+
 
         link_to_world_dict = torch.stack(link_to_world_dict, dim=1) # (N_frame, 52, 4, 4)
         return link_to_world_dict

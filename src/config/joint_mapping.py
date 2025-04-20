@@ -87,6 +87,12 @@ G1_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_ro
             'left_rubber_hand', 'left_mid_finger_link', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 'right_shoulder_yaw_link', 
             'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 'right_wrist_yaw_link', 'right_rubber_hand', 'right_mid_finger_link']
 
+G1_LOWERBODY_LINKS = [
+    'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
+    'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
+    'right_ankle_pitch_link', 'right_ankle_roll_link',
+]
+
 
 ### robot DOF names
 G1_29_DOFS = [
@@ -216,8 +222,8 @@ SMPL_G1_FULLBODY_CORRESPONDENCE = [
     # [SMPL_LINKS.index("Spine3"), G1_LINKS.index(""), 1],  
     [SMPL_LINKS.index("L_Knee"), G1_LINKS.index("left_knee_link"), 1],
     [SMPL_LINKS.index("R_Knee"), G1_LINKS.index("right_knee_link"), 1],
-    [SMPL_LINKS.index("L_Ankle"), G1_LINKS.index("left_ankle_roll_link"), 1],
-    [SMPL_LINKS.index("R_Ankle"), G1_LINKS.index("right_ankle_roll_link"), 1],
+    [SMPL_LINKS.index("L_Ankle"), G1_LINKS.index("left_ankle_roll_link"), 3],
+    [SMPL_LINKS.index("R_Ankle"), G1_LINKS.index("right_ankle_roll_link"), 3],
     #[SMPL_LINKS.index("L_Foot"), G1_LINKS.index(""), 1],
     #[SMPL_LINKS.index("R_Foot"), G1_LINKS.index(""), 1],
     # [SMPL_LINKS.index("Neck"), G1_LINKS.index(""), 1],
