@@ -49,6 +49,7 @@ q = np.array([0,0,0.785,0,0,0,1,
                         0,0,0,
                         0, 1.57,0,1.57,0,0,0,
                         0,-1.57,0,1.57,0,0,0]).astype(np.float32)
+# q = np.zeros(36)
  
 # Create data structures
 data = model.createData()
@@ -72,10 +73,11 @@ for k in range(len(geom_model.collisionPairs)):
         "Yes" if cr.isCollision() else "No",
     )
 
-import ipdb 
-ipdb.set_trace()
+# import ipdb 
+# ipdb.set_trace()
  
 # Compute for a single pair of collision
 pin.updateGeometryPlacements(model, data, geom_model, geom_data, q)
-pin.computeCollision(geom_model, geom_data, 0)
+flag = pin.computeCollision(geom_model, geom_data, 0)
+print(flag)
 
