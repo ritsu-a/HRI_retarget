@@ -3,7 +3,7 @@
 1. retarget for galbot from seg_dataset
 
 ### TODO LIST:
-- change sample-based collision loss into analytical loss 
+- accelerate analytical loss 
 - change clip_angles in retarget files to normalize (follow model/g1_29.py and retarget/smpl_g1_29.py)
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
 - online version of retarget
@@ -18,6 +18,7 @@
     there is commented experimental code in model/g1_29.py
     but learning on xyz scale of lowerbody will lead robot foot floating
     i want to learn xy and fix z, but the code have some bug now
+- hydra/dotmap for config management
 
 
 # preparation
