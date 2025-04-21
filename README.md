@@ -5,32 +5,6 @@
 3. visualization of unitree motion csv via rerun 
 4. data conversion between motion pkl(ours) & humanml3d npy & SG bvh & ASAP reference motion
 
-### TODO LIST:
-- fix utils/vis/rerun
-- fix utils/vis/kinematic_vis.vis_kinematic_result (memory leak & cannot shut down on zirui's server)
-- accelerate analytical loss 
-- change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
-    how to use torch.clamp on nn.parameter?
-- online version of retarget
-- humanml3d retarget & joint representation design
-- unstable bug:
-    change          self.joint_scales_min = 0.7
-                    self.joint_scales_max = 1.3
-                in model/g1_29.py 
-    then run python src/retarget/smpl_g1_29.py data/motion/human/MDM/00000.npy
-    the right leg is lifted into the air, which is undesired behavior
-
-    comment: is it still a problem after fixing bugs?
-
-- use different scale parameter for upperbody and lower body
-    there is commented experimental code in model/g1_29.py
-    but learning on xyz scale of lowerbody will lead robot foot floating
-    i want to learn xy and fix z, but the code have some bug now
-
-- hydra/dotmap for config management
-
-- setup.py or pytoml to avoid managing PYTHONPATH(which may lead to undesired behavior)
-
 
 # preparation
 write current folder path into bashrc, then
