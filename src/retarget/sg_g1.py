@@ -1,11 +1,11 @@
 ### usage:
 ### python sg_g1.py {path_to_bvh_file}
-### python sg_g1.py data/human/SG/output.bvh
+### python src/retarget/sg_g1.py data/motion/human/SG/output.bvh
 
 import sys
 import os
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
-sys.append(SRC_ROOT)
+sys.path.append(SRC_ROOT)
 # sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 import torch

@@ -17,6 +17,7 @@ from config.joint_mapping import G1_COLLISION_CYLINDER, G1_COLLISION
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 from utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
+from collision.segment_dist_lib import calc_seg2seg_dist,calc_point2seg_dist
 
 class G1_29_Motion_Model(nn.Module):
     def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
@@ -182,24 +183,35 @@ class G1_29_Motion_Model(nn.Module):
 
         loss = 0
 
-        def sample_ptx(body):
-            link1, link2, radius = G1_COLLISION_CYLINDER[body]
-            ratio = (torch.arange(self.collision_sample_num + 1) / self.collision_sample_num).to(dtype=torch.float32, device=self.device)
+        # def sample_ptx(body):
+        #     link1, link2, radius = G1_COLLISION_CYLINDER[body]
+        #     ratio = (torch.arange(self.collision_sample_num + 1) / self.collision_sample_num).to(dtype=torch.float32, device=self.device)
 
-            sampled_ptx =   pred_link_global[:, link1][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * ratio[None, :, None].repeat(self.batch_size, 1, 3) +\
-                            pred_link_global[:, link2][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * (1 - ratio[None, :, None].repeat(self.batch_size, 1, 3))
-            return sampled_ptx, radius
+        #     sampled_ptx =   pred_link_global[:, link1][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * ratio[None, :, None].repeat(self.batch_size, 1, 3) +\
+        #                     pred_link_global[:, link2][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * (1 - ratio[None, :, None].repeat(self.batch_size, 1, 3))
+        #     return sampled_ptx, radius
         
-        for body1, body2 in G1_COLLISION:
-            sampled_pts1, r1 = sample_ptx(body1)
-            sampled_pts2, r2 = sample_ptx(body2)
+        # for body1, body2 in G1_COLLISION:
+        #     sampled_pts1, r1 = sample_ptx(body1)
+        #     sampled_pts2, r2 = sample_ptx(body2)
         
-            pairwised_euc_dist = sampled_pts1.unsqueeze(1).repeat(1,self.collision_sample_num+1,1,1) -\
-                                 sampled_pts2.unsqueeze(2).repeat(1,1,self.collision_sample_num+1,1)
-            pairwised_dist = torch.norm(pairwised_euc_dist, dim=-1).view(self.batch_size, -1)
-            penetrate_dist = (r1 + r2 - pairwised_dist).clamp(min=0)
+        #     pairwised_euc_dist = sampled_pts1.unsqueeze(1).repeat(1,self.collision_sample_num+1,1,1) -\
+        #                          sampled_pts2.unsqueeze(2).repeat(1,1,self.collision_sample_num+1,1)
+        #     pairwised_dist = torch.norm(pairwised_euc_dist, dim=-1).view(self.batch_size, -1)
+        #     penetrate_dist = (r1 + r2 - pairwised_dist).clamp(min=0)
+        #     loss += (penetrate_dist ** 2).sum(dim=-1).mean()
+        for body1,body2 in G1_COLLISION:
+            body1_link1,body1_link2,body1_radius = G1_COLLISION_CYLINDER[body1]
+            body2_link1,body2_link2,body2_radius = G1_COLLISION_CYLINDER[body2]
+            body1_P1 = pred_link_global[:,body1_link1][:,:3,3]
+            body1_P2 = pred_link_global[:,body1_link2][:,:3,3]
+            body2_Q1 = pred_link_global[:,body2_link1][:,:3,3]
+            body2_Q2 = pred_link_global[:,body2_link1][:,:3,3]
+            
+            seg_distance = calc_seg2seg_dist(body1_P1,body1_P2,body2_Q1,body2_Q2)
+            penetrate_dist = (body1_radius + body2_radius - seg_distance).clamp(min=0)
             loss += (penetrate_dist ** 2).sum(dim=-1).mean()
-        
+            
         return loss
 
 
