@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     history_losses = []
     
-    pbar = tqdm(range(2000))
+    pbar = tqdm(range(200))
     for epoch in pbar:
         
         ### normalize

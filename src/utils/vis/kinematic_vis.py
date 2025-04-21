@@ -19,6 +19,10 @@ from model.galbot_charlie import Galbot_Charlie_Motion_Model
 from model.g1_15 import G1_15_Motion_Model
 from model.g1_29 import G1_29_Motion_Model
 
+from pynput import keyboard
+
+
+
 
 def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, reference_link=SG_LINKS, robot_link=G1_LINKS, correspondence=SG_G1_CORRESPONDENCE):
 
@@ -40,7 +44,16 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
 
     
     idx = 0
-    while True:
+
+    # 检测键盘输入esc时退出
+    def on_press(key):
+        if key == keyboard.Key.esc:
+            # 停止监听
+            return False
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+
+    while listener.running:
         idx += 1
         i = idx % len(bvh_link_pos) 
         

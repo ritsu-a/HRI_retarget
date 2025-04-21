@@ -6,8 +6,8 @@
 4. data conversion between motion pkl(ours) & humanml3d npy & SG bvh & ASAP reference motion
 
 ### TODO LIST:
+- add filter_motion into retarget
 - fix utils/vis/rerun
-- fix utils/vis/kinematic_vis.vis_kinematic_result (memory leak & cannot shut down on zirui's server)
 - accelerate analytical loss 
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
     how to use torch.clamp on nn.parameter?
