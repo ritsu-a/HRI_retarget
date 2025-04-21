@@ -87,6 +87,12 @@ G1_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_ro
             'left_rubber_hand', 'left_mid_finger_link', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 'right_shoulder_yaw_link', 
             'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 'right_wrist_yaw_link', 'right_rubber_hand', 'right_mid_finger_link']
 
+G1_LOWERBODY_LINKS = [
+    'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
+    'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
+    'right_ankle_pitch_link', 'right_ankle_roll_link',
+]
+
 
 ### robot DOF names
 G1_29_DOFS = [
@@ -183,6 +189,9 @@ SG_G1_CORRESPONDENCE = [
 
 ]
 
+
+
+
 SMPL_G1_CORRESPONDENCE = [
     [SMPL_LINKS.index("Pelvis"), G1_LINKS.index("pelvis"), 1],
     [SMPL_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
@@ -197,7 +206,37 @@ SMPL_G1_CORRESPONDENCE = [
     [SMPL_LINKS.index("R_Elbow"), G1_LINKS.index("right_elbow_link"), 3],
     [SMPL_LINKS.index("R_Wrist"), G1_LINKS.index("right_rubber_hand"), 3],
     # [SMPL_LINKS.index("RightHandMiddle3"), G1_LINKS.index("right_mid_finger_link"), 3],
+
+    ### used for standing straight
+    [SMPL_LINKS.index("L_Ankle"), G1_LINKS.index("left_ankle_roll_link"), 1],
+    [SMPL_LINKS.index("R_Ankle"), G1_LINKS.index("right_ankle_roll_link"), 1],
+
 ]
 
+SMPL_G1_FULLBODY_CORRESPONDENCE = [
+    [SMPL_LINKS.index("Pelvis"), G1_LINKS.index("pelvis"), 1],
+    [SMPL_LINKS.index("L_Hip"), G1_LINKS.index("left_hip_pitch_link"), 1],
+    [SMPL_LINKS.index("R_Hip"), G1_LINKS.index("right_hip_pitch_link"), 1],
+    # [SMPL_LINKS.index("Spine1"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Spine2"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Spine3"), G1_LINKS.index(""), 1],  
+    [SMPL_LINKS.index("L_Knee"), G1_LINKS.index("left_knee_link"), 1],
+    [SMPL_LINKS.index("R_Knee"), G1_LINKS.index("right_knee_link"), 1],
+    [SMPL_LINKS.index("L_Ankle"), G1_LINKS.index("left_ankle_roll_link"), 3],
+    [SMPL_LINKS.index("R_Ankle"), G1_LINKS.index("right_ankle_roll_link"), 3],
+    #[SMPL_LINKS.index("L_Foot"), G1_LINKS.index(""), 1],
+    #[SMPL_LINKS.index("R_Foot"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Neck"), G1_LINKS.index(""), 1],
+    [SMPL_LINKS.index("Head"), G1_LINKS.index("mid360_link"), 1],
 
+    # [SMPL_LINKS.index("L_Collar"), G1_LINKS.index(""), 3],
+    # [SMPL_LINKS.index("R_Collar"), G1_LINKS.index(""), 3],
+    [SMPL_LINKS.index("L_Shoulder"), G1_LINKS.index("left_shoulder_roll_link"), 3],
+    [SMPL_LINKS.index("R_Shoulder"), G1_LINKS.index("right_shoulder_roll_link"), 3],
+    [SMPL_LINKS.index("L_Elbow"), G1_LINKS.index("left_elbow_link"), 3],
+    [SMPL_LINKS.index("R_Elbow"), G1_LINKS.index("right_elbow_link"), 3],
+    [SMPL_LINKS.index("L_Wrist"), G1_LINKS.index("left_rubber_hand"), 3],
+    [SMPL_LINKS.index("R_Wrist"), G1_LINKS.index("right_rubber_hand"), 3],
+
+]
 

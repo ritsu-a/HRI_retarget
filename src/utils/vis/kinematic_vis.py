@@ -18,6 +18,7 @@ from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LI
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 from model.g1_15 import G1_15_Motion_Model
+from model.g1_29 import G1_29_Motion_Model
 
 
 def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, reference_link=SG_LINKS, robot_link=G1_LINKS, correspondence=SG_G1_CORRESPONDENCE):
@@ -34,6 +35,9 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
     frame_skips = 1
 
     figure_limit = 2 #used to set figure axis limits
+
+    offset = 0.0 ### seperate two bvhs when offset > 0m
+
 
     
     idx = 0
@@ -72,14 +76,15 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
             for child_frame in urdf_chain.find_frame(link).children:
                 child_link = child_frame.name 
                 frames_to_draw.append(child_link)
-                plt.plot(xs = [urdf_pos[robot_link.index(link)][1] + 0.5, urdf_pos[robot_link.index(child_link)][1] + 0.5],
+                ### by default apply rotation on robot frame
+                plt.plot(xs = [urdf_pos[robot_link.index(link)][1] + offset, urdf_pos[robot_link.index(child_link)][1] + offset],
                          zs = [urdf_pos[robot_link.index(link)][2], urdf_pos[robot_link.index(child_link)][2]],
                          ys = [urdf_pos[robot_link.index(link)][0], urdf_pos[robot_link.index(child_link)][0]],c = 'red', lw = 2.5)
 
 
         ### visualizing corespondence
         for ii, jj, v in correspondence:
-            plt.plot(xs = [urdf_pos[jj][1] + 0.5, bvh_pos[ii][0]],
+            plt.plot(xs = [urdf_pos[jj][1] + offset, bvh_pos[ii][0]],
                     zs = [urdf_pos[jj][2], bvh_pos[ii][1]],
                     ys = [urdf_pos[jj][0], bvh_pos[ii][2]],c = 'green', lw = 2.5)
 
@@ -113,12 +118,12 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         reference_link = SG_LINKS 
     elif dataset == "SeG":
         reference_link = SEG_LINKS
-    elif dataset == "MDM":
+    elif dataset == "MDM" or "HumanML3D":
         reference_link = SMPL_LINKS
 
     ### loading bvh data
     if dataset in ["SG", "SeG"]:
-        bvh_path = os.path.join(DATA_ROOT,f"/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+        bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
         skeleton_data = ProcessBVH(bvh_path)
         bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
         num_frames = len(bvh_joint_local_coord)
@@ -126,7 +131,22 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
 
     elif dataset in ["MDM"]:
         ### creating pseudo skeleton for smpl-like joints
-        npy_path = os.path.join(DATA_ROOT,f"/motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        joint_data = np.load(npy_path)
+        skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
+        skeleton = {}
+        for chain in skeleton_chain:
+            for idx, link_idx in enumerate(chain):
+                if idx == 0:
+                    continue
+                skeleton[SMPL_LINKS[chain[idx]]] = [SMPL_LINKS[chain[idx-1]]]
+        skeleton_data = [SMPL_LINKS, None, skeleton]
+        num_frames = len(joint_data)
+        bvh_joint_local_coord = joint_data
+    
+    elif dataset == 'HumanML3D':
+         ### creating pseudo skeleton for smpl-like joints
+        npy_path = os.path.join(DATA_ROOT, f"motion/human/HumanML3D/new_joints", filename.split("/")[-1][:-7] + ".npy")
         joint_data = np.load(npy_path)
         skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
         skeleton = {}
@@ -140,15 +160,22 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         bvh_joint_local_coord = joint_data
 
 
-    ### loading galbot model 
-    if "galbot" in robot:
-        model = Galbot_Charlie_Motion_Model(num_frames)
-        robot_link = GALBOT_CHARLIE_LINKS
-    elif "g1" in robot:
-        model = G1_15_Motion_Model(num_frames)
-        robot_link = G1_LINKS
-    else:
-        print("wrong robot name in kinematic vis")
+    ### loading robot model 
+    match robot:
+        case "galbot":
+            model = Galbot_Charlie_Motion_Model(num_frames)
+            robot_link = GALBOT_CHARLIE_LINKS
+        case "g1":
+            model = G1_15_Motion_Model(num_frames)
+            robot_link = G1_LINKS
+        case "g1_29":
+            model = G1_29_Motion_Model(num_frames)
+            robot_link = G1_LINKS
+        case _:
+            print("wrong robot name in kinematic vis")
+            quit()
+   
+    
 
     model.set_angles(torch.tensor(joints_angle))
     model.set_global_matrix(data_dict)

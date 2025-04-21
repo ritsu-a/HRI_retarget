@@ -2,6 +2,41 @@
 
 1. retarget for galbot from seg_dataset
 
+### TODO LIST:
+- change sample-based collision loss into analytical loss 
+- change clip_angles in retarget files to normalize (follow model/g1_29.py and retarget/smpl_g1_29.py)
+- change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
+- online version of retarget
+- humanml3d retarget & joint representation design
+- unstable bug:
+    change          self.joint_scales_min = 0.7
+                    self.joint_scales_max = 1.3
+                in model/g1_29.py 
+    then run python src/retarget/smpl_g1_29.py /home/pengyang/codebase/HRI_retarget/data/motion/human/MDM/00000.npy
+    the right leg is lifted into the air, which is undesired behavior
+- use different scale parameter for upperbody and lower body
+    there is commented experimental code in model/g1_29.py
+    but learning on xyz scale of lowerbody will lead robot foot floating
+    i want to learn xy and fix z, but the code have some bug now
+
+
+# preparation
+write current folder path into bashrc, then
+    git clone git@github.com:ritsu-a/HRI_retarget.git
+    cd HRI_retarget
+    git checkout g1
+
+
+the environment is tested with cuda12.1 with python=3.10
+    pip install -r requirements.txt
+
+contact pengyang for data
+then create a soft link to HRI_retarget/data
+
+
+    
+
+
 # Basic usage:
 you may search for /home/pengyang/data and replace it with your directory
 
@@ -51,6 +86,10 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
     src/utils/vis/pybullet_visualize_g1_dynamic.py  #TODO change IO
 4. deploy on real G1 
     src/deploy/deploy_g1.py
+
+
+### 0419 retarget humanml3d 
+    src/retarget/
 
 
 
