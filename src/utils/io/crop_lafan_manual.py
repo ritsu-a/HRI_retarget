@@ -6,7 +6,6 @@ import sys
 import os
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
-# sys.path.append("/home/pengyang/codebase/retarget/src")
 
 import joblib
 import numpy as np
@@ -42,7 +41,6 @@ def crop_csv(input_path, output_path):
     
     ### computing pose_aa 
     cfg = {
-        # "assetRoot": "/home/pengyang/data/resources/robots/g1_asap",
         "assetRoot": os.path.join(DATA_ROOT,"resources/robots/g1_asap"),
         "assetFileName": "g1_29dof_anneal_23dof_fitmotionONLY.xml",
         "extend_config": [{

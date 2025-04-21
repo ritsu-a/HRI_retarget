@@ -6,7 +6,6 @@
 
 import sys
 import os
-# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
 

@@ -7,7 +7,6 @@ import sys
 import os
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
-# sys.path.append("/home/pengyang/codebase/retarget/src")
 
 
 import joblib
@@ -34,7 +33,6 @@ def asap_to_csv(input_path, output_path):
     root_rot_vec = torch.from_numpy(sRot.from_quat(data[key]["root_rot"]).as_rotvec()).float()
 
     cfg = {
-        # "assetRoot": "/home/pengyang/codebase/retarget/data/resources/robots/g1_asap",
         "assetRoot": os.path.join(DATA_ROOT,"resources/robots/g1_asap"),
         "assetFileName": "g1_29dof_anneal_23dof_fitmotionONLY.xml",
         "extend_config": [{

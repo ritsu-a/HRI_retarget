@@ -13,8 +13,7 @@ p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1) # collision
 urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
 robotId = p.loadURDF(os.path.join(DATA_ROOT,urdf_rel_path), [0, 0, 0], [0, 0, 0, 1])
 
-### h1 urdf (not functinoal)
-# robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/urdf/h1/urdf/h1_add_hand_link_limit.urdf", [0, 0, 0], [0, 0, 0, 1])
+
 
 # 获取关节信息
 num_joints = p.getNumJoints(robotId)

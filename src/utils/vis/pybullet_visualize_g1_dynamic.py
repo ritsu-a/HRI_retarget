@@ -13,13 +13,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
-# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 np.set_printoptions(suppress=True)
 
 if len(sys.argv) != 2:
     print('Call the function with the motion file')
-    # filename = "/home/pengyang/data/motion/g1/SG/output.pickle"
     filename = os.path.join(DATA_ROOT,"motion/g1/SG/output.pickle")
 
 else:

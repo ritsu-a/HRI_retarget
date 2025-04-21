@@ -6,7 +6,6 @@ import sys
 import os
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
-# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 import torch
 from tqdm import tqdm
