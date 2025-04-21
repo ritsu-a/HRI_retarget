@@ -15,6 +15,8 @@ from utils.torch_utils.diff_quat import vec6d_to_matrix
 from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
 from config.joint_mapping import G1_COLLISION_CAPSULE, G1_COLLISION
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+from utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
+
 from collision.segment_dist_lib import calc_seg2seg_dist,calc_point2seg_dist
 
 class G1_15_Motion_Model(nn.Module):
@@ -51,9 +53,13 @@ class G1_15_Motion_Model(nn.Module):
         self.dof_limits = self.dof_max_limits * 0.9
 
        
+        ### joint scales upper and lower bound 
+        self.joint_scales_min = 0.8
+        self.joint_scales_max = 1.2
 
-
+        ## learnable parameters 
         self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
+        self.joint_scales = nn.Parameter(torch.ones(self.dof).to(device), requires_grad=True)  # (dof)
 
         self.joint_correspondence = joint_correspondence
 
@@ -61,24 +67,20 @@ class G1_15_Motion_Model(nn.Module):
 
         self.links = G1_LINKS
 
+        ### apply scale and transformation on robot frame
         self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
         urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
-        self.load_urdf_as_chain(os.path.join(DATA_ROOT,urdf_rel_path))
+        self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
+
         
     
     def forward(self):
         return {
             "joint_angles": self.joint_angles,    
         }
-    
-
-    def load_urdf_as_chain(self, filename):
-        with open(filename, 'rb') as file:
-            self.chain = pk.build_chain_from_urdf(file.read())
-        self.chain = self.chain.to(dtype=torch.float32, device=self.device)
 
     def set_global_matrix(self, data_dict):
         self.global_trans = nn.Parameter(torch.tensor(data_dict["global_translation"]).to(self.device), requires_grad=True)
@@ -180,11 +182,15 @@ class G1_15_Motion_Model(nn.Module):
 
     # #     return elbow_loss
 
-    def clip_angles(self):
+    def normalize(self):
         ### clip angles within max limits
-        ### TODO: torch.clamp on nn.parameter
+        ### TODO: torch.clamp on nn.parameter and rename
         self.joint_angles[self.joint_angles < self.dof_max_limits[:, :, 0]] = self.dof_max_limits[:, :, 0][self.joint_angles < self.dof_max_limits[:, :, 0]]
         self.joint_angles[self.joint_angles > self.dof_max_limits[:, :, 1]] = self.dof_max_limits[:, :, 1][self.joint_angles > self.dof_max_limits[:, :, 1]]
+
+        ### clip joint scales
+        self.joint_scales[self.joint_scales < self.joint_scales_min] = self.joint_scales_min    
+        self.joint_scales[self.joint_scales > self.joint_scales_max] = self.joint_scales_max
 
 
 

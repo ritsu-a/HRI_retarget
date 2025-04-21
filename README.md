@@ -3,9 +3,10 @@
 1. retarget for galbot from seg_dataset
 
 ### TODO LIST:
+- fix utils/vis/rerun
 - accelerate analytical loss 
-- change clip_angles in retarget files to normalize (follow model/g1_29.py and retarget/smpl_g1_29.py)
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
+    how to use torch.clamp on nn.parameter?
 - online version of retarget
 - humanml3d retarget & joint representation design
 - unstable bug:

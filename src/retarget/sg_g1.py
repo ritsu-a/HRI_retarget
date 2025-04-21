@@ -11,11 +11,15 @@ sys.path.append(SRC_ROOT)
 import torch
 from tqdm import tqdm
 import pickle
+import numpy as np
 
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
 from model.g1_15 import G1_15_Motion_Model
 from config.joint_mapping import SG_LINKS, SG_G1_CORRESPONDENCE
+
+import matplotlib.pyplot as plt
+
 
 
 ### magic numbers
@@ -53,10 +57,14 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-2)
     model.train()
 
+    history_losses = []
 
     
-    pbar = tqdm(range(2000))
+    pbar = tqdm(range(200))
     for epoch in pbar:
+        ### normalize
+        with torch.no_grad():
+            model.normalize()
         
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
@@ -80,15 +88,15 @@ if __name__ == "__main__":
             loss += loss_dict[loss_name][0] * loss_dict[loss_name][1]
             log_str += f"{loss_name}: {loss_dict[loss_name][0] * loss_dict[loss_name][1].item()}" + "\n"
         # pbar.set_description(log_str)  
-        print("dof_limit_loss", dof_limit_loss.item())
-        print("collision_loss", collision_loss.item())
+        # print("dof_limit_loss", dof_limit_loss.item())
+        # print("collision_loss", collision_loss.item())
 
-
+        pbar.set_description(f"loss:, {loss.item()}")
+        history_losses.append(loss.item())
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        with torch.no_grad():
-            model.clip_angles()
+        
         
 
     with torch.no_grad():
@@ -107,5 +115,16 @@ if __name__ == "__main__":
 
     with open(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
+    ### visualize results.
+
+    ### draw loss curve
+    plt.plot(history_losses, label='Training Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training Loss Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
     
-    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)
+    ### vis motion
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)
