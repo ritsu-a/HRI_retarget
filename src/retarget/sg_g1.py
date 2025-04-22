@@ -106,12 +106,13 @@ if __name__ == "__main__":
         scale = model.scale.detach().cpu().numpy()
 
     data_dict = {
+        "fps": 60,
+        "reference_motion_pth": filename,
         "robot_name": "g1_15",
         "angles": pred_joint_angles,
         "global_rotation": global_rotation,
         "global_translation": global_translation,
         "scale": scale,
-        "fps": 60,
     }
 
     with open(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:

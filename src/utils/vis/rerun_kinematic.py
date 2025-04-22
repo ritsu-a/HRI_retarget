@@ -15,6 +15,7 @@ from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
 
 
+from src.utils.motion_lib.qpose_denoiser import low_pass_filter, plot_qpose
 from utils.io.motion_pkl_to_csv import load_motion_pkl_as_csv_data
 
 
@@ -123,6 +124,16 @@ if __name__ == "__main__":
         data = joblib.load(file)
         robot_type = data["robot_name"]
     csv_data = load_motion_pkl_as_csv_data(args.file_name)
+    from config.joint_mapping import G1_INSPIREHANDS_DOFS 
+    # plot_qpose(csv_data[:, 7:], G1_INSPIREHANDS_DOFS)
+
+    csv_data = low_pass_filter(csv_data)
+    # plot_qpose(csv_data[:, 7:], G1_INSPIREHANDS_DOFS)
+
+
+    downsample_rate = 4 
+    csv_data = csv_data[::downsample_rate, :]
+    print(csv_data.shape)
 
     rerun_urdf = RerunURDF(robot_type)
     for frame_nr in range(csv_data.shape[0]):
