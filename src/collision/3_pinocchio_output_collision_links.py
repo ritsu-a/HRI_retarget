@@ -1,3 +1,6 @@
+# 2025.04.21 HIT-xiaowangzi
+# Print the collsion links 
+
 from pathlib import Path
  
 import os
@@ -47,41 +50,40 @@ for i, joint in enumerate(model.joints):
 
 q = pin.randomConfiguration(model)
 print("random q:", q)
- 
+
 # Create data structures
 data = model.createData()
 geom_data = pin.GeometryData(geom_model)
+
  
  
 # Compute all the collisions
-# pin.computeCollisions(model, data, geom_model, geom_data, q, False)
+pin.computeCollisions(model, data, geom_model, geom_data, q, False)
  
-# # Print the status of collision for all collision pairs
-# for k in range(len(geom_model.collisionPairs)):
-#     cr = geom_data.collisionResults[k]
-#     cp = geom_model.collisionPairs[k]
-#     print(
-#         "collision pair:",
-#         cp.first,
-#         ",",
-#         cp.second,
-#         "- collision:",
-#         "Yes" if cr.isCollision() else "No",
-#     )
+# Print the status of collision for all collision pairs
+for k in range(len(geom_model.collisionPairs)):
+    cr = geom_data.collisionResults[k]
+    cp = geom_model.collisionPairs[k]
+    
+    # name1 = geom_model.geometryObjects[cp.first].name
+    # name2 = geom_model.geometryObjects[cp.second].name
+        # 原始 mesh 名称
+    geo1 = geom_model.geometryObjects[cp.first]
+    geo2 = geom_model.geometryObjects[cp.second]
+
+    # 真正的 link 名称（无 _0/_1 后缀）
+    link1 = model.frames[geo1.parentFrame].name
+    link2 = model.frames[geo2.parentFrame].name
+    
+    print(
+        "collision pair:",
+        {link1},
+        ",",
+        {link2},
+        "- collision:",
+        "Yes" if cr.isCollision() else "No",
+    )
  
-# # Compute for a single pair of collision
-# pin.updateGeometryPlacements(model, data, geom_model, geom_data, q)
-# pin.computeCollision(geom_model, geom_data, 0)
-# pin.computeDistance
-
-# Speed test
-
-epochs = 10000
-start = time.time()
-for i in range(epochs):
-    q = pin.randomConfiguration(model)
-    print(model.joints)
-    pin.computeCollisions(model, data, geom_model, geom_data, q, False)
-end = time.time()
-print("Time per epoch: {:.4f}ms".format((end-start) * 1000 /epochs))
-# print("random q:", q)
+# Compute for a single pair of collision
+pin.updateGeometryPlacements(model, data, geom_model, geom_data, q)
+pin.computeCollision(geom_model, geom_data, 0)

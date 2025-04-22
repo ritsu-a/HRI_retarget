@@ -131,7 +131,7 @@ if __name__ == "__main__":
     dataset = args.dataset
     # csv_files = "/home/pengyang/data/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
     # csv_files = "/home/pengyang/codebase/retarget/output.csv"
-    csv_files = DATA_ROOT+ "motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
+    csv_files = DATA_ROOT+ "/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
     data = np.genfromtxt(csv_files, delimiter=',')
 
     rerun_urdf = RerunURDF(robot_type)
