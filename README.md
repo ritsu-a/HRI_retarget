@@ -7,12 +7,17 @@
 
 ### TODO LIST:
 - add filter_motion into retarget
+- collision handling for g1_inspirehands
 - fix utils/vis/rerun
 - accelerate analytical loss 
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
     how to use torch.clamp on nn.parameter?
 - online version of retarget
 - humanml3d retarget & joint representation design
+- update beat motion pth
+- accel src/utils/vis/bvh_vis.py/Get_bvh_joint_local_coord to support batchwised load
+- rename robot "g1" to "g1_15"
+
 - unstable bug:
     change          self.joint_scales_min = 0.7
                     self.joint_scales_max = 1.3
@@ -20,7 +25,7 @@
     then run python src/retarget/smpl_g1_29.py data/motion/human/MDM/00000.npy
     the right leg is lifted into the air, which is undesired behavior
 
-    comment: is it still a problem after fixing bugs?
+    comment: is it still a problem after fixing other bugs?
 
 - use different scale parameter for upperbody and lower body
     there is commented experimental code in model/g1_29.py

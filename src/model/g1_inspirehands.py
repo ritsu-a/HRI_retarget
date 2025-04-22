@@ -1,4 +1,3 @@
-
 import math
 import numpy as np
 import torch
@@ -9,22 +8,23 @@ import pytorch_kinematics as pk
 
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
-from config.joint_mapping import G1_LINKS, G1_LOWERBODY_LINKS, SG_G1_CORRESPONDENCE
-from config.joint_mapping import G1_COLLISION_CAPSULE, G1_COLLISION
+from config.joint_mapping import G1_INSPIREHANDS_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, G1_LOWERBODY_LINKS
+# from config.joint_mapping import G1_COLLISION_CAPSULE, G1_COLLISION
+### TODO replace with g1_inspirehand collision
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 from utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
-from collision.segment_dist_lib import calc_seg2seg_dist,calc_point2seg_dist
+from collision.segment_dist_lib import calc_seg2seg_dist, calc_point2seg_dist
 
-class G1_29_Motion_Model(nn.Module):
-    def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
-        super(G1_29_Motion_Model, self).__init__()
+class G1_Inspirehands_Motion_Model(nn.Module):
+    def __init__(self, batch_size=1, joint_correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE, device="cuda:0"):
+        super(G1_Inspirehands_Motion_Model, self).__init__()
 
         self.batch_size = batch_size
         self.device = device
         self.gt_joint_positions = None
 
-        self.dof = 29
+        self.dof = 53
 
         self.init_angles = torch.zeros(self.batch_size, self.dof)
 
@@ -51,6 +51,18 @@ class G1_29_Motion_Model(nn.Module):
                 [-1.972222054, 1.972222054], ## left_wrist_roll
                 [-1.614429558, 1.614429558], ##left_wrist_pitch
                 [-1.614429558, 1.614429558], ## left_wrist_yaw
+                [-0.1, 1.3], ## L_thumb_proximal_yaw_joint
+                [-0.1, 0.6], ##L_thumb_proximal_pitch_joint
+                [0, 0.8], ##L_thumb_intermediate_joint
+                [0, 1.2], ##L_thumb_distal_joint
+                [0, 1.7], ##L_index_proximal_joint
+                [0, 1.7], ##L_index_intermediate_joint
+                [0, 1.7], ##L_middle_proximal_joint
+                [0, 1.7], ##L_middle_intermediate_joint
+                [0, 1.7], ##L_ring_proximal_joint
+                [0, 1.7], ##L_ring_intermediate_joint
+                [0, 1.7], ##L_pinky_proximal_joint
+                [0, 1.7], ##L_pinky_intermediate_joint
                 [-3.0892, 2.6704], ## right_shoulder_pitch
                 [-2.2515, 1.5882], ## right_should_roll
                 [-2.618, 2.618], ## right_shoulder_yaw
@@ -58,6 +70,19 @@ class G1_29_Motion_Model(nn.Module):
                 [-1.972222054, 1.972222054], ## right_wrist_roll
                 [-1.614429558, 1.614429558], ## right_wrist_pitch
                 [-1.614429558, 1.614429558], ## right_wrist_yaw
+                [-0.1, 1.3],##R_thumb_proximal_yaw_joint
+                [-0.1, 0.6], ##R_thumb_proximal_pitch_joint
+                [0, 0.8], ##R_thumb_intermediate_joint
+                [0, 1.2], ##R_thumb_distal_joint
+                [0, 1.7], ##R_index_proximal_joint
+                [0, 1.7], ##R_index_intermediate_joint
+                [0, 1.7], ##R_middle_proximal_joint
+                [0, 1.7], ##R_middle_intermediate_joint
+                [0, 1.7], ##R_ring_proximal_joint
+                [0, 1.7], ##R_ring_intermediate_joint
+                [0, 1.7], ##R_pinky_proximal_joint
+                [0, 1.7], ##R_pinky_intermediate_joint
+
         ])).repeat(self.batch_size, 1, 1).to(dtype=torch.float32, device=self.device)
 
 
@@ -77,7 +102,7 @@ class G1_29_Motion_Model(nn.Module):
 
         self.chain = None
 
-        self.links = G1_LINKS
+        self.links = G1_INSPIREHANDS_LINKS
         self.lower_body_links = G1_LOWERBODY_LINKS
 
         ### apply scale and transformation on robot frame
@@ -89,7 +114,7 @@ class G1_29_Motion_Model(nn.Module):
         ### modify lowerbody scale to match robot and human shape
         self.lower_body_scale = torch.ones(3).requires_grad_(False).to(device)
 
-        urdf_rel_path = "resources/robots/g1_asap/g1_29dof.urdf"
+        urdf_rel_path = "resources/robots/g1_inspirehands/G1_inspire_hands.urdf"
         self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
         
     
@@ -171,26 +196,27 @@ class G1_29_Motion_Model(nn.Module):
         return loss.sum(dim=-1).mean()
     
 
-    def collision_loss(self):
-        ### TODO: cuda acceleration
-        pred_link_global = self.forward_kinematics()
+    ### todo: G1_INSPIREHANDS_COLLISION collision handling
+    # def collision_loss(self):
+    #     ### TODO: cuda acceleration
+    #     pred_link_global = self.forward_kinematics()
 
-        loss = 0
+    #     loss = 0
 
-        for body1,body2 in G1_COLLISION:
-            body1_link1,body1_link2,body1_radius = G1_COLLISION_CAPSULE[body1]
-            body2_link1,body2_link2,body2_radius = G1_COLLISION_CAPSULE[body2]
-            body1_P1 = pred_link_global[:,body1_link1][:,:3,3]
-            body1_P2 = pred_link_global[:,body1_link2][:,:3,3]
-            body2_Q1 = pred_link_global[:,body2_link1][:,:3,3]
-            body2_Q2 = pred_link_global[:,body2_link2][:,:3,3]
+    #     for body1,body2 in G1_COLLISION:
+    #         body1_link1,body1_link2,body1_radius = G1_COLLISION_CAPSULE[body1]
+    #         body2_link1,body2_link2,body2_radius = G1_COLLISION_CAPSULE[body2]
+    #         body1_P1 = pred_link_global[:,body1_link1][:,:3,3]
+    #         body1_P2 = pred_link_global[:,body1_link2][:,:3,3]
+    #         body2_Q1 = pred_link_global[:,body2_link1][:,:3,3]
+    #         body2_Q2 = pred_link_global[:,body2_link2][:,:3,3]
             
-            ### analytical dist between two capsules
-            seg_distance = calc_seg2seg_dist(body1_P1,body1_P2,body2_Q1,body2_Q2)
-            penetrate_dist = (body1_radius + body2_radius - seg_distance).clamp(min=0)
-            loss += (penetrate_dist ** 2).sum(dim=-1).mean()
+    #         ### analytical dist between two capsules
+    #         seg_distance = calc_seg2seg_dist(body1_P1,body1_P2,body2_Q1,body2_Q2)
+    #         penetrate_dist = (body1_radius + body2_radius - seg_distance).clamp(min=0)
+    #         loss += (penetrate_dist ** 2).sum(dim=-1).mean()
             
-        return loss
+    #     return loss
 
 
 

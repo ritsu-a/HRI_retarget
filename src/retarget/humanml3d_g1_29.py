@@ -1,6 +1,6 @@
 ### usage:
-### python smpl_g1.py {path_to_npy_file}
-### python smpl_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python humanml3d_g1.py {path_to_npy_file}
+### python humanml3d_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
 
 import sys
 import os
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     history_losses = []
     
-    pbar = tqdm(range(200))
+    pbar = tqdm(range(2000))
     for epoch in pbar:
         
         ### normalize
@@ -107,6 +107,7 @@ if __name__ == "__main__":
         scale = model.scale.detach().cpu().numpy()
 
     data_dict = {
+        "robot_name": "g1_29",
         "angles": pred_joint_angles,
         "global_rotation": global_rotation,
         "global_translation": global_translation,
@@ -121,7 +122,7 @@ if __name__ == "__main__":
     ### visualize results.
 
     ### draw loss curve
-    plt.plot(history_losses, label='Training Loss')
+    plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('Training Loss Curve')
@@ -130,4 +131,6 @@ if __name__ == "__main__":
     plt.show()
     
     ### vis motion
+    ### press esc to quit plt visualization
+
     vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)

@@ -17,6 +17,8 @@ from pytorch_kinematics import build_chain_from_urdf
 from pytorch_kinematics.frame import Frame, Link, Joint
 from pytorch_kinematics.transforms.rotation_conversions import axis_and_angle_to_matrix_44, axis_and_d_to_pris_matrix
 
+
+### modified from pytorch_kinamatics.chain.Chain.forward_kinematics
 class StretchableChain(Chain):
     def forward_kinematics(self, th, scale: Optional = None, frame_indices: Optional = None):
         """

@@ -160,6 +160,7 @@ class G1_15_Motion_Model(nn.Module):
             body2_Q1 = pred_link_global[:,body2_link1][:,:3,3]
             body2_Q2 = pred_link_global[:,body2_link2][:,:3,3]
             
+            ### analytical dist between two capsules
             seg_distance = calc_seg2seg_dist(body1_P1,body1_P2,body2_Q1,body2_Q2)
             penetrate_dist = (body1_radius + body2_radius - seg_distance).clamp(min=0)
             loss += (penetrate_dist ** 2).sum(dim=-1).mean()

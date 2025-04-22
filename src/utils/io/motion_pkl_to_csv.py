@@ -18,9 +18,11 @@ from utils.torch_utils.diff_quat import vec6d_to_quat
 from config.joint_mapping import G1_29_DOFS, G1_15_DOFS
 
 def pkl_to_csv(input_path, output_path):
+    ### only apply to motion pkl with g1_15 
     with open(input_path, "rb") as file:
         data = joblib.load(file)
     # print(data.keys())
+    assert data["robot_name"] == "g1_15"
     csv_data = np.zeros((data["angles"].shape[0], 36))
     csv_data[:, :3] = data["global_translation"]
 

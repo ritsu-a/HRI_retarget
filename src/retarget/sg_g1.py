@@ -106,6 +106,7 @@ if __name__ == "__main__":
         scale = model.scale.detach().cpu().numpy()
 
     data_dict = {
+        "robot_name": "g1_15",
         "angles": pred_joint_angles,
         "global_rotation": global_rotation,
         "global_translation": global_translation,
@@ -126,4 +127,5 @@ if __name__ == "__main__":
     plt.show()
     
     ### vis motion
+    ### press esc to quit plt visualization
     vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE)

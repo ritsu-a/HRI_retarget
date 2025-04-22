@@ -1,6 +1,6 @@
 ### usage:
-### python smpl_g1.py {path_to_npy_file}
-### python smpl_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python beat_g1.py {path_to_npy_file}
+### python beat_g1.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
 
 import sys
 import os
@@ -15,10 +15,10 @@ import numpy as np
 
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
-from model.g1_15 import G1_15_Motion_Model
-from config.joint_mapping import SMPL_G1_CORRESPONDENCE
-import matplotlib.pyplot as plt
+from src.model.g1_inspirehands import G1_Inspirehands_Motion_Model
+from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE
 
+import matplotlib.pyplot as plt
 
 ### magic numbers
 ### transition from sg to galbot
@@ -37,18 +37,18 @@ if __name__ == "__main__":
         quit()
 
     filename = sys.argv[1]
-    bvh_joint_local_coord = torch.from_numpy(np.load(filename))
+    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
 
 
    
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
     
-    model = G1_15_Motion_Model(batch_size=num_frames, joint_correspondence=SMPL_G1_CORRESPONDENCE)
+    model = G1_Inspirehands_Motion_Model(batch_size=num_frames, joint_correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)
 
 
 
-    print(bvh_joint_local_coord.shape)
+    # print(bvh_joint_local_coord.shape)
 
     model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
@@ -58,13 +58,14 @@ if __name__ == "__main__":
     model.train()
 
     history_losses = []
-
     
     pbar = tqdm(range(2000))
     for epoch in pbar:
+        
         ### normalize
         with torch.no_grad():
             model.normalize()
+    
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
@@ -92,11 +93,11 @@ if __name__ == "__main__":
 
         pbar.set_description(f"loss:, {loss.item()}")
         history_losses.append(loss.item())
-
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-     
+
+        
 
     with torch.no_grad():
         
@@ -106,20 +107,22 @@ if __name__ == "__main__":
         scale = model.scale.detach().cpu().numpy()
 
     data_dict = {
-        "robot_name": "g1_15",
+        "robot_name": "g1_inspirehands",
         "angles": pred_joint_angles,
         "global_rotation": global_rotation,
         "global_translation": global_translation,
         "scale": scale,
     }
 
-    with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
+
     
 
-    ### visualize results
+    ### visualize results.
+
     ### draw loss curve
-    plt.plot(history_losses, label='Training Loss')
+    plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('Training Loss Curve')
@@ -130,4 +133,4 @@ if __name__ == "__main__":
     ### vis motion
     ### press esc to quit plt visualization
 
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1", correspondence=SMPL_G1_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), dataset="BEAT", robot="g1_inspirehands", correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)

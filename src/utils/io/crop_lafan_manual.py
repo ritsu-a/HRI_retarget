@@ -26,6 +26,9 @@ from utils.isaac_utils.rotations import (
 
 
 def crop_csv(input_path, output_path):
+
+    ### maunally editing the unitree dancing motion
+
     full_csv_data = np.genfromtxt(input_path, delimiter=',')
     csv_data = full_csv_data[170:700, :]
 
