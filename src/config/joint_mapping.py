@@ -263,6 +263,7 @@ BEAT_G1_INSPIREHANDS_CORRESPONDENCE = [
     [BEAT_LINKS.index("RightHandRing1"), G1_INSPIREHANDS_LINKS.index("R_ring_intermediate"), 1],
     [BEAT_LINKS.index("RightHandPinky1"), G1_INSPIREHANDS_LINKS.index("R_pinky_proximal"), 1],
     [BEAT_LINKS.index("RightHandPinky1"), G1_INSPIREHANDS_LINKS.index("R_pinky_intermediate"), 1],
+
    
 ]
 

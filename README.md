@@ -9,7 +9,7 @@
 - add filter_motion into retarget
 - collision handling for g1_inspirehands
 - fix utils/vis/rerun
-- accelerate analytical loss 
+- accelerate analytical collision loss 
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
     how to use torch.clamp on nn.parameter?
 - online version of retarget
@@ -29,7 +29,7 @@
 
 - use different scale parameter for upperbody and lower body
     there is commented experimental code in model/g1_29.py
-    but learning on xyz scale of lowerbody will lead robot foot floating
+    but learning on xyz scale of lowerbody will lead to robot foot floating
     i want to learn xy and fix z, but the code have some bug now
 
 - hydra/dotmap for config management

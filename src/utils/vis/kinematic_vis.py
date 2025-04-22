@@ -121,7 +121,7 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
 
 
 
-def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE):
+def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=SG_G1_CORRESPONDENCE):
     ### loading estimated joint angles
     with open(filename, "rb") as file:
         data_dict = pickle.load(file)
@@ -189,7 +189,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         case "galbot":
             model = Galbot_Charlie_Motion_Model(num_frames)
             robot_link = GALBOT_CHARLIE_LINKS
-        case "g1":
+        case "g1_15":
             model = G1_15_Motion_Model(num_frames)
             robot_link = G1_LINKS
         case "g1_29":

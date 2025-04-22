@@ -112,6 +112,7 @@ if __name__ == "__main__":
         "global_rotation": global_rotation,
         "global_translation": global_translation,
         "scale": scale,
+        "fps": 20,
     }
 
     with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:

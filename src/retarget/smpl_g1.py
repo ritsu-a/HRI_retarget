@@ -111,6 +111,7 @@ if __name__ == "__main__":
         "global_rotation": global_rotation,
         "global_translation": global_translation,
         "scale": scale,
+        "fps": 20,
     }
 
     with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
@@ -130,4 +131,4 @@ if __name__ == "__main__":
     ### vis motion
     ### press esc to quit plt visualization
 
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1", correspondence=SMPL_G1_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1_15", correspondence=SMPL_G1_CORRESPONDENCE)

@@ -17,6 +17,24 @@ import torch
 from utils.torch_utils.diff_quat import vec6d_to_quat
 from config.joint_mapping import G1_29_DOFS, G1_15_DOFS
 
+
+def load_motion_pkl_as_csv_data(input_pkl_path):
+    with open(input_pkl_path, "rb") as file:
+        data = joblib.load(file)
+
+    robot_name = data["robot_name"]
+    match robot_name:
+        case "g1_inspirehands":
+            csv_data = np.zeros((data["angles"].shape[0], 60))
+            csv_data[:, :3] = data["global_translation"][:, :, 0]
+            csv_data[:, 3:7] = vec6d_to_quat(torch.tensor(data['global_rotation'])).numpy()
+            csv_data[:, 7:] = data["angles"]
+        case "_":
+            print("Undefined robot type: ", robot_name)
+            raise ValueError('Invalid robot type')
+
+    return csv_data
+
 def pkl_to_csv(input_path, output_path):
     ### only apply to motion pkl with g1_15 
     with open(input_path, "rb") as file:
