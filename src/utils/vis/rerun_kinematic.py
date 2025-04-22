@@ -8,22 +8,21 @@ import numpy as np
 import pinocchio as pin
 import rerun as rr
 import trimesh
+import joblib
 import os
+import sys
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+
+
+from src.utils.motion_lib.qpose_denoiser import low_pass_filter, plot_qpose
+from utils.io.motion_pkl_to_csv import load_motion_pkl_as_csv_data
 
 
 class RerunURDF():
     def __init__(self, robot_type):
         self.name = robot_type
         match robot_type:
-            case 'g1':
-                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1/g1_29dof_rev_1_0.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1'), pin.JointModelFreeFlyer())
-                self.Tpose = np.array([0,0,0.785,0,0,0,1,
-                                       -0.15,0,0,0.3,-0.15,0,
-                                       -0.15,0,0,0.3,-0.15,0,
-                                       0,0,0,
-                                       0, 1.57,0,1.57,0,0,0,
-                                       0,-1.57,0,1.57,0,0,0]).astype(np.float32)
             case 'g1_29':
                 self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_asap/g1_29dof.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_asap'), pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
@@ -32,24 +31,19 @@ class RerunURDF():
                                        0,0,0,
                                        0, 1.57,0,1.57,0,0,0,
                                        0,-1.57,0,1.57,0,0,0]).astype(np.float32)
-            case 'h1_2':
-                self.robot = pin.RobotWrapper.BuildFromURDF('robot_description/h1_2/h1_2_wo_hand.urdf', 'robot_description/h1_2', pin.JointModelFreeFlyer())
-                assert self.robot.model.nq == 7 + 12+1+14
-                self.Tpose = np.array([0,0,1.02,0,0,0,1,
-                                       0,-0.15,0,0.3,-0.15,0,
-                                       0,-0.15,0,0.3,-0.15,0,
-                                       0,
+                
+            case 'g1_inspirehands':
+                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_inspirehands/G1_inspire_hands.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_inspirehands'), pin.JointModelFreeFlyer())
+                self.Tpose = np.array([0,0,0.785,0,0,0,1,
+                                       -0.15,0,0,0.3,-0.15,0,
+                                       -0.15,0,0,0.3,-0.15,0,
+                                       0,0,0,
                                        0, 1.57,0,1.57,0,0,0,
-                                       0,-1.57,0,1.57,0,0,0]).astype(np.float32)
-            case 'h1':
-                self.robot = pin.RobotWrapper.BuildFromURDF('robot_description/h1/h1.urdf', 'robot_description/h1', pin.JointModelFreeFlyer())
-                assert self.robot.model.nq == 7 + 10+1+8
-                self.Tpose = np.array([0,0,1.03,0,0,0,1,
-                                       0,0,-0.15,0.3,-0.15,
-                                       0,0,-0.15,0.3,-0.15,
-                                       0,
-                                       0, 1.57,0,1.57,
-                                       0,-1.57,0,1.57]).astype(np.float32)
+                                       0,0,0,0,0,0,0,0,0,0,0,0,
+                                       0,-1.57,0,1.57,0,0,0,
+                                       0,0,0,0,0,0,0,0,0,0,0,0,]).astype(np.float32)
+           
+         
             case _:
                 print(robot_type)
                 raise ValueError('Invalid robot type')
@@ -117,9 +111,7 @@ class RerunURDF():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type=str, help="File name", default='dance1_subject2')
-    parser.add_argument('--robot_type', type=str, help="Robot type", default='g1')
-    parser.add_argument('--dataset', type=str, help="dataset", default='LAFAN1')
+    parser.add_argument('--file_name', type=str, help="File name", default='/home/pengyang/codebase/HRI_retarget/data/motion/g1/BEAT/1_wayne_0_1_1.pickle')
 
     args = parser.parse_args()
 
@@ -127,15 +119,24 @@ if __name__ == "__main__":
     rr.log('', rr.ViewCoordinates.RIGHT_HAND_Z_UP, static=True)
 
     file_name = args.file_name
-    robot_type = args.robot_type
-    dataset = args.dataset
-    # csv_files = "/home/pengyang/data/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
-    # csv_files = "/home/pengyang/codebase/retarget/output.csv"
-    csv_files = DATA_ROOT+ "/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
-    data = np.genfromtxt(csv_files, delimiter=',')
+   
+    with open(file_name, "rb") as file:
+        data = joblib.load(file)
+        robot_type = data["robot_name"]
+    csv_data = load_motion_pkl_as_csv_data(args.file_name)
+    from config.joint_mapping import G1_INSPIREHANDS_DOFS 
+    # plot_qpose(csv_data[:, 7:], G1_INSPIREHANDS_DOFS)
+
+    csv_data = low_pass_filter(csv_data)
+    # plot_qpose(csv_data[:, 7:], G1_INSPIREHANDS_DOFS)
+
+
+    downsample_rate = 4 
+    csv_data = csv_data[::downsample_rate, :]
+    print(csv_data.shape)
 
     rerun_urdf = RerunURDF(robot_type)
-    for frame_nr in range(data.shape[0]):
+    for frame_nr in range(csv_data.shape[0]):
         rr.set_time_sequence('frame_nr', frame_nr)
-        configuration = data[frame_nr, :]
+        configuration = csv_data[frame_nr, :]
         rerun_urdf.update(configuration)

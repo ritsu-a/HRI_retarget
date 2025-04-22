@@ -1,6 +1,6 @@
 ### usage:
-### python humanml3d_g1.py {path_to_npy_file}
-### python humanml3d_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python beat_g1.py {path_to_npy_file}
+### python beat_g1.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
 
 import sys
 import os
@@ -15,8 +15,8 @@ import numpy as np
 
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
-from model.g1_29 import G1_29_Motion_Model
-from config.joint_mapping import SMPL_G1_FULLBODY_CORRESPONDENCE
+from src.model.g1_inspirehands import G1_Inspirehands_Motion_Model
+from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE
 
 import matplotlib.pyplot as plt
 
@@ -37,18 +37,18 @@ if __name__ == "__main__":
         quit()
 
     filename = sys.argv[1]
-    bvh_joint_local_coord = torch.from_numpy(np.load(filename))
+    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
 
 
    
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
     
-    model = G1_29_Motion_Model(batch_size=num_frames, joint_correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
+    model = G1_Inspirehands_Motion_Model(batch_size=num_frames, joint_correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)
 
 
 
-    print(bvh_joint_local_coord.shape)
+    # print(bvh_joint_local_coord.shape)
 
     model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
@@ -107,16 +107,16 @@ if __name__ == "__main__":
         scale = model.scale.detach().cpu().numpy()
 
     data_dict = {
-        "fps": 20,
+        "fps": 120,
         "reference_motion_pth": filename,
-        "robot_name": "g1_29",
+        "robot_name": "g1_inspirehands",
         "angles": pred_joint_angles,
         "global_rotation": global_rotation,
         "global_translation": global_translation,
         "scale": scale,
     }
 
-    with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
 
     
@@ -135,4 +135,4 @@ if __name__ == "__main__":
     ### vis motion
     ### press esc to quit plt visualization
 
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), dataset="BEAT", robot="g1_inspirehands", correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)

@@ -13,8 +13,10 @@ import pytorch_kinematics as pk
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
-from config.joint_mapping import G1_COLLISION_CYLINDER, G1_COLLISION
+from config.joint_mapping import G1_COLLISION_CAPSULE, G1_COLLISION
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+from utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
+
 from collision.segment_dist_lib import calc_seg2seg_dist,calc_point2seg_dist
 
 class G1_15_Motion_Model(nn.Module):
@@ -50,12 +52,14 @@ class G1_15_Motion_Model(nn.Module):
         ### soft threshold
         self.dof_limits = self.dof_max_limits * 0.9
 
-        ### sampled ptx on cylinder axis 
-        self.collision_sample_num = 10
        
+        ### joint scales upper and lower bound 
+        self.joint_scales_min = 0.8
+        self.joint_scales_max = 1.2
 
-
+        ## learnable parameters 
         self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
+        self.joint_scales = nn.Parameter(torch.ones(self.dof).to(device), requires_grad=True)  # (dof)
 
         self.joint_correspondence = joint_correspondence
 
@@ -63,24 +67,20 @@ class G1_15_Motion_Model(nn.Module):
 
         self.links = G1_LINKS
 
+        ### apply scale and transformation on robot frame
         self.scale = nn.Parameter(torch.ones(3).to(device), requires_grad=True)
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
         urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
-        self.load_urdf_as_chain(os.path.join(DATA_ROOT,urdf_rel_path))
+        self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
+
         
     
     def forward(self):
         return {
             "joint_angles": self.joint_angles,    
         }
-    
-
-    def load_urdf_as_chain(self, filename):
-        with open(filename, 'rb') as file:
-            self.chain = pk.build_chain_from_urdf(file.read())
-        self.chain = self.chain.to(dtype=torch.float32, device=self.device)
 
     def set_global_matrix(self, data_dict):
         self.global_trans = nn.Parameter(torch.tensor(data_dict["global_translation"]).to(self.device), requires_grad=True)
@@ -152,31 +152,15 @@ class G1_15_Motion_Model(nn.Module):
 
         loss = 0
 
-        # def sample_ptx(body):
-        #     link1, link2, radius = G1_COLLISION_CYLINDER[body]
-        #     ratio = (torch.arange(self.collision_sample_num + 1) / self.collision_sample_num).to(dtype=torch.float32, device=self.device)
-
-        #     sampled_ptx =   pred_link_global[:, link1][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * ratio[None, :, None].repeat(self.batch_size, 1, 3) +\
-        #                     pred_link_global[:, link2][:, :3, 3].unsqueeze(1).repeat(1, self.collision_sample_num + 1, 1) * (1 - ratio[None, :, None].repeat(self.batch_size, 1, 3))
-        #     return sampled_ptx, radius
-        
-        # for body1, body2 in G1_COLLISION:
-        #     sampled_pts1, r1 = sample_ptx(body1)
-        #     sampled_pts2, r2 = sample_ptx(body2)
-        
-        #     pairwised_euc_dist = sampled_pts1.unsqueeze(1).repeat(1,self.collision_sample_num+1,1,1) -\
-        #                          sampled_pts2.unsqueeze(2).repeat(1,1,self.collision_sample_num+1,1)
-        #     pairwised_dist = torch.norm(pairwised_euc_dist, dim=-1).view(self.batch_size, -1)
-        #     penetrate_dist = (r1 + r2 - pairwised_dist).clamp(min=0)
-        #     loss += (penetrate_dist ** 2).sum(dim=-1).mean()
         for body1,body2 in G1_COLLISION:
-            body1_link1,body1_link2,body1_radius = G1_COLLISION_CYLINDER[body1]
-            body2_link1,body2_link2,body2_radius = G1_COLLISION_CYLINDER[body2]
+            body1_link1,body1_link2,body1_radius = G1_COLLISION_CAPSULE[body1]
+            body2_link1,body2_link2,body2_radius = G1_COLLISION_CAPSULE[body2]
             body1_P1 = pred_link_global[:,body1_link1][:,:3,3]
             body1_P2 = pred_link_global[:,body1_link2][:,:3,3]
             body2_Q1 = pred_link_global[:,body2_link1][:,:3,3]
-            body2_Q2 = pred_link_global[:,body2_link1][:,:3,3]
+            body2_Q2 = pred_link_global[:,body2_link2][:,:3,3]
             
+            ### analytical dist between two capsules
             seg_distance = calc_seg2seg_dist(body1_P1,body1_P2,body2_Q1,body2_Q2)
             penetrate_dist = (body1_radius + body2_radius - seg_distance).clamp(min=0)
             loss += (penetrate_dist ** 2).sum(dim=-1).mean()
@@ -199,11 +183,15 @@ class G1_15_Motion_Model(nn.Module):
 
     # #     return elbow_loss
 
-    def clip_angles(self):
+    def normalize(self):
         ### clip angles within max limits
-        ### TODO: torch.clamp on nn.parameter
+        ### TODO: torch.clamp on nn.parameter and rename
         self.joint_angles[self.joint_angles < self.dof_max_limits[:, :, 0]] = self.dof_max_limits[:, :, 0][self.joint_angles < self.dof_max_limits[:, :, 0]]
         self.joint_angles[self.joint_angles > self.dof_max_limits[:, :, 1]] = self.dof_max_limits[:, :, 1][self.joint_angles > self.dof_max_limits[:, :, 1]]
+
+        ### clip joint scales
+        self.joint_scales[self.joint_scales < self.joint_scales_min] = self.joint_scales_min    
+        self.joint_scales[self.joint_scales > self.joint_scales_max] = self.joint_scales_max
 
 
 

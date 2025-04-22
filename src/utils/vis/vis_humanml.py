@@ -103,8 +103,6 @@ os.makedirs(tgt_ani_dir, exist_ok=True)
 
 
 
-# npy_files = os.listdir(src_dir)
-# npy_files = ["/home/pengyang/codebase/H1_RL/data/motion/human/MDM/00000.npy"]
 npy_files = [os.path.join(DATA_ROOT,"motion/human/MDM/00000.npy")]
 npy_files = sorted(npy_files)
 # npy_files = npy_files[:10]

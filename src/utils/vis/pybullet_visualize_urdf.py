@@ -6,21 +6,22 @@ import os
 # 连接物理引擎
 physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
 # p.setGravity(0, 0, -9.81)  # 设置重力
-p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1) # collision
+# p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1) # collision
 
 
 ### galbot charlie urdf
-urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
+urdf_rel_path = "resources/robots/g1_inspirehands/G1_inspire_hands.urdf"
 robotId = p.loadURDF(os.path.join(DATA_ROOT,urdf_rel_path), [0, 0, 0], [0, 0, 0, 1])
 
-### h1 urdf (not functinoal)
-# robotId = p.loadURDF("/home/pengyang/codebase/H1_RL/data/urdf/h1/urdf/h1_add_hand_link_limit.urdf", [0, 0, 0], [0, 0, 0, 1])
+
 
 # 获取关节信息
 num_joints = p.getNumJoints(robotId)
 joint_indices = range(num_joints)
 joint_names = [p.getJointInfo(robotId, i)[1].decode("utf-8") for i in joint_indices]
 print("Joint Names:", joint_names)
+
+dofs = []
 
 # 创建滑块控件
 sliders = []
@@ -31,6 +32,12 @@ for i in joint_indices:
     upper_limit = joint_info[9]  # 关节上限
     slider = p.addUserDebugParameter(joint_name, lower_limit, upper_limit, 0)  # 初始值为0
     sliders.append(slider)
+
+    if joint_info[2] != p.JOINT_FIXED:  # 如果不是固定关节
+        dofs.append(joint_name)
+
+print("Dof Joints:", dofs)
+
 
 # # 创建固定约束，将base链接固定在世界坐标系的原点
 # constraint_id = p.createConstraint(

@@ -13,18 +13,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
-# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
 np.set_printoptions(suppress=True)
 
 if len(sys.argv) != 2:
     print('Call the function with the motion file')
-    # filename = "/home/pengyang/data/motion/g1/SG/output.pickle"
     filename = os.path.join(DATA_ROOT,"motion/g1/SG/output.pickle")
 
 else:
     filename = sys.argv[1]
 
+with open(filename, "rb") as file:
+    
+    data_dict = pickle.load(file)
+    joint_global_pos = data_dict["angles"]
+    robot_name = data_dict["robot_name"]
+    # fps = data_dict["fps"]
+    fps = 120
+    
 
 
 
@@ -34,7 +40,12 @@ p.setGravity(0, 0, -9.81)  # 设置重力
 # p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1) # collision
 
 ### galbot charlie urdf
-urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
+
+match robot_name:
+    case "g1_15":
+        urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
+    case "g1_inspirehands":
+        urdf_rel_path = "resources/robots/g1_inspirehands/G1_inspire_hands.urdf"
 robotId = p.loadURDF(os.path.join(DATA_ROOT,urdf_rel_path), [0, 0, 0], [0, 0, 0, 1])
 
 
@@ -57,8 +68,7 @@ joint_names = [p.getJointInfo(robotId, i)[1].decode("utf-8") for i in joint_indi
 print("Joint Names:", joint_names)
 
 
-with open(filename, "rb") as file:
-    joint_global_pos = pickle.load(file)["angles"]
+
 
 
 # 创建滑块控件
@@ -151,7 +161,7 @@ try:
                 targetPosition=target_angles[j]
             )
 
-        time.sleep(1 / 20)
+        time.sleep(1 / fps)
 
         p.stepSimulation()
 except KeyboardInterrupt:

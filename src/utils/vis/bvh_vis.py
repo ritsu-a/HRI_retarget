@@ -10,9 +10,10 @@ import time
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
 
-# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 from utils.io.bvh_io import ProcessBVH
 from config.joint_mapping import SEG_LINKS
+
+from tqdm import tqdm
 
 #rotation matrices
 def Rx(ang, in_radians = False):
@@ -182,6 +183,8 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
     skeleton_data = ProcessBVH(filename)
 
     joints = skeleton_data[0]
+    print("BVH links: ", joints)
+
     joints_offsets = skeleton_data[1]
     joints_hierarchy = skeleton_data[2]
     root_positions = skeleton_data[3]
@@ -197,8 +200,8 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
 
     joints_coord_full = torch.zeros(len(joints_rotations) // frame_skips, len(link_list), 3)
 
-
-    for i in range(0,len(joints_rotations), frame_skips):
+    print("Loading bvh data ... ")
+    for i in tqdm(range(0,len(joints_rotations), frame_skips)):
 
         frame_data = joints_rotations[i]
 
@@ -329,6 +332,7 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
     skeleton_data = ProcessBVH(filename)
+    print(skeleton_data[4].shape)
 
     # joints = skeleton_data[0]
     # joints_offsets = skeleton_data[1]

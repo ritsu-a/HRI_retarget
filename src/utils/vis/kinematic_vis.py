@@ -2,6 +2,8 @@
 ### specific to /data/SeG_dataset results
 ### python kinematic_vis.py data/SeG_dataset/galbot_motion/ARMS_SELF_EMBRACE-1.pickle
 
+### press esc to quit the plt visualization
+
 import torch
 import time
 import pickle 
@@ -12,13 +14,17 @@ import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
-# sys.path.append("/home/pengyang/codebase/H1_RL/src")
 
-from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS,SG_LINKS, SEG_LINKS, SMPL_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
+from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS, G1_INSPIREHANDS_LINKS, SG_LINKS, SEG_LINKS, SMPL_LINKS, BEAT_LINKS, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from model.galbot_charlie import Galbot_Charlie_Motion_Model
 from model.g1_15 import G1_15_Motion_Model
 from model.g1_29 import G1_29_Motion_Model
+from model.g1_inspirehands import G1_Inspirehands_Motion_Model
+
+from pynput import keyboard
+
+
 
 
 def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, reference_link=SG_LINKS, robot_link=G1_LINKS, correspondence=SG_G1_CORRESPONDENCE):
@@ -41,7 +47,16 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
 
     
     idx = 0
-    while True:
+
+    # 检测键盘输入esc时退出
+    def on_press(key):
+        if key == keyboard.Key.esc:
+            # 停止监听
+            return False
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+
+    while listener.running:
         idx += 1
         i = idx % len(bvh_link_pos) 
         
@@ -106,32 +121,55 @@ def Draw_bvh_urdf(bvh_link_pos, bvh_skeleton_data, urdf_link_pos, urdf_chain, re
 
 
 
-def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G1_CORRESPONDENCE):
+def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=SG_G1_CORRESPONDENCE):
     ### loading estimated joint angles
     with open(filename, "rb") as file:
         data_dict = pickle.load(file)
         joints_angle = data_dict["angles"]
 
     
-    ### loading dataset
-    if dataset == "SG":
-        reference_link = SG_LINKS 
-    elif dataset == "SeG":
-        reference_link = SEG_LINKS
-    elif dataset == "MDM" or "HumanML3D":
-        reference_link = SMPL_LINKS
+    ### loading dataset links
+    match dataset:
+        case "SG":
+            reference_link = SG_LINKS 
+        case "SeG":
+            reference_link = SEG_LINKS
+        case "MDM":
+            reference_link = SMPL_LINKS
+        case "HumanML3D":
+            reference_link = SMPL_LINKS
+        case "BEAT":
+            reference_link = BEAT_LINKS
+
 
     ### loading bvh data
-    if dataset in ["SG", "SeG"]:
-        bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+
+    ### bvh data
+    if dataset in ["SG", "SeG", "BEAT"]:
+        match dataset:
+            case "SG":
+                bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+            case "Seg":
+                bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+            case "BEAT":
+                ### todo update beat motion pth
+                bvh_path = os.path.join(DATA_ROOT, f"motion/human/BEAT_ZIP/beat_english_v0.2.1/1", filename.split("/")[-1][:-7] + ".bvh")
+        
         skeleton_data = ProcessBVH(bvh_path)
         bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
         num_frames = len(bvh_joint_local_coord)
         print("Num of frames: ", num_frames)
 
-    elif dataset in ["MDM"]:
+
+    ### npy data
+    elif dataset in ["MDM", "HumanML3D"]:
         ### creating pseudo skeleton for smpl-like joints
-        npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        match dataset:
+            case "MDM":
+                npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+            case "HumanML3D":
+                npy_path = os.path.join(DATA_ROOT, f"motion/human/HumanML3D/new_joints", filename.split("/")[-1][:-7] + ".npy")
+
         joint_data = np.load(npy_path)
         skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
         skeleton = {}
@@ -144,20 +182,6 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         num_frames = len(joint_data)
         bvh_joint_local_coord = joint_data
     
-    elif dataset == 'HumanML3D':
-         ### creating pseudo skeleton for smpl-like joints
-        npy_path = os.path.join(DATA_ROOT, f"motion/human/HumanML3D/new_joints", filename.split("/")[-1][:-7] + ".npy")
-        joint_data = np.load(npy_path)
-        skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
-        skeleton = {}
-        for chain in skeleton_chain:
-            for idx, link_idx in enumerate(chain):
-                if idx == 0:
-                    continue
-                skeleton[SMPL_LINKS[chain[idx]]] = [SMPL_LINKS[chain[idx-1]]]
-        skeleton_data = [SMPL_LINKS, None, skeleton]
-        num_frames = len(joint_data)
-        bvh_joint_local_coord = joint_data
 
 
     ### loading robot model 
@@ -165,12 +189,15 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1", correspondence=SG_G
         case "galbot":
             model = Galbot_Charlie_Motion_Model(num_frames)
             robot_link = GALBOT_CHARLIE_LINKS
-        case "g1":
+        case "g1_15":
             model = G1_15_Motion_Model(num_frames)
             robot_link = G1_LINKS
         case "g1_29":
             model = G1_29_Motion_Model(num_frames)
             robot_link = G1_LINKS
+        case "g1_inspirehands":
+            model = G1_Inspirehands_Motion_Model(num_frames)
+            robot_link = G1_INSPIREHANDS_LINKS
         case _:
             print("wrong robot name in kinematic vis")
             quit()

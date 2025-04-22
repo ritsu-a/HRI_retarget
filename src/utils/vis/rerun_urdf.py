@@ -23,7 +23,20 @@ class RerunURDF():
                                        -0.15,0,0,0.3,-0.15,0,
                                        0,0,0,
                                        0, 1.57,0,1.57,0,0,0,
-                                       0,-1.57,0,1.57,0,0,0]).astype(np.float32)
+                                       0,-1.57,0,1.57,0,0,0,
+                                       ]).astype(np.float32)
+            case 'g1_inspirehands':
+                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_inspirehands/G1_inspire_hands.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_inspirehands'), pin.JointModelFreeFlyer())
+                self.Tpose = np.array([0,0,0.785,0,0,0,1,
+                                       -0.15,0,0,0.3,-0.15,0,
+                                       -0.15,0,0,0.3,-0.15,0,
+                                       0,0,0,
+                                       0, 1.57,0,1.57,0,0,0,
+                                       0,0,0,0,0,0,0,0,0,0,0,0,
+                                       0,-1.57,0,1.57,0,0,0,
+                                       0,0,0,0,0,0,0,0,0,0,0,0,]).astype(np.float32)
+
+            
             case 'g1_retarget':
                 self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_asap'), pin.JointModelFreeFlyer())
                 self.Tpose = np.array([0,0,0.785,0,0,0,1,
@@ -123,7 +136,7 @@ class RerunURDF():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--file_name', type=str, help="File name", default='dance1_subject2')
-    parser.add_argument('--robot_type', type=str, help="Robot type", default='g1_retarget')
+    parser.add_argument('--robot_type', type=str, help="Robot type", default='g1_inspirehands')
     parser.add_argument('--dataset', type=str, help="dataset", default='LAFAN1')
 
     args = parser.parse_args()

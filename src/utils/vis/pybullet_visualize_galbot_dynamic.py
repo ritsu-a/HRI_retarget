@@ -19,7 +19,6 @@ np.set_printoptions(suppress=True)
 
 if len(sys.argv) != 2:
     print('Call the function with the motion file')
-    # filename = "/home/pengyang/data/motion/galbot/SG/output.pickle"
     filename = os.path.join(DATA_ROOT,"motion/galbot/SG/output.pickle")
 
 else:

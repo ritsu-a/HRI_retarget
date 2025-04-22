@@ -246,7 +246,7 @@ def deploy_low_cmd():
 
 
 
-    with open("/home/pengyang/codebase/H1_RL/output.pickle", "rb") as file:
+    with open("/home/pengyang/codebase/HRI_retarget/output.pickle", "rb") as file:
         joint_angles = pickle.load(file)["angles"]
     print(joint_angles.shape)
     
