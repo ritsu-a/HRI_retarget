@@ -67,10 +67,13 @@ class StretchableChain(Chain):
                         frame_transform = frame_transform @ link_offset_i
 
                     jnt_idx = self.joint_indices[chain_idx]
+                    
 
                     joint_offset_i = self.joint_offsets[chain_idx]
                     if joint_offset_i is not None:
-                        frame_transform = frame_transform @ joint_offset_i * scale[jnt_idx]
+                        joint_offset_i = joint_offset_i.clone() 
+                        joint_offset_i[:,:3,3] *= scale[jnt_idx]
+                        frame_transform = frame_transform @ joint_offset_i
 
                     jnt_type = self.joint_type_indices[chain_idx]
                     if jnt_type == 0:
