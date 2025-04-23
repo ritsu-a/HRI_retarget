@@ -72,6 +72,7 @@ class G1_15_Motion_Model(nn.Module):
         self.global_rot = nn.Parameter(torch.eye(3)[:, :2].to(device), requires_grad=True)
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
+
         urdf_rel_path = "resources/robots/g1_asap/g1_29dof_anneal_15dof.urdf"
         self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
 
@@ -107,7 +108,9 @@ class G1_15_Motion_Model(nn.Module):
         t = self.global_trans.reshape(3, 1).repeat(self.batch_size, 1, 1) # (N_frame, 3, 1)
         root_to_world = torch.cat((torch.cat((R, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
 
-        link_to_root_dict = self.chain.forward_kinematics(self.joint_angles)  # link to root
+        # link_to_root_dict = self.chain.forward_kinematics(self.joint_angles)  # link to root
+        # Modified to changed link length
+        link_to_root_dict = self.chain.forward_kinematics(self.joint_angles, self.joint_scales)  # link to root
         link_to_world_dict = []
         for link_name in self.links:
             T = link_to_root_dict[link_name].get_matrix()  # link to root

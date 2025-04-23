@@ -18,6 +18,7 @@ from model.g1_15 import G1_15_Motion_Model
 from config.joint_mapping import SG_LINKS, SG_G1_CORRESPONDENCE
 
 import matplotlib.pyplot as plt
+from deploy.filter_motion import filter_motion
 
 
 
@@ -33,10 +34,11 @@ rot = torch.tensor([
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:
-        print('Call the function with the BVH file')
-        quit()
-
-    filename = sys.argv[1]
+        print('Call the function with the BVH file. Default:data/motion/human/SG/output.bvh ')
+        filename = os.path.join(DATA_ROOT,"motion/human/SG/output.bvh")
+        #quit()
+    else:
+        filename = sys.argv[1]
     bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=SG_LINKS)
 
    
@@ -104,6 +106,11 @@ if __name__ == "__main__":
         global_rotation = model.global_rot.detach().cpu().numpy()
         global_translation = model.global_trans.detach().cpu().numpy()
         scale = model.scale.detach().cpu().numpy()
+        joint_scale = model.joint_scales.detach().cpu().numpy()
+        
+        # 2025.04.23 Add Filtering to the pred_joint_angles
+        
+    pred_joint_angles = filter_motion(pred_joint_angles)
 
     data_dict = {
         "fps": 60,
@@ -113,7 +120,10 @@ if __name__ == "__main__":
         "global_rotation": global_rotation,
         "global_translation": global_translation,
         "scale": scale,
+        "joint_scale": joint_scale
     }
+    print("Global scale:", scale)
+    print("Global joint scale:", joint_scale)
 
     with open(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)

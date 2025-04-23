@@ -19,6 +19,7 @@ from src.model.g1_inspirehands import G1_Inspirehands_Motion_Model
 from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE
 
 import matplotlib.pyplot as plt
+from deploy.filter_motion import filter_motion
 
 ### magic numbers
 ### transition from sg to galbot
@@ -105,6 +106,8 @@ if __name__ == "__main__":
         global_rotation = model.global_rot.detach().cpu().numpy()
         global_translation = model.global_trans.detach().cpu().numpy()
         scale = model.scale.detach().cpu().numpy()
+        
+    pred_joint_angles = filter_motion(pred_joint_angles)
 
     data_dict = {
         "fps": 120,

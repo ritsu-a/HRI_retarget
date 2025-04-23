@@ -6,9 +6,9 @@
 4. data conversion between motion pkl(ours) & humanml3d npy & SG bvh & ASAP reference motion
 
 ### TODO LIST:
-- add filter_motion into retarget
+- add filter_motion into retarget (fixed!)
 - collision handling for g1_inspirehands
-- fix utils/vis/rerun
+- fix utils/vis/rerun (fixed!)
 - accelerate analytical collision loss 
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
     how to use torch.clamp on nn.parameter?

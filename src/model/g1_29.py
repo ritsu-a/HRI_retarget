@@ -128,7 +128,7 @@ class G1_29_Motion_Model(nn.Module):
         lower_body_root_to_world = torch.cat((torch.cat((R_lower_body, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
         
 
-        link_to_root_dict = self.chain.forward_kinematics(self.joint_angles, self.joint_scales)  # link to root
+        link_to_root_dict = self.chain.forward_kinematics(self.joint_angles, self.joint_scales, self.joint_scales_min, self.joint_scales_max)  # link to root
         link_to_world_dict = []
         for link_name in self.links:
             T = link_to_root_dict[link_name].get_matrix()  # link to root

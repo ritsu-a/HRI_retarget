@@ -19,6 +19,7 @@ from model.g1_29 import G1_29_Motion_Model
 from config.joint_mapping import SMPL_G1_FULLBODY_CORRESPONDENCE
 
 import matplotlib.pyplot as plt
+from deploy.filter_motion import filter_motion
 
 ### magic numbers
 ### transition from sg to galbot
@@ -105,6 +106,9 @@ if __name__ == "__main__":
         global_rotation = model.global_rot.detach().cpu().numpy()
         global_translation = model.global_trans.detach().cpu().numpy()
         scale = model.scale.detach().cpu().numpy()
+        
+    # add motion filtering
+    pred_joint_angles = filter_motion(pred_joint_angles)
 
     data_dict = {
         "fps": 20,
