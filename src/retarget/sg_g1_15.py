@@ -1,6 +1,6 @@
 ### usage:
-### python smpl_g1.py {path_to_npy_file}
-### python smpl_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python sg_g1_15.py {path_to_bvh_file}
+### python src/retarget/sg_g1_15.py data/motion/human/SG/output.bvh
 
 import sys
 import os
@@ -10,14 +10,15 @@ sys.path.append(SRC_ROOT)
 import torch
 from tqdm import tqdm
 import pickle
-
 import numpy as np
 
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
 from model.g1_15 import G1_15_Motion_Model
-from config.joint_mapping import SMPL_G1_CORRESPONDENCE
+from config.joint_mapping import SG_LINKS, SG_G1_CORRESPONDENCE
+
 import matplotlib.pyplot as plt
+
 
 
 ### magic numbers
@@ -29,7 +30,6 @@ rot = torch.tensor([
 ], dtype=torch.float)
 
 
-
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:
@@ -37,14 +37,13 @@ if __name__ == "__main__":
         quit()
 
     filename = sys.argv[1]
-    bvh_joint_local_coord = torch.from_numpy(np.load(filename))
-
+    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=SG_LINKS)
 
    
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
     
-    model = G1_15_Motion_Model(batch_size=num_frames, joint_correspondence=SMPL_G1_CORRESPONDENCE)
+    model = G1_15_Motion_Model(batch_size=num_frames, joint_correspondence=SG_G1_CORRESPONDENCE)
 
 
 
@@ -60,15 +59,16 @@ if __name__ == "__main__":
     history_losses = []
 
     
-    pbar = tqdm(range(2000))
+    pbar = tqdm(range(200))
     for epoch in pbar:
         ### normalize
         with torch.no_grad():
             model.normalize()
+        
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
-        # collision_loss = model.collision_loss()
+        collision_loss = model.collision_loss()
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             "joint_local_velocity_loss": [1.0, joint_local_velocity_loss],
             "joint_local_accel_loss": [0.0, joint_local_accel_loss],
             "dof_limit_loss": [1.0, dof_limit_loss],
-            # "collision_loss": [1.0, collision_loss],
+            "collision_loss": [1.0, collision_loss],
         }
 
         loss = 0
@@ -92,11 +92,11 @@ if __name__ == "__main__":
 
         pbar.set_description(f"loss:, {loss.item()}")
         history_losses.append(loss.item())
-
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-     
+        
+        
 
     with torch.no_grad():
         
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         scale = model.scale.detach().cpu().numpy()
 
     data_dict = {
-        "fps": 20,
+        "fps": 60,
         "reference_motion_pth": filename,
         "robot_name": "g1_15",
         "angles": pred_joint_angles,
@@ -115,11 +115,10 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
-    
+    ### visualize results.
 
-    ### visualize results
     ### draw loss curve
     plt.plot(history_losses, label='Training Loss')
     plt.xlabel('Epoch')
@@ -131,5 +130,4 @@ if __name__ == "__main__":
     
     ### vis motion
     ### press esc to quit plt visualization
-
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="MDM", robot="g1_15", correspondence=SMPL_G1_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SG", filename.split("/")[-1][:-4] + ".pickle"), dataset="SG", robot="g1_15", correspondence=SG_G1_CORRESPONDENCE)

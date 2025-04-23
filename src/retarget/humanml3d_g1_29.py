@@ -1,6 +1,6 @@
 ### usage:
-### python humanml3d_g1.py {path_to_npy_file}
-### python humanml3d_g1.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python humanml3d_g1_29.py {path_to_npy_file}
+### python humanml3d_g1_29.py data/motion/human/HumanML3D/new_joints/000000.npy
 
 import sys
 import os

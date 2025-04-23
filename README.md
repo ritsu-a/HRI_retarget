@@ -6,17 +6,17 @@
 4. data conversion between motion pkl(ours) & humanml3d npy & SG bvh & ASAP reference motion
 
 ### TODO LIST:
-- add filter_motion into retarget
 - collision handling for g1_inspirehands
-- fix utils/vis/rerun
 - accelerate analytical collision loss 
 - change pytorch_kinematics.chain.Chain into utils.motionlib.strechable_chain.Strechable_Chain(follow model/g1_29.py)
     how to use torch.clamp on nn.parameter?
 - online version of retarget
 - humanml3d retarget & joint representation design
+
 - update beat motion pth
-- accel src/utils/vis/bvh_vis.py/Get_bvh_joint_local_coord to support batchwised load
-- rename robot "g1" to "g1_15"
+    how to deal with 1/ 2/ folder?
+- accel src/utils/vis/bvh_vis.py/Get_bvh_joint_local_coord to support batchwised load; loading bvh is too slow!!!
+    seems more difficult than I thought. An experimental version is even slower
 
 - unstable bug:
     change          self.joint_scales_min = 0.7
@@ -74,7 +74,7 @@ visualize dynamic results via pybullet and position pd control:
 
 
 ### for g1:
-    python src/retarget/sg_g1.py data/motion/human/SG/output.bvh
+    python src/retarget/sg_g1_15.py data/motion/human/SG/output.bvh
 
 
     python src/utils/vis/pybullet_visualize_g1_dynamic.py data/motion/g1/SG/output.pickle
@@ -97,7 +97,7 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
 
 ### real deployment pipeline:
 1. retarget to generate the raw motion 
-    src/retarget/sg_g1.py 
+    src/retarget/sg_g1_15.py 
 2. apply clipping and filter of the raw motion
     src/deploy/filter_motion.py #TODO change IO
 3. visualize motion either via pybullet(dynamic) or rerun (kinamatic)

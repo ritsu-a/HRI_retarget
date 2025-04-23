@@ -1,6 +1,6 @@
 ### usage:
-### python beat_g1.py {path_to_npy_file}
-### python beat_g1.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
+### python beat_g1_inspirehands.py {path_to_npy_file}
+### python beat_g1_inspirehands.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
 
 import sys
 import os
@@ -121,18 +121,18 @@ if __name__ == "__main__":
 
     
 
-    ### visualize results.
+    # ### visualize results.
 
-    ### draw loss curve
-    plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Training Loss Curve')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    # ### draw loss curve
+    # plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Loss')
+    # plt.title('Training Loss Curve')
+    # plt.legend()
+    # plt.grid(True)
+    # plt.show()
     
-    ### vis motion
-    ### press esc to quit plt visualization
+    # ### vis motion
+    # ### press esc to quit plt visualization
 
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), dataset="BEAT", robot="g1_inspirehands", correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)
+    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), dataset="BEAT", robot="g1_inspirehands", correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)

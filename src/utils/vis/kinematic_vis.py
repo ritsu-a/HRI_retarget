@@ -146,14 +146,15 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
 
     ### bvh data
     if dataset in ["SG", "SeG", "BEAT"]:
-        match dataset:
-            case "SG":
-                bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
-            case "Seg":
-                bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
-            case "BEAT":
-                ### todo update beat motion pth
-                bvh_path = os.path.join(DATA_ROOT, f"motion/human/BEAT_ZIP/beat_english_v0.2.1/1", filename.split("/")[-1][:-7] + ".bvh")
+        # match dataset:
+        #     case "SG":
+        #         bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+        #     case "Seg":
+        #         bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
+        #     case "BEAT":
+        #         ### todo update beat motion pth
+        #         bvh_path = os.path.join(DATA_ROOT, f"motion/human/BEAT_ZIP/beat_english_v0.2.1/1", filename.split("/")[-1][:-7] + ".bvh")
+        bvh_path = data_dict["reference_motion_pth"]
         
         skeleton_data = ProcessBVH(bvh_path)
         bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
@@ -164,12 +165,13 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
     ### npy data
     elif dataset in ["MDM", "HumanML3D"]:
         ### creating pseudo skeleton for smpl-like joints
-        match dataset:
-            case "MDM":
-                npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
-            case "HumanML3D":
-                npy_path = os.path.join(DATA_ROOT, f"motion/human/HumanML3D/new_joints", filename.split("/")[-1][:-7] + ".npy")
+        # match dataset:
+        #     case "MDM":
+        #         npy_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".npy")
+        #     case "HumanML3D":
+        #         npy_path = os.path.join(DATA_ROOT, f"motion/human/HumanML3D/new_joints", filename.split("/")[-1][:-7] + ".npy")
 
+        npy_path = data_dict["reference_motion_pth"]
         joint_data = np.load(npy_path)
         skeleton_chain = [[0, 2, 5, 8, 11], [0, 1, 4, 7, 10], [0, 3, 6, 9, 12, 15], [9, 14, 17, 19, 21], [9, 13, 16, 18, 20]]
         skeleton = {}
