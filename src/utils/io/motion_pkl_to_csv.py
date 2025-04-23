@@ -39,7 +39,7 @@ def pkl_to_csv(input_path, output_path):
     ### only apply to motion pkl with g1_15 
     with open(input_path, "rb") as file:
         data = joblib.load(file)
-    # print(data.keys())
+    print(data.keys())
     assert data["robot_name"] == "g1_15"
     csv_data = np.zeros((data["angles"].shape[0], 36))
     csv_data[:, :3] = data["global_translation"]
@@ -49,9 +49,11 @@ def pkl_to_csv(input_path, output_path):
 
     for idx in range(15):
         csv_data[:, 7 + G1_29_DOFS.index(G1_15_DOFS[idx])] = data["angles"][:, idx]
+        np.savetxt(output_path, csv_data, delimiter=',', fmt='%.8f')
+    
+    return csv_data
 
     
-    np.savetxt(output_path, csv_data, delimiter=',', fmt='%.8f')
 
 
 

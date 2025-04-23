@@ -1,7 +1,7 @@
-# 2025.04.21 HIT-xiaowangzi
-# (1) Visualize the pickle data in the remote visualizer provided by unitree
-# (2) Detect the collison links by pinocchio library
-# (3) Highlight the collision links in red
+# 2025.04.23 HIt-xiaowangzi
+# (1) 加载我们自己的pickle文件，看一看有没有碰撞的问题
+# (2) 将碰撞结果导出log日志，便于后面排查
+
 
 import argparse
 import numpy as np
@@ -9,14 +9,21 @@ import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 import rerun as rr
 import trimesh
-import os
 import pandas as pd
 from pinocchio import FrameType
 from datetime import datetime
 
+import os
+import sys
+from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
+sys.path.append(SRC_ROOT)
+
 import trimesh.visual
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 from copy import deepcopy
+from utils.io.motion_pkl_to_csv import pkl_to_csv
+
+
 
 urdf_path = os.path.join(DATA_ROOT, 'resources/robots/g1/g1_29dof_rev_1_0.urdf')
 mesh_dir = os.path.join(DATA_ROOT, 'resources/robots/g1/meshes')
@@ -33,6 +40,8 @@ class RerunURDF():
     def __init__(self, robot_type, urdf_path, mesh_dir,srdf_path, Tpose):
         self.name = robot_type
         self.robot = RobotWrapper.BuildFromURDF(urdf_path, mesh_dir, pin.JointModelFreeFlyer())
+
+        # self.robot = RobotWrapper.BuildFromURDF(urdf_path, mesh_dir)
         self.urdf_path = urdf_path
         self.mesh_dir = mesh_dir
         self.Tpose = Tpose
@@ -42,6 +51,7 @@ class RerunURDF():
         
         self.last_collision_set= set()
         self.curr_collision_set = set()
+        
         
         self.link2mesh = self.get_link2mesh()
         self.load_visual_mesh()
@@ -111,7 +121,6 @@ class RerunURDF():
         
         # Load reference configuration
         pin.loadReferenceConfigurations(self.model, self.srdf_path)
-        
         print(f"Total joints in Pinocchio model: {self.model.njoints}")
         for i, joint in enumerate(self.model.joints):
             print(f"Joint {i}: {self.model.names[i]}")
@@ -127,8 +136,11 @@ class RerunURDF():
             frame = self.model.frames[frame_id]
             if frame.type == pin.FrameType.BODY:
                 collision_link_names.add(frame.name)
-        collision_link_names = list(collision_link_names)                   
-        link_num = len(collision_link_names)   
+
+        collision_link_names = list(collision_link_names)
+                     
+        link_num = len(collision_link_names) 
+            
         acm = pd.DataFrame(np.zeros((link_num,link_num)),index = collision_link_names, columns= collision_link_names) 
         for k in range(len(self.geom_model.collisionPairs)):
             cp = self.geom_model.collisionPairs[k]
@@ -200,6 +212,7 @@ class RerunURDF():
         collision_set = set()
         pin.computeCollisions(self.model,self.data,self.geom_model,
                               self.geom_data,configuration,False)
+        # print("2")
         for k in range(len(self.geom_model.collisionPairs)):
             cr = self.geom_data.collisionResults[k]
             cp = self.geom_model.collisionPairs[k]
@@ -235,6 +248,7 @@ class RerunURDF():
 
 
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--file_name', type=str, help="File name", default='dance1_subject2')
@@ -249,8 +263,12 @@ if __name__ == "__main__":
     file_name = args.file_name
     robot_type = args.robot_type
     dataset = args.dataset
-    csv_files = DATA_ROOT+ "/motion" + '/'  + robot_type + '/' + dataset + '/' + file_name + '.csv'
-    data = np.genfromtxt(csv_files, delimiter=',')
+    
+    # input the pickle data
+    data_path = os.path.join(DATA_ROOT,"motion/g1/SG/output.pickle")
+    curr_dir_path = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(curr_dir_path,"log","output.csv")
+    data = pkl_to_csv(data_path,output_path)
 
 
     rerun_urdf = RerunURDF('g1',urdf_path,mesh_dir,srdf_path,Tpose)
