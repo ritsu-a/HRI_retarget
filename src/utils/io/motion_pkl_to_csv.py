@@ -10,8 +10,6 @@ sys.path.append(SRC_ROOT)
 import joblib
 import numpy as np
 import argparse
-from scipy.spatial.transform import Rotation as sRot
-from utils.motion_lib.torch_humanoid_batch import Humanoid_Batch
 import torch
 
 from utils.torch_utils.diff_quat import vec6d_to_quat
@@ -29,6 +27,20 @@ def load_motion_pkl_as_csv_data(input_pkl_path):
             csv_data[:, :3] = data["global_translation"][:, :, 0]
             csv_data[:, 3:7] = vec6d_to_quat(torch.tensor(data['global_rotation'])).numpy()
             csv_data[:, 7:] = data["angles"]
+        case "g1_15":
+            ### csv correspond to g1_29
+            csv_data = np.zeros((data["angles"].shape[0], 36))
+            csv_data[:, :3] = data["global_translation"]
+            csv_data[:, 3:7] = vec6d_to_quat(torch.tensor(data['global_rotation'])).numpy()
+            for idx in range(15):
+                csv_data[:, 7 + G1_29_DOFS.index(G1_15_DOFS[idx])] = data["angles"][:, idx]
+        case "g1_29":
+            csv_data = np.zeros((data["angles"].shape[0], 36))
+            csv_data[:, :3] = data["global_translation"][:, :, 0]
+            csv_data[:, 3:7] = vec6d_to_quat(torch.tensor(data['global_rotation'])).numpy()
+            csv_data[:, 7:] = data["angles"]
+
+   
         case "_":
             print("Undefined robot type: ", robot_name)
             raise ValueError('Invalid robot type')
@@ -36,24 +48,11 @@ def load_motion_pkl_as_csv_data(input_pkl_path):
     return csv_data
 
 def pkl_to_csv(input_path, output_path):
-    ### only apply to motion pkl with g1_15 
-    with open(input_path, "rb") as file:
-        data = joblib.load(file)
-    print(data.keys())
-    assert data["robot_name"] == "g1_15"
-    csv_data = np.zeros((data["angles"].shape[0], 36))
-    csv_data[:, :3] = data["global_translation"]
+    csv_data = load_motion_pkl_as_csv_data(input_path)
 
-
-    csv_data[:, 3:7] = vec6d_to_quat(torch.tensor(data['global_rotation'])).numpy()
-
-    for idx in range(15):
-        csv_data[:, 7 + G1_29_DOFS.index(G1_15_DOFS[idx])] = data["angles"][:, idx]
-        np.savetxt(output_path, csv_data, delimiter=',', fmt='%.8f')
     
+    np.savetxt(output_path, csv_data, delimiter=',', fmt='%.8f')
     return csv_data
-
-    
 
 
 
