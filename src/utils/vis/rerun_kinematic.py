@@ -27,8 +27,9 @@ from datetime import datetime
 
 
 class RerunURDF():
-    def __init__(self, robot_type):
+    def __init__(self, robot_type, enable_log=False):
         self.name = robot_type
+        self.enable_log = enable_log
         match robot_type:
             case 'g1_29':
                 self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/g1_asap/g1_29dof.urdf'), os.path.join(DATA_ROOT,'resources/robots/g1_asap'), pin.JointModelFreeFlyer())
@@ -62,8 +63,8 @@ class RerunURDF():
                 raise ValueError('Invalid robot type')
             
         
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.log_path = os.path.join(SRC_ROOT, "utils/vis/log", timestamp+".txt")
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        self.log_path = os.path.join(ROOT, "log", timestamp + "_" + robot_type + "_collision.txt")
         self.last_collision_set= set()
         self.curr_collision_set = set()
         
@@ -158,8 +159,9 @@ class RerunURDF():
                             vertex_texcoords=None,
                         ),
                         )
-        if len(collision_set) > 0:
-            self.generate_log(self.log_path, frame_nr, collision_set)
+        if self.enable_log:
+            if len(collision_set) > 0:
+                self.generate_log(self.log_path, frame_nr, collision_set)
             
     # merge collision detection code into rerun_kinematic
     
@@ -167,6 +169,7 @@ class RerunURDF():
         # Load model
         self.model = pin.buildModelFromUrdf(self.urdf_path, pin.JointModelFreeFlyer())
         # Load collision geometries
+
         self.geom_model = pin.buildGeomFromUrdf( 
             self.model, self.urdf_path, pin.GeometryType.COLLISION, self.mesh_dir
         )
@@ -186,30 +189,31 @@ class RerunURDF():
         self.data = self.model.createData()
         self.geom_data = pin.GeometryData(self.geom_model)
         
-        # Create a table to visualize collision pairs
-        collision_link_names = set()
-        for geom_obj in self.geom_model.geometryObjects:
-            frame_id = geom_obj.parentFrame
-            frame = self.model.frames[frame_id]
-            if frame.type == pin.FrameType.BODY:
-                collision_link_names.add(frame.name)
-        collision_link_names = list(collision_link_names)                   
-        link_num = len(collision_link_names)   
-        acm = pd.DataFrame(np.zeros((link_num,link_num)),index = collision_link_names, columns= collision_link_names) 
-        for k in range(len(self.geom_model.collisionPairs)):
-            cp = self.geom_model.collisionPairs[k]
+        # # Create a table to visualize collision pairs
+        # if self.enable_log:
+        #     collision_link_names = set()
+        #     for geom_obj in self.geom_model.geometryObjects:
+        #         frame_id = geom_obj.parentFrame
+        #         frame = self.model.frames[frame_id]
+        #         if frame.type == pin.FrameType.BODY:
+        #             collision_link_names.add(frame.name)
+        #     collision_link_names = list(collision_link_names)                   
+        #     link_num = len(collision_link_names)   
+        #     acm = pd.DataFrame(np.zeros((link_num,link_num)),index = collision_link_names, columns= collision_link_names) 
+        #     for k in range(len(self.geom_model.collisionPairs)):
+        #         cp = self.geom_model.collisionPairs[k]
 
-            # 原始 mesh 名称
-            geo1 = self.geom_model.geometryObjects[cp.first]
-            geo2 = self.geom_model.geometryObjects[cp.second]
+        #         # 原始 mesh 名称
+        #         geo1 = self.geom_model.geometryObjects[cp.first]
+        #         geo2 = self.geom_model.geometryObjects[cp.second]
 
-            # 真正的 link 名称（无 _0/_1 后缀）
-            link1 = self.model.frames[geo1.parentFrame].name
-            link2 = self.model.frames[geo2.parentFrame].name 
-            acm[link1][link2] = 1
-            acm[link2][link1] = 1
-            
-        acm.to_excel(os.path.join(SRC_ROOT,"utils","vis","log",self.name+"_acm.xlsx"))
+        #         # 真正的 link 名称（无 _0/_1 后缀）
+        #         link1 = self.model.frames[geo1.parentFrame].name
+        #         link2 = self.model.frames[geo2.parentFrame].name 
+        #         acm[link1][link2] = 1
+        #         acm[link2][link1] = 1
+                
+        #     acm.to_excel(os.path.join(ROOT,"log",self.name+"_acm.xlsx"))
         
     def check_collision(self,configuration):
         collision_set = set()
@@ -241,7 +245,7 @@ class RerunURDF():
         self.last_collision_set = collison_set
         return removed_collision_links,added_collision_links,True
     
-    def generate_log(self,log_path, frame_nr, collision_set):
+    def generate_log(self, log_path, frame_nr, collision_set):
         with open(log_path, 'a') as log_file:
             log_file.write(f"Frame {frame_nr} collision: ", )
             for item in collision_set:
@@ -252,7 +256,7 @@ class RerunURDF():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/BEAT/1_wayne_0_1_1.pickle'))
-    parser.add_argument('--downsample_rate', type=str, help="Downsample rate", default= 4)
+    parser.add_argument('--downsample_rate', type=int, help="Downsample rate", default=4)
 
     args = parser.parse_args()
 

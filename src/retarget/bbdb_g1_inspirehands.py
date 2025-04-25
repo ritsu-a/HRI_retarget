@@ -17,7 +17,7 @@ import numpy as np
 from utils.vis.bvh_vis import Get_bvh_joint_local_coord, Get_bvh_joint_local_coord_parallel
 from utils.vis.kinematic_vis import vis_kinematic_result
 from src.model.g1_inspirehands import G1_Inspirehands_Motion_Model
-from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE
+from config.joint_mapping import BBDB_LINKS, BBDB_G1_INSPIREHANDS_CORRESPONDENCE
 
 import matplotlib.pyplot as plt
 
@@ -33,18 +33,19 @@ rot = torch.tensor([
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print('Call the function with the BVH file')
-        quit()
+    # if len(sys.argv) != 2:
+    #     print('Call the function with the BVH file')
+    #     quit()
 
-    filename = sys.argv[1]
-    bvh_joint_local_coord = Get_bvh_joint_local_coord_parallel(filename, link_list=BEAT_LINKS)
+    # filename = sys.argv[1]
+    filename = os.path.join(DATA_ROOT, "motion/human/misc/suisei_vivideba_motion_.bvh")
+    bvh_joint_local_coord = Get_bvh_joint_local_coord_parallel(filename, link_list=BBDB_LINKS)
 
    
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
     
-    model = G1_Inspirehands_Motion_Model(batch_size=num_frames, joint_correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)
+    model = G1_Inspirehands_Motion_Model(batch_size=num_frames, joint_correspondence=BBDB_G1_INSPIREHANDS_CORRESPONDENCE)
 
 
 
@@ -116,7 +117,7 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/BBDB", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
 
     
@@ -135,4 +136,4 @@ if __name__ == "__main__":
     # ### vis motion
     # ### press esc to quit plt visualization
 
-    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/BEAT", filename.split("/")[-1][:-4] + ".pickle"), dataset="BEAT", robot="g1_inspirehands", correspondence=BEAT_G1_INSPIREHANDS_CORRESPONDENCE)
+    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/BBDB", filename.split("/")[-1][:-4] + ".pickle"), dataset="BBDB", robot="g1_inspirehands", correspondence=BBDB_G1_INSPIREHANDS_CORRESPONDENCE)

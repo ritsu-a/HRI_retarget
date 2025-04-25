@@ -60,8 +60,8 @@ def Rx_par(ang):
     cos = torch.cos(ang)
     sin = torch.sin(ang)
     
-    batch = ang.shape[0]
-    Rx = torch.zeros((batch, 3, 3), device=ang.device, dtype=ang.dtype)
+    batch_size = ang.shape[0]
+    Rx = torch.zeros((batch_size, 3, 3), device=ang.device, dtype=ang.dtype)
     
     Rx[:, 0, 0] = 1
     Rx[:, 1, 1] = cos
@@ -76,8 +76,8 @@ def Ry_par(ang):
     cos = torch.cos(ang)
     sin = torch.sin(ang)
     
-    batch = ang.shape[0]
-    Ry = torch.zeros((batch, 3, 3), device=ang.device, dtype=ang.dtype)
+    batch_size = ang.shape[0]
+    Ry = torch.zeros((batch_size, 3, 3), device=ang.device, dtype=ang.dtype)
     
     Ry[:, 0, 0] = cos
     Ry[:, 0, 2] = sin
@@ -94,8 +94,8 @@ def Rz_par(ang):
     cos = torch.cos(ang)
     sin = torch.sin(ang)
     
-    batch = ang.shape[0]
-    Rz = torch.zeros((batch, 3, 3), device=ang.device, dtype=ang.dtype)
+    batch_size = ang.shape[0]
+    Rz = torch.zeros((batch_size, 3, 3), device=ang.device, dtype=ang.dtype)
     
     Rz[:, 0, 0] = cos
     Rz[:, 0, 1] = -sin
@@ -358,50 +358,6 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
         
     return joints_coord_full / 100
 
-def Get_bvh_joint_local_coord_multi_thread(filename, link_list=SEG_LINKS, max_workers=128):
-    skeleton_data = ProcessBVH(filename)
-
-    joints = skeleton_data[0]
-    print("BVH links: ", joints)
-
-    joints_offsets = skeleton_data[1]
-    joints_hierarchy = skeleton_data[2]
-    root_positions = skeleton_data[3]
-    joints_rotations = skeleton_data[4] #this contains the angles in degrees
-    joints_saved_angles = skeleton_data[5] #this contains channel information. E.g ['Xrotation', 'Yrotation', 'Zrotation']
-
-    frame_joints_rotations = {en:[] for en in joints}
-
-
-    joints_coord_full = torch.zeros(len(joints_rotations), len(link_list), 3)
-
-    print("Loading bvh data ... ")
-    starting_time = time.time()
-
-    def get_joints_coord(idx):
-        frame_data = joints_rotations[idx]
-
-        #fill in the rotations dict
-        joint_index = 0
-        for joint in joints:
-            frame_joints_rotations[joint] = frame_data[joint_index:joint_index+3]
-            joint_index += 3
-
-        #this returns a dictionary of joint positions in local space. This can be saved to file to get the joint positions.
-        local_pos = _calculate_frame_joint_positions_in_local_space(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, joints_hierarchy)
-
-        #calculate world positions
-        # world_pos = _calculate_frame_joint_positions_in_world_space(local_pos, root_positions[i], frame_joints_rotations[joints[0]], joints_saved_angles[joints[0]])
-        
-        joints_coord = []
-        for joint in link_list:
-            joints_coord.append(torch.from_numpy(local_pos[joint]))
-        return torch.stack(joints_coord, dim=0)
-
-
-    joints_coord_full = torch.stack(Parallel(n_jobs=max_workers)(delayed(get_joints_coord)(idx) for idx in range(len(joints_rotations)))).to(dtype=torch.float32)
-    print(f"Elapsed time: {str(timedelta(seconds=time.time() - starting_time)).split('.')[0]}")
-    return joints_coord_full / 100
 
 def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
     # 1. preprocess
@@ -426,6 +382,7 @@ def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
     )
     
     joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
+
     link_indices = [joint_name_to_index[name] for name in link_list]
     return joint_coords_full[:, link_indices, :] / 100
     # return joint_coords_full / 100
@@ -538,16 +495,11 @@ if __name__ == "__main__":
     #     print('Call the function with the BVH file')
     #     quit()
 
-    # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT,"motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
-    # filename = os.path.join(DATA_ROOT,"motion/human/SG/output.bvh")
-    
-    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
-    bvh_joint_local_coord_parallel = Get_bvh_joint_local_coord_parallel(filename, link_list = BEAT_LINKS)
-    
-    print("Ground truth:" ,bvh_joint_local_coord[0])
-    print("Parallel Process: ", bvh_joint_local_coord_parallel[0])
+    filename = sys.argv[1]
+    # filename = os.path.join(DATA_ROOT,"motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
+
     
     skeleton_data = ProcessBVH(filename)
     print(skeleton_data[4].shape)
+    print(skeleton_data[0])
     Draw_bvh(*skeleton_data[:6])
