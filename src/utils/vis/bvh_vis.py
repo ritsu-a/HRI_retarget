@@ -1,6 +1,7 @@
 ### https://github.com/TemugeB/Python_BVH_viewer/blob/main/view_bvh.py
 ### usage: 
 ### python bvh_vis.py {path_to_bvh_file}
+from datetime import timedelta
 import torch
 
 import sys
@@ -15,6 +16,8 @@ from config.joint_mapping import SEG_LINKS
 from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, SG_LINKS
 
 from tqdm import tqdm
+from joblib import Parallel, delayed
+
 import os
 
 #rotation matrices
@@ -309,7 +312,6 @@ def Draw_bvh(joints, joints_offsets, joints_hierarchy, root_positions, joints_ro
         ax.cla()
 
     pass
-
 def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
     skeleton_data = ProcessBVH(filename)
 
@@ -354,6 +356,51 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
             joints_coord.append(torch.from_numpy(local_pos[joint]))
         joints_coord_full[0 + i * frame_skips] = torch.stack(joints_coord, dim=0)
         
+    return joints_coord_full / 100
+
+def Get_bvh_joint_local_coord_multi_thread(filename, link_list=SEG_LINKS, max_workers=128):
+    skeleton_data = ProcessBVH(filename)
+
+    joints = skeleton_data[0]
+    print("BVH links: ", joints)
+
+    joints_offsets = skeleton_data[1]
+    joints_hierarchy = skeleton_data[2]
+    root_positions = skeleton_data[3]
+    joints_rotations = skeleton_data[4] #this contains the angles in degrees
+    joints_saved_angles = skeleton_data[5] #this contains channel information. E.g ['Xrotation', 'Yrotation', 'Zrotation']
+
+    frame_joints_rotations = {en:[] for en in joints}
+
+
+    joints_coord_full = torch.zeros(len(joints_rotations), len(link_list), 3)
+
+    print("Loading bvh data ... ")
+    starting_time = time.time()
+
+    def get_joints_coord(idx):
+        frame_data = joints_rotations[idx]
+
+        #fill in the rotations dict
+        joint_index = 0
+        for joint in joints:
+            frame_joints_rotations[joint] = frame_data[joint_index:joint_index+3]
+            joint_index += 3
+
+        #this returns a dictionary of joint positions in local space. This can be saved to file to get the joint positions.
+        local_pos = _calculate_frame_joint_positions_in_local_space(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, joints_hierarchy)
+
+        #calculate world positions
+        # world_pos = _calculate_frame_joint_positions_in_world_space(local_pos, root_positions[i], frame_joints_rotations[joints[0]], joints_saved_angles[joints[0]])
+        
+        joints_coord = []
+        for joint in link_list:
+            joints_coord.append(torch.from_numpy(local_pos[joint]))
+        return torch.stack(joints_coord, dim=0)
+
+
+    joints_coord_full = torch.stack(Parallel(n_jobs=max_workers)(delayed(get_joints_coord)(idx) for idx in range(len(joints_rotations)))).to(dtype=torch.float32)
+    print(f"Elapsed time: {str(timedelta(seconds=time.time() - starting_time)).split('.')[0]}")
     return joints_coord_full / 100
 
 def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
@@ -501,3 +548,6 @@ if __name__ == "__main__":
     print("Ground truth:" ,bvh_joint_local_coord[0])
     print("Parallel Process: ", bvh_joint_local_coord_parallel[0])
     
+    skeleton_data = ProcessBVH(filename)
+    print(skeleton_data[4].shape)
+    Draw_bvh(*skeleton_data[:6])
