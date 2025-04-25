@@ -247,7 +247,7 @@ SG_GALBOT_CHARLIE_CORRESPONDENCE = [
 
 
 BBDB_G1_INSPIREHANDS_CORRESPONDENCE = [
-    [BBDB_LINKS.index("Hip"), G1_INSPIREHANDS_LINKS.index("pelvis"), 5],
+    [BBDB_LINKS.index("Spine"), G1_INSPIREHANDS_LINKS.index("pelvis"), 5],
     [BBDB_LINKS.index("Head"), G1_INSPIREHANDS_LINKS.index("mid360_link"), 5],
     # [BEAT_LINKS.index("LeftShoulder"), G1_INSPIREHANDS_LINKS.index(""), 1],
     [BBDB_LINKS.index("LeftArm"), G1_INSPIREHANDS_LINKS.index("left_shoulder_roll_link"), 5],
