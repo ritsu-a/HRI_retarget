@@ -12,8 +12,10 @@ sys.path.append(SRC_ROOT)
 
 from utils.io.bvh_io import ProcessBVH
 from config.joint_mapping import SEG_LINKS
+from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, SG_LINKS
 
 from tqdm import tqdm
+import os
 
 #rotation matrices
 def Rx(ang, in_radians = False):
@@ -49,6 +51,57 @@ def Rz(ang, in_radians = False):
     ])
     return Rot_Mat
 
+def Rx_par(ang):
+
+    ang = ang.view(-1) * torch.pi / 180  # Flatten to (batch,)
+    cos = torch.cos(ang)
+    sin = torch.sin(ang)
+    
+    batch = ang.shape[0]
+    Rx = torch.zeros((batch, 3, 3), device=ang.device, dtype=ang.dtype)
+    
+    Rx[:, 0, 0] = 1
+    Rx[:, 1, 1] = cos
+    Rx[:, 1, 2] = -sin
+    Rx[:, 2, 1] = sin
+    Rx[:, 2, 2] = cos
+    
+    return Rx
+
+def Ry_par(ang):
+    ang = ang.view(-1) * torch.pi / 180  # Flatten to (batch,)
+    cos = torch.cos(ang)
+    sin = torch.sin(ang)
+    
+    batch = ang.shape[0]
+    Ry = torch.zeros((batch, 3, 3), device=ang.device, dtype=ang.dtype)
+    
+    Ry[:, 0, 0] = cos
+    Ry[:, 0, 2] = sin
+    Ry[:, 1, 1] = 1
+    Ry[:, 2, 0] = -sin
+    Ry[:, 2, 2] = cos
+    
+    return Ry
+
+def Rz_par(ang):
+    # ang: (batch, 1)
+    # return: (batch, 3, 3)
+    ang = ang.view(-1) * torch.pi / 180 # Flatten to (batch,)
+    cos = torch.cos(ang)
+    sin = torch.sin(ang)
+    
+    batch = ang.shape[0]
+    Rz = torch.zeros((batch, 3, 3), device=ang.device, dtype=ang.dtype)
+    
+    Rz[:, 0, 0] = cos
+    Rz[:, 0, 1] = -sin
+    Rz[:, 1, 0] = sin
+    Rz[:, 1, 1] = cos
+    Rz[:, 2, 2] = 1
+    
+    return Rz
+
 #the rotation matrices need to be chained according to the order in the file
 def _get_rotation_chain(joint_channels, joint_rotations):
 
@@ -67,6 +120,34 @@ def _get_rotation_chain(joint_channels, joint_rotations):
 
         elif chan[0].lower() == 'z':
             Rot_Mat = Rot_Mat @ Rz(joint_rotations[index])
+            order += 'z'
+        index += 1
+    #print(order)
+    return Rot_Mat
+
+def _get_rotation_chain_parallel(joint_channels, joint_rotations):
+    # joint_rotations: (batch * 3)
+    #the rotation matrices are constructed in the order given in the file
+    # Rot_Mat =  np.array([[1,0,0],[0,1,0],[0,0,1]])#identity matrix 3x3
+    batch_size = joint_rotations.shape[0]
+    Rot_Mat = torch.eye(3).unsqueeze(0).repeat(batch_size,1,1)
+    order = ''
+    index = 0
+    for chan in joint_channels: #if file saves xyz ordered rotations, then rotation matrix must be chained as R_x @ R_y @ R_z
+        if chan[0].lower() == 'x':
+            Rot_x = Rx_par(joint_rotations[:,index])
+            # Rot_Mat = Rot_Mat @ Rx(joint_rotations[index])
+            Rot_Mat = torch.bmm(Rot_Mat, Rot_x)
+            order += 'x'
+
+        elif chan[0].lower() == 'y':
+            Rot_y = Ry_par(joint_rotations[:,index])
+            Rot_Mat = torch.bmm(Rot_Mat, Rot_y)
+            order += 'y'
+
+        elif chan[0].lower() == 'z':
+            Rot_z = Rz_par(joint_rotations[:,index])
+            Rot_Mat = torch.bmm(Rot_Mat,Rot_z)
             order += 'z'
         index += 1
     #print(order)
@@ -101,6 +182,56 @@ def _calculate_frame_joint_positions_in_local_space(joints, joints_offsets, fram
             pos = pos + joint_pos
 
         local_positions[joint] = pos
+
+    return local_positions
+
+# 2025.04.24 HIT-xiaowangzi
+# 并行计算local_joint_positions, 其中frame_joints_rotations包含batch维度
+def _calculate_frame_joint_positions_in_local_space_parallel(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, joints_hierarchy):
+
+    batch_num = frame_joints_rotations.shape[0]
+    local_positions = torch.zeros_like(frame_joints_rotations) # (batch * link_num * 3)
+    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
+
+    for joint_ind, joint in enumerate(joints):
+
+        #ignore root joint and set local coordinate to (0,0,0)
+        # if joint == joints[0]:
+        #     local_positions[joint] = np.array([0,0,0])
+        #     continue
+        if joint != joints[0]:
+            connected_joints = joints_hierarchy[joint]
+            connected_joints = connected_joints[::-1]
+            connected_joints.append(joint) #this contains the chain of joints that finally end with the current joint that we want the coordinate of.
+            # Rot = np.eye(3)
+            # pos = np.array([0,0,0])
+            Rot = torch.eye(3).unsqueeze(0).repeat(batch_num,1,1) # (batch *3*3)
+            pos = torch.tensor([0,0,0]).view(1,-1,1).repeat(batch_num, 1, 1) # (batch * 3)
+            for i, con_joint in enumerate(connected_joints):
+                if i == 0:
+                    pass
+                else:
+                    parent_joint = connected_joints[i - 1]
+                    parent_joint_ind = joint_name_to_index[parent_joint]
+                    # parent_joint_ind = joints.index(parent_joint)
+                    # if parent_joint != joints[0]:
+                    # input is batch * 3
+                    
+                    Rot = torch.bmm(Rot,_get_rotation_chain_parallel
+                            (joints_saved_angles[parent_joint], frame_joints_rotations[:,parent_joint_ind,:]))
+                joint_pos = torch.from_numpy(joints_offsets[con_joint]).view(1,-1,1).repeat(batch_num,1,1).type(torch.float32)
+                # print("joint_pos.shape: ", joint_pos.shape)
+                # print("Rot.shape: ", Rot.shape)
+                # joint_pos = Rot @ joint_pos
+                # joint_pos = torch.bmm(Rot, joint_pos) # (batch * 3)
+    
+                joint_pos = torch.bmm(Rot, joint_pos)
+                # print("joint_pos shape: ",joint_pos.shape)
+                # print("pos shape: ",pos.shape)
+                pos = pos + joint_pos
+
+            # local_positions[joint] = pos
+            local_positions[:,joint_ind,:] = pos.squeeze(2)
 
     return local_positions
 
@@ -184,6 +315,7 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
 
     joints = skeleton_data[0]
     print("BVH links: ", joints)
+    print("joint_num: ", len(joints))
 
     joints_offsets = skeleton_data[1]
     joints_hierarchy = skeleton_data[2]
@@ -223,6 +355,35 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
         joints_coord_full[0 + i * frame_skips] = torch.stack(joints_coord, dim=0)
         
     return joints_coord_full / 100
+
+def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
+    # 1. preprocess
+    skeleton_data = ProcessBVH(filename)
+
+    joints = skeleton_data[0]
+    joints_offsets = skeleton_data[1]
+    joints_hierarchy = skeleton_data[2]
+    root_positions = skeleton_data[3]
+    joints_rotations = skeleton_data[4] #this contains the angles in degrees
+    joints_saved_angles = skeleton_data[5]
+    
+    # 2. convert joints_rotations to torch, and reshape it to (batch, link_num,3)
+    frame_skips = 1
+    joints_rotations = joints_rotations[::frame_skips,:]
+    frame_num = joints_rotations.shape[0]
+    joints_rotations_batch = torch.from_numpy(joints_rotations).view([frame_num,-1,3])
+    
+    # 3. send the batch joint rotations to the func
+    joint_coords_full = _calculate_frame_joint_positions_in_local_space_parallel(
+        joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    )
+    
+    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
+    link_indices = [joint_name_to_index[name] for name in link_list]
+    return joint_coords_full[:, link_indices, :] / 100
+    # return joint_coords_full / 100
+    
+    
 
 def Get_bvh_joint_world_coord(filename, link_list=SEG_LINKS):
     skeleton_data = ProcessBVH(filename)
@@ -326,22 +487,17 @@ def Draw_bvh_frame(joints, joints_offsets, joints_hierarchy, root_positions, joi
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print('Call the function with the BVH file')
-        quit()
+    # if len(sys.argv) != 2:
+    #     print('Call the function with the BVH file')
+    #     quit()
 
-    filename = sys.argv[1]
-    skeleton_data = ProcessBVH(filename)
-    print(skeleton_data[4].shape)
-
-    # joints = skeleton_data[0]
-    # joints_offsets = skeleton_data[1]
-    # joints_hierarchy = skeleton_data[2]
-    # root_positions = skeleton_data[3]
-    # joints_rotations = skeleton_data[4] #this contains the angles in degrees
-    # joints_saved_angles = skeleton_data[5] #this contains channel information. E.g ['Xrotation', 'Yrotation', 'Zrotation']
-    # joints_positions = skeleton_data[6]
-    # joints_saved_positions = skeleton_data[7]
-
-    # Draw_bvh(joints, joints_offsets, joints_hierarchy, root_positions, joints_rotations, joints_saved_angles)
-    Draw_bvh(*skeleton_data[:6])
+    # filename = sys.argv[1]
+    filename = os.path.join(DATA_ROOT,"motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
+    # filename = os.path.join(DATA_ROOT,"motion/human/SG/output.bvh")
+    
+    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
+    bvh_joint_local_coord_parallel = Get_bvh_joint_local_coord_parallel(filename, link_list = BEAT_LINKS)
+    
+    print("Ground truth:" ,bvh_joint_local_coord[0])
+    print("Parallel Process: ", bvh_joint_local_coord_parallel[0])
+    

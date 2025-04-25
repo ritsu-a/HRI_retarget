@@ -1,11 +1,12 @@
 ### usage:
 ### python beat_g1_inspirehands.py {path_to_npy_file}
-### python beat_g1_inspirehands.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
+### python src/retarget/beat_g1_inspirehands.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
 
 import sys
 import os
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
+sys.path.append(ROOT)
 
 import torch
 from tqdm import tqdm
@@ -13,7 +14,7 @@ import pickle
 
 import numpy as np
 
-from utils.vis.bvh_vis import Get_bvh_joint_local_coord
+from utils.vis.bvh_vis import Get_bvh_joint_local_coord, Get_bvh_joint_local_coord_parallel
 from utils.vis.kinematic_vis import vis_kinematic_result
 from src.model.g1_inspirehands import G1_Inspirehands_Motion_Model
 from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE
@@ -37,8 +38,8 @@ if __name__ == "__main__":
         quit()
 
     filename = sys.argv[1]
-    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
-
+    # bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
+    bvh_joint_local_coord = Get_bvh_joint_local_coord_parallel(filename, link_list=BEAT_LINKS)
 
    
     num_frames = len(bvh_joint_local_coord)
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 
     history_losses = []
     
-    pbar = tqdm(range(2000))
+    pbar = tqdm(range(200))
     for epoch in pbar:
         
         ### normalize

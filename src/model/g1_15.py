@@ -16,7 +16,7 @@ from utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
 from model.g1_base_model import G1_Base_Motion_Model
 
 
-class G1_15_Motion_Model(G1_Base_Motion_Model)):
+class G1_15_Motion_Model(G1_Base_Motion_Model):
     def __init__(self, batch_size=1, joint_correspondence=SG_G1_CORRESPONDENCE, device="cuda:0"):
         super(G1_15_Motion_Model, self).__init__(batch_size=batch_size, joint_correspondence=joint_correspondence, device=device)
 
