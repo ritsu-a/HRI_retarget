@@ -13,7 +13,7 @@ sys.path.append(SRC_ROOT)
 
 from utils.io.bvh_io import ProcessBVH
 from config.joint_mapping import SEG_LINKS
-from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, SG_LINKS
+from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, SG_LINKS, 
 
 from tqdm import tqdm
 from joblib import Parallel, delayed
@@ -539,11 +539,10 @@ if __name__ == "__main__":
     #     quit()
 
     # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT,"motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
+    filename = os.path.join(DATA_ROOT,"motion/g1/BBDB/suisei_vivideba_motion_.pickle")
     # filename = os.path.join(DATA_ROOT,"motion/human/SG/output.bvh")
     
-    bvh_joint_local_coord = Get_bvh_joint_local_coord(filename, link_list=BEAT_LINKS)
-    bvh_joint_local_coord_parallel = Get_bvh_joint_local_coord_parallel(filename, link_list = BEAT_LINKS)
+    bvh_joint_local_coord_parallel = Get_bvh_joint_local_coord_parallel(filename, link_list = )
     
     print("Ground truth:" ,bvh_joint_local_coord[0])
     print("Parallel Process: ", bvh_joint_local_coord_parallel[0])
