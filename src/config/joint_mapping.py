@@ -1,4 +1,22 @@
 ### dataset link names
+BBDB_LINKS = ['Hip', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 
+              'RightToeBase_end', 'Spine', 'Spine1', 'RightShoulder', 'RightArm', 
+              'RightForeArm', 'RightHand', 'RightHandIndex1', 'RightHandIndex2', 
+              'RightHandIndex3', 'RightHandIndex4', 'RightHandIndex4_end', 'RightHandMiddle1', 
+              'RightHandMiddle2', 'RightHandMiddle3', 'RightHandMiddle4', 'RightHandMiddle4_end', 
+              'RightHandPinky1', 'RightHandPinky2', 'RightHandPinky3', 'RightHandPinky4', 
+              'RightHandPinky4_end', 'RightHandRing1', 'RightHandRing2', 'RightHandRing3', 
+              'RightHandRing4', 'RightHandRing4_end', 'RightHandThumb1', 'RightHandThumb2', 
+              'RightHandThumb3', 'RightHandThumb4', 'RightHandThumb4_end', 'Phy_RightWrist_Root', 
+              'Phy_RightWrist_Root_end', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 
+              'LeftHandIndex1', 'LeftHandIndex2', 'LeftHandIndex3', 'LeftHandIndex4', 'LeftHandIndex4_end', 
+              'LeftHandMiddle1', 'LeftHandMiddle2', 'LeftHandMiddle3', 'LeftHandMiddle4', 'LeftHandMiddle4_end', 
+              'LeftHandPinky1', 'LeftHandPinky2', 'LeftHandPinky3', 'LeftHandPinky4', 'LeftHandPinky4_end', 
+              'LeftHandRing1', 'LeftHandRing2', 'LeftHandRing3', 'LeftHandRing4', 'LeftHandRing4_end', 
+              'LeftHandThumb1', 'LeftHandThumb2', 'LeftHandThumb3', 'LeftHandThumb4', 'LeftHandThumb4_end', 
+              'Phy_LeftWrist_Root', 'Phy_LeftWrist_Root_end', 'Neck', 'Head', 'Root_1', 'Root_1_end', 
+              'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'LeftToeBase_end']
+
 BEAT_LINKS = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Spine3', 'Neck', 
                'Neck1', 'Head', 'HeadEnd', 'RightShoulder', 'RightArm', 
                'RightForeArm', 'RightHand', 'RightHandMiddle1', 'RightHandMiddle2', 
@@ -228,6 +246,58 @@ SG_GALBOT_CHARLIE_CORRESPONDENCE = [
 ]
 
 
+BBDB_G1_INSPIREHANDS_CORRESPONDENCE = [
+    [BBDB_LINKS.index("Spine"), G1_INSPIREHANDS_LINKS.index("pelvis"), 5],
+    [BBDB_LINKS.index("Head"), G1_INSPIREHANDS_LINKS.index("mid360_link"), 5],
+    # [BEAT_LINKS.index("LeftShoulder"), G1_INSPIREHANDS_LINKS.index(""), 1],
+    [BBDB_LINKS.index("LeftArm"), G1_INSPIREHANDS_LINKS.index("left_shoulder_roll_link"), 5],
+    [BBDB_LINKS.index("LeftForeArm"), G1_INSPIREHANDS_LINKS.index("left_elbow_link"), 5],
+    [BBDB_LINKS.index("LeftHand"), G1_INSPIREHANDS_LINKS.index("L_hand_base_link"), 5],
+
+    # [BEAT_LINKS.index("RightShoulder"), G1_INSPIREHANDS_LINKS.index(""), 1],
+    [BBDB_LINKS.index("RightArm"), G1_INSPIREHANDS_LINKS.index("right_shoulder_roll_link"), 5],
+    [BBDB_LINKS.index("RightForeArm"), G1_INSPIREHANDS_LINKS.index("right_elbow_link"), 5],
+    [BBDB_LINKS.index("RightHand"), G1_INSPIREHANDS_LINKS.index("R_hand_base_link"), 5],
+
+
+    [BBDB_LINKS.index("LeftUpLeg"), G1_LINKS.index("left_hip_pitch_link"), 3],
+    [BBDB_LINKS.index("RightUpLeg"), G1_LINKS.index("right_hip_pitch_link"), 3],
+    # [SMPL_LINKS.index("Spine1"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Spine2"), G1_LINKS.index(""), 1],
+    # [SMPL_LINKS.index("Spine3"), G1_LINKS.index(""), 1],  
+    [BBDB_LINKS.index("LeftLeg"), G1_LINKS.index("left_knee_link"), 3],
+    [BBDB_LINKS.index("RightLeg"), G1_LINKS.index("right_knee_link"), 3],
+    [BBDB_LINKS.index("LeftFoot"), G1_LINKS.index("left_ankle_roll_link"), 3],
+    [BBDB_LINKS.index("RightFoot"), G1_LINKS.index("right_ankle_roll_link"), 3],
+
+
+
+    [BBDB_LINKS.index("LeftHandThumb2"), G1_INSPIREHANDS_LINKS.index("L_thumb_intermediate"), 1],
+    [BBDB_LINKS.index("LeftHandThumb3"), G1_INSPIREHANDS_LINKS.index("L_thumb_distal"), 1],
+    [BBDB_LINKS.index("LeftHandIndex2"), G1_INSPIREHANDS_LINKS.index("L_index_proximal"), 1],
+    [BBDB_LINKS.index("LeftHandIndex3"), G1_INSPIREHANDS_LINKS.index("L_index_intermediate"), 1],
+    [BBDB_LINKS.index("LeftHandMiddle2"), G1_INSPIREHANDS_LINKS.index("L_middle_proximal"), 1],
+    [BBDB_LINKS.index("LeftHandMiddle3"), G1_INSPIREHANDS_LINKS.index("L_middle_intermediate"), 1],
+    [BBDB_LINKS.index("LeftHandRing2"), G1_INSPIREHANDS_LINKS.index("L_ring_proximal"), 1],
+    [BBDB_LINKS.index("LeftHandRing3"), G1_INSPIREHANDS_LINKS.index("L_ring_intermediate"), 1],
+    [BBDB_LINKS.index("LeftHandPinky2"), G1_INSPIREHANDS_LINKS.index("L_pinky_proximal"), 1],
+    [BBDB_LINKS.index("LeftHandPinky3"), G1_INSPIREHANDS_LINKS.index("L_pinky_intermediate"), 1],
+
+    [BBDB_LINKS.index("RightHandThumb2"), G1_INSPIREHANDS_LINKS.index("R_thumb_intermediate"), 1],
+    [BBDB_LINKS.index("RightHandThumb3"), G1_INSPIREHANDS_LINKS.index("R_thumb_distal"), 1],
+    [BBDB_LINKS.index("RightHandIndex2"), G1_INSPIREHANDS_LINKS.index("R_index_proximal"), 1],
+    [BBDB_LINKS.index("RightHandIndex3"), G1_INSPIREHANDS_LINKS.index("R_index_intermediate"), 1],
+    [BBDB_LINKS.index("RightHandMiddle2"), G1_INSPIREHANDS_LINKS.index("R_middle_proximal"), 1],
+    [BBDB_LINKS.index("RightHandMiddle3"), G1_INSPIREHANDS_LINKS.index("R_middle_intermediate"), 1],
+    [BBDB_LINKS.index("RightHandRing2"), G1_INSPIREHANDS_LINKS.index("R_ring_proximal"), 1],
+    [BBDB_LINKS.index("RightHandRing3"), G1_INSPIREHANDS_LINKS.index("R_ring_intermediate"), 1],
+    [BBDB_LINKS.index("RightHandPinky2"), G1_INSPIREHANDS_LINKS.index("R_pinky_proximal"), 1],
+    [BBDB_LINKS.index("RightHandPinky3"), G1_INSPIREHANDS_LINKS.index("R_pinky_intermediate"), 1],
+
+   
+]
+
+
 
 BEAT_G1_INSPIREHANDS_CORRESPONDENCE = [
     [BEAT_LINKS.index("Hips"), G1_INSPIREHANDS_LINKS.index("pelvis"), 5],
@@ -257,25 +327,25 @@ BEAT_G1_INSPIREHANDS_CORRESPONDENCE = [
 
     [BEAT_LINKS.index("LeftHandThumb2"), G1_INSPIREHANDS_LINKS.index("L_thumb_intermediate"), 1],
     [BEAT_LINKS.index("LeftHandThumb3"), G1_INSPIREHANDS_LINKS.index("L_thumb_distal"), 1],
-    [BEAT_LINKS.index("LeftHandIndex1"), G1_INSPIREHANDS_LINKS.index("L_index_proximal"), 1],
-    [BEAT_LINKS.index("LeftHandIndex1"), G1_INSPIREHANDS_LINKS.index("L_index_intermediate"), 1],
-    [BEAT_LINKS.index("LeftHandMiddle1"), G1_INSPIREHANDS_LINKS.index("L_middle_proximal"), 1],
-    [BEAT_LINKS.index("LeftHandMiddle1"), G1_INSPIREHANDS_LINKS.index("L_middle_intermediate"), 1],
-    [BEAT_LINKS.index("LeftHandRing1"), G1_INSPIREHANDS_LINKS.index("L_ring_proximal"), 1],
-    [BEAT_LINKS.index("LeftHandRing1"), G1_INSPIREHANDS_LINKS.index("L_ring_intermediate"), 1],
-    [BEAT_LINKS.index("LeftHandPinky1"), G1_INSPIREHANDS_LINKS.index("L_pinky_proximal"), 1],
-    [BEAT_LINKS.index("LeftHandPinky1"), G1_INSPIREHANDS_LINKS.index("L_pinky_intermediate"), 1],
+    [BEAT_LINKS.index("LeftHandIndex2"), G1_INSPIREHANDS_LINKS.index("L_index_proximal"), 1],
+    [BEAT_LINKS.index("LeftHandIndex3"), G1_INSPIREHANDS_LINKS.index("L_index_intermediate"), 1],
+    [BEAT_LINKS.index("LeftHandMiddle2"), G1_INSPIREHANDS_LINKS.index("L_middle_proximal"), 1],
+    [BEAT_LINKS.index("LeftHandMiddle3"), G1_INSPIREHANDS_LINKS.index("L_middle_intermediate"), 1],
+    [BEAT_LINKS.index("LeftHandRing2"), G1_INSPIREHANDS_LINKS.index("L_ring_proximal"), 1],
+    [BEAT_LINKS.index("LeftHandRing3"), G1_INSPIREHANDS_LINKS.index("L_ring_intermediate"), 1],
+    [BEAT_LINKS.index("LeftHandPinky2"), G1_INSPIREHANDS_LINKS.index("L_pinky_proximal"), 1],
+    [BEAT_LINKS.index("LeftHandPinky3"), G1_INSPIREHANDS_LINKS.index("L_pinky_intermediate"), 1],
 
     [BEAT_LINKS.index("RightHandThumb2"), G1_INSPIREHANDS_LINKS.index("R_thumb_intermediate"), 1],
     [BEAT_LINKS.index("RightHandThumb3"), G1_INSPIREHANDS_LINKS.index("R_thumb_distal"), 1],
-    [BEAT_LINKS.index("RightHandIndex1"), G1_INSPIREHANDS_LINKS.index("R_index_proximal"), 1],
-    [BEAT_LINKS.index("RightHandIndex1"), G1_INSPIREHANDS_LINKS.index("R_index_intermediate"), 1],
-    [BEAT_LINKS.index("RightHandMiddle1"), G1_INSPIREHANDS_LINKS.index("R_middle_proximal"), 1],
-    [BEAT_LINKS.index("RightHandMiddle1"), G1_INSPIREHANDS_LINKS.index("R_middle_intermediate"), 1],
-    [BEAT_LINKS.index("RightHandRing1"), G1_INSPIREHANDS_LINKS.index("R_ring_proximal"), 1],
-    [BEAT_LINKS.index("RightHandRing1"), G1_INSPIREHANDS_LINKS.index("R_ring_intermediate"), 1],
-    [BEAT_LINKS.index("RightHandPinky1"), G1_INSPIREHANDS_LINKS.index("R_pinky_proximal"), 1],
-    [BEAT_LINKS.index("RightHandPinky1"), G1_INSPIREHANDS_LINKS.index("R_pinky_intermediate"), 1],
+    [BEAT_LINKS.index("RightHandIndex2"), G1_INSPIREHANDS_LINKS.index("R_index_proximal"), 1],
+    [BEAT_LINKS.index("RightHandIndex3"), G1_INSPIREHANDS_LINKS.index("R_index_intermediate"), 1],
+    [BEAT_LINKS.index("RightHandMiddle2"), G1_INSPIREHANDS_LINKS.index("R_middle_proximal"), 1],
+    [BEAT_LINKS.index("RightHandMiddle3"), G1_INSPIREHANDS_LINKS.index("R_middle_intermediate"), 1],
+    [BEAT_LINKS.index("RightHandRing2"), G1_INSPIREHANDS_LINKS.index("R_ring_proximal"), 1],
+    [BEAT_LINKS.index("RightHandRing3"), G1_INSPIREHANDS_LINKS.index("R_ring_intermediate"), 1],
+    [BEAT_LINKS.index("RightHandPinky2"), G1_INSPIREHANDS_LINKS.index("R_pinky_proximal"), 1],
+    [BEAT_LINKS.index("RightHandPinky3"), G1_INSPIREHANDS_LINKS.index("R_pinky_intermediate"), 1],
 
    
 ]
@@ -354,4 +424,22 @@ SMPL_G1_FULLBODY_CORRESPONDENCE = [
     [SMPL_LINKS.index("R_Wrist"), G1_LINKS.index("right_rubber_hand"), 3],
 
 ]
+
+# Add the links for dex_retargeting
+BBDB_LEFT_HAND_LINK = {
+    "base_link" : BBDB_LINKS.index("LeftHand"),
+    "tip_link" : [ BBDB_LINKS.index('LeftHandThumb4_end'), BBDB_LINKS.index('LeftHandIndex4_end'),
+                  BBDB_LINKS.index('LeftHandMiddle4_end'), BBDB_LINKS.index('LeftHandRing4_end')
+                  , BBDB_LINKS.index('LeftHandPinky4_end'), 
+                  ]
+}
+
+BBDB_RIGHT_HAND_LINK = {
+    "base_link" : BBDB_LINKS.index("RightHand"),
+    "tip_link" : [BBDB_LINKS.index('RightHandThumb4_end'),BBDB_LINKS.index('RightHandIndex4_end'), 
+                  BBDB_LINKS.index('RightHandMiddle4_end'),BBDB_LINKS.index('RightHandRing4_end'),
+                  BBDB_LINKS.index('RightHandPinky4_end')
+                  ]
+}
+
 

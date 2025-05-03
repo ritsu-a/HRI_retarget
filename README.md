@@ -13,11 +13,6 @@
 - online version of retarget
 - humanml3d retarget & joint representation design
 
-- update beat motion pth
-    how to deal with 1/ 2/ folder?
-- accel src/utils/vis/bvh_vis.py/Get_bvh_joint_local_coord to support batchwised load; loading bvh is too slow!!!
-    seems more difficult than I thought. An experimental version is even slower
-
 - unstable bug:
     change          self.joint_scales_min = 0.7
                     self.joint_scales_max = 1.3
@@ -105,6 +100,17 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
     src/utils/vis/pybullet_visualize_g1_dynamic.py  #TODO change IO
 4. deploy on real G1 
     src/deploy/deploy_g1.py
+
+
+### convert fbx to bvh
+blender -b -P src/utils/io/fbx_to_bvh.py
+
+### hand_retarget
+1. pip install dex-retarget
+2. ask HIT-xiaowangzi for inspire_hand_left_virtual.urdf, inspire_hand_right_virtual.urdf, inspire_hand.yml
+   and put them into data/resources/robots/g1_inspirehands
+3. python bbdb_hand_retarget.py
+4. to visualize: python rerun_kinematic.py
 
 
 
