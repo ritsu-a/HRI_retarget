@@ -1,6 +1,6 @@
 ### usage:
 ### python humanml3d_g1_29.py {path_to_npy_file}
-### python humanml3d_g1_29.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python src/retarget/humanml3d_g1_29.py data/motion/human/HumanML3D/new_joints/000000.npy
 
 import sys
 import os
@@ -13,7 +13,6 @@ import pickle
 
 import numpy as np
 
-from utils.vis.bvh_vis import Get_bvh_joint_local_coord
 from utils.vis.kinematic_vis import vis_kinematic_result
 from model.g1_29 import G1_29_Motion_Model
 from config.joint_mapping import SMPL_G1_FULLBODY_CORRESPONDENCE
@@ -59,7 +58,7 @@ if __name__ == "__main__":
 
     history_losses = []
     
-    pbar = tqdm(range(2000))
+    pbar = tqdm(range(200))
     for epoch in pbar:
         
         ### normalize
@@ -116,23 +115,23 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    with open(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
+    with open(os.path.join(DATA_ROOT,"motion/g1/HumanML3D", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)
 
     
 
     ### visualize results.
 
-    ### draw loss curve
-    plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Training Loss Curve')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    # ### draw loss curve
+    # plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Loss')
+    # plt.title('Training Loss Curve')
+    # plt.legend()
+    # plt.grid(True)
+    # plt.show()
     
-    ### vis motion
-    ### press esc to quit plt visualization
+    # ### vis motion
+    # ### press esc to quit plt visualization
 
-    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/SMPL", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
+    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/HumanML3D", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
