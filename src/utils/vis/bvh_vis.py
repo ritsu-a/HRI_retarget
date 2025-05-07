@@ -13,7 +13,8 @@ sys.path.append(SRC_ROOT)
 
 from utils.io.bvh_io import ProcessBVH
 from config.joint_mapping import SEG_LINKS
-from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, SG_LINKS
+from config.joint_mapping import BEAT_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, SG_LINKS, \
+BBDB_G1_INSPIREHANDS_CORRESPONDENCE, BBDB_LINKS
 
 from tqdm import tqdm
 from joblib import Parallel, delayed
@@ -369,6 +370,7 @@ def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
     root_positions = skeleton_data[3]
     joints_rotations = skeleton_data[4] #this contains the angles in degrees
     joints_saved_angles = skeleton_data[5]
+    print("joints: ", joints)
     
     # 2. convert joints_rotations to torch, and reshape it to (batch, link_num,3)
     frame_skips = 1
@@ -380,6 +382,9 @@ def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
     joint_coords_full = _calculate_frame_joint_positions_in_local_space_parallel(
         joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
     )
+    # joint_coords_full, joint_rot_full = _calculate_local_pos_and_Rot(
+    #     joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    # )
     
     joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
 
@@ -484,9 +489,114 @@ def Draw_bvh_frame(joints, joints_offsets, joints_hierarchy, root_positions, joi
     plt.pause(0.001)
 
     ax.cla()
+    
+def Get_bvh_joint_pos_and_Rot(filename, link_list=SG_LINKS):
+    # 1. preprocess
+    skeleton_data = ProcessBVH(filename)
 
+    joints = skeleton_data[0]
+    joints_offsets = skeleton_data[1]
+    joints_hierarchy = skeleton_data[2]
+    root_positions = skeleton_data[3]
+    joints_rotations = skeleton_data[4] #this contains the angles in degrees
+    joints_saved_angles = skeleton_data[5]
+    print("joints: ", joints)
+    
+    # 2. convert joints_rotations to torch, and reshape it to (batch, link_num,3)
+    frame_skips = 1
+    joints_rotations = joints_rotations[::frame_skips,:]
+    frame_num = joints_rotations.shape[0]
+    joints_rotations_batch = torch.from_numpy(joints_rotations).view([frame_num,-1,3])
+    
+    # 3. send the batch joint rotations to the func
+    # joint_coords_full = _calculate_frame_joint_positions_in_local_space_parallel(
+    #     joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    # )
+    joint_coords_full, joint_rot_full = _calculate_local_pos_and_Rot(
+        joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    )
+    
+    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
+
+    link_indices = [joint_name_to_index[name] for name in link_list]
+    return joint_coords_full[:, link_indices, :] / 100, joint_rot_full[:, link_indices, :, :]
+    # return joint_coords_full / 100
     
     
+# 2025.04.28
+# Add: calculate the local position and orientation
+# because we need the transformation from the hand base link to the fingertip
+def _calculate_local_pos_and_Rot(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, joints_hierarchy):
+
+    batch_num = frame_joints_rotations.shape[0]
+    link_num = frame_joints_rotations.shape[1]
+    local_positions = torch.zeros_like(frame_joints_rotations) # (batch * link_num * 3)
+    local_Rotations = torch.eye(3).view(1,1,3,3).repeat(batch_num, link_num, 1, 1)
+    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
+
+    for joint_ind, joint in enumerate(joints):
+
+        if joint != joints[0]:
+            connected_joints = joints_hierarchy[joint]
+            
+            connected_joints = connected_joints[::-1]
+            connected_joints.append(joint) #this contains the chain of joints that finally end with the current joint that we want the coordinate of.
+            # Rot = np.eye(3)
+            # pos = np.array([0,0,0])
+            Rot = torch.eye(3).unsqueeze(0).repeat(batch_num,1,1) # (batch *3*3)
+            pos = torch.tensor([0,0,0]).view(1,-1,1).repeat(batch_num, 1, 1) # (batch * 3)
+            for i, con_joint in enumerate(connected_joints):
+                if i == 0:
+                    pass
+                else:
+                    parent_joint = connected_joints[i - 1]
+                    parent_joint_ind = joint_name_to_index[parent_joint]
+                    # parent_joint_ind = joints.index(parent_joint)
+                    # if parent_joint != joints[0]:
+                    # input is batch * 3
+                    
+                    Rot = torch.bmm(Rot,_get_rotation_chain_parallel
+                            (joints_saved_angles[parent_joint], frame_joints_rotations[:,parent_joint_ind,:]))
+                joint_pos = torch.from_numpy(joints_offsets[con_joint]).view(1,-1,1).repeat(batch_num,1,1).type(torch.float32)
+                
+                # print("joint_pos.shape: ", joint_pos.shape)
+                # print("Rot.shape: ", Rot.shape)
+                # joint_pos = Rot @ joint_pos
+                # joint_pos = torch.bmm(Rot, joint_pos) # (batch * 3)
+    
+                joint_pos = torch.bmm(Rot, joint_pos)
+                # print("joint_pos shape: ",joint_pos.shape)
+                # print("pos shape: ",pos.shape)
+                pos = pos + joint_pos
+                real_Rot = torch.bmm(Rot,_get_rotation_chain_parallel
+                            (joints_saved_angles[joint], frame_joints_rotations[:,joint_ind,:]))
+
+            # local_positions[joint] = pos
+            local_positions[:,joint_ind,:] = pos.squeeze(2)
+            local_Rotations[:,joint_ind,:,:] = real_Rot
+
+    return local_positions, local_Rotations
+
+def calc_relative_transform(local_positions, local_Rotations, id1, id2):
+    """
+    Calculate the batchwise transformation from the id2 to id1
+    """
+    # 1. get the joint ind from the joints list
+    pos1 = local_positions[:,id1,:].unsqueeze(2) # (batch * 3 * 1)
+    Rot1 = local_Rotations[:,id1,:,:] # (batch * 3 * 3)
+    pos2 = local_positions[:,id2,:].unsqueeze(2) # (batch * 3 * 1)
+    Rot2 = local_Rotations[:,id2,:,:] # (batch * 3 * 3)
+    
+    
+    # 2. calculate the relative transform
+    rel_Rot = torch.bmm(Rot1.transpose(1,2), Rot2)
+    # rel_pos = pos1 - torch.bmm(rel_Rot,pos2)
+    # rel_pos = rel_pos.squeeze(2)
+    rel_pos =torch.bmm(Rot1.transpose(1,2),(pos2-pos1))
+    # rel_pos = rel_pos.squeeze(2)
+    
+    return rel_pos, rel_Rot
+ 
     
 
 if __name__ == "__main__":
@@ -495,9 +605,13 @@ if __name__ == "__main__":
     #     print('Call the function with the BVH file')
     #     quit()
 
-    filename = sys.argv[1]
-    # filename = os.path.join(DATA_ROOT,"motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
-
+    # filename = sys.argv[1]
+    filename = os.path.join(DATA_ROOT,"motion/human/misc/suisei_vivideba_motion_.bvh")
+    # filename = os.path.join(DATA_ROOT,"motion/human/SG/output.bvh")
+    
+    bvh_joint_local_coord_parallel = Get_bvh_joint_local_coord_parallel(filename, link_list = BBDB_LINKS)
+    
+    print("Parallel Process: ", bvh_joint_local_coord_parallel[0])
     
     skeleton_data = ProcessBVH(filename)
     print(skeleton_data[4].shape)

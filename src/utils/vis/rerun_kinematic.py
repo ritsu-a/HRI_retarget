@@ -62,7 +62,10 @@ class RerunURDF():
                 print(robot_type)
                 raise ValueError('Invalid robot type')
             
-        
+        print("List all the joints:")
+        for name in self.robot.model.names:
+            print(f'{name}\n')
+        print(self.robot.model.names)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
         self.log_path = os.path.join(ROOT, "log", timestamp + "_" + robot_type + "_collision.txt")
         self.last_collision_set= set()
@@ -73,6 +76,7 @@ class RerunURDF():
         self.init_collision_checking()
         q = pin.neutral(self.robot.model)
         self.update(q)
+ 
     
     def get_link2mesh(self):
         link2mesh = {}
@@ -173,7 +177,6 @@ class RerunURDF():
         self.geom_model = pin.buildGeomFromUrdf( 
             self.model, self.urdf_path, pin.GeometryType.COLLISION, self.mesh_dir
         )
-        
         # Add collisition pairs
         self.geom_model.addAllCollisionPairs()
         print("num collision pairs - initial:", len(self.geom_model.collisionPairs))
@@ -255,8 +258,8 @@ class RerunURDF():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/BEAT/1_wayne_0_1_1.pickle'))
-    parser.add_argument('--downsample_rate', type=int, help="Downsample rate", default=4)
+    parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/BBDB/suisei_vivideba_motion_.pickle'))
+    parser.add_argument('--downsample_rate', type=int, help="Downsample rate", default=1)
 
     args = parser.parse_args()
 
@@ -275,7 +278,7 @@ if __name__ == "__main__":
     csv_data = csv_data[::downsample_rate, :]
     print(csv_data.shape)
 
-    rerun_urdf = RerunURDF(robot_type)
+    rerun_urdf = RerunURDF(robot_type, enable_log=True)
     for frame_nr in range(csv_data.shape[0]):
         rr.set_time_sequence('frame_nr', frame_nr)
         configuration = csv_data[frame_nr, :]
