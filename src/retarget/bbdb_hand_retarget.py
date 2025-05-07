@@ -16,7 +16,7 @@ import pickle
 
 import numpy as np
 
-from utils.vis.bvh_vis import Get_bvh_joint_local_coord, Get_bvh_joint_local_coord_parallel, calc_relative_transform
+from utils.vis.bvh_vis import Get_bvh_joint_pos_and_Rot, calc_relative_transform
 from utils.vis.kinematic_vis import vis_kinematic_result
 from src.model.g1_inspirehands import G1_Inspirehands_Motion_Model
 from config.joint_mapping import BBDB_LINKS, BBDB_G1_INSPIREHANDS_CORRESPONDENCE, \
@@ -29,54 +29,12 @@ from pathlib import Path
 import yaml
 import pandas as pd
 
-
-### magic numbers
-### transition from sg to galbot
-# rot = torch.tensor([
-#     [0, 0, 1],
-#     [1, 0, 0],
-#     [0, 1, 0],
-# ], dtype=torch.float)
-# rot = Rz(np.pi/2,in_radians=True) @ Rx(-np.pi/2,in_radians=True)
-# rot = torch.from_numpy(rot.T).type(torch.float)
-rot = torch.eye(3)
-# left_hand_to_inspire = Rx(np.pi/2,in_radians=True)
-# right_hand_to_inspire = Rz(np.pi,in_radians=True) @ Rx(np.pi/2,in_radians=True)
+# rot = torch.eye(3)
+rot = np.array([[0,-1,0],[1,0,0],[0,0,1]])
 left_hand_to_inspire = np.array([[1,0,0],[0,0,1],[0,-1,0]])
 right_hand_to_inspire = np.array([[-1,0,0],[0,0,1],[0,1,0]])
-
-
 config_file_path = os.path.join(DATA_ROOT, "resources/robots/g1_inspirehands/inspire_hand.yml")
-RetargetingConfig.set_default_urdf_dir(os.path.join(DATA_ROOT,"resources/robots/g1_inspirehands"))
-with Path(config_file_path).open('r') as f:
-    cfg = yaml.safe_load(f)
-left_retargeting_config = RetargetingConfig.from_dict(cfg['left'])
-right_retargeting_config = RetargetingConfig.from_dict(cfg['right'])
-left_retargeting = left_retargeting_config.build()
-right_retargeting = right_retargeting_config.build()
-
-# print("left joint names: ", left_retargeting.joint_names)
-# print("right_joint_names: ", right_retargeting.joint_names)
-
-def fingerpos_clip(qpos):
-    limits = np.array([
-        [-0.1, 1.3], ## L_thumb_proximal_yaw_joint
-        [-0.1, 0.6], ##L_thumb_proximal_pitch_joint
-        [0, 0.8], ##L_thumb_intermediate_joint
-        [0, 1.2], ##L_thumb_distal_joint
-        [0, 1.7], ##L_index_proximal_joint
-        [0, 1.7], ##L_index_intermediate_joint
-        [0, 1.7], ##L_middle_proximal_joint
-        [0, 1.7], ##L_middle_intermediate_joint
-        [0, 1.7], ##L_ring_proximal_joint
-        [0, 1.7], ##L_ring_intermediate_joint
-        [0, 1.7], ##L_pinky_proximal_joint
-        [0, 1.7], ##L_pinky_intermediate_joint
-    ])
-    qpos[qpos < limits[:,0]] = limits[:,0][qpos < limits[:,0]]
-    qpos[qpos > limits[:,1]] = limits[:,1][qpos > limits[:,1]]
-    return qpos
-
+default_urdf_dir = os.path.join(DATA_ROOT,"resources/robots/g1_inspirehands")
 
 if __name__ == "__main__":
 
@@ -86,22 +44,49 @@ if __name__ == "__main__":
 
     # filename = sys.argv[1]
     filename = os.path.join(DATA_ROOT, "motion/human/misc/suisei_vivideba_motion_.bvh")
-    # bvh_joint_local_coord = Get_bvh_joint_local_coord_parallel(filename, link_list=BBDB_LINKS)
-    bvh_joint_local_coord, bvh_joint_local_rot = Get_bvh_joint_local_coord_parallel(filename, link_list = BBDB_LINKS)
+    bvh_joint_local_coord, bvh_joint_local_rot = Get_bvh_joint_pos_and_Rot(filename, link_list = BBDB_LINKS)
 
     num_frames = len(bvh_joint_local_coord)
     print("Num of frames: ", num_frames)
     
     model = G1_Inspirehands_Motion_Model(batch_size=num_frames, joint_correspondence=BBDB_G1_INSPIREHANDS_CORRESPONDENCE)
 
-
-
-    # print(bvh_joint_local_coord.shape)
-
-    model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
+    rot_batch = torch.from_numpy(rot).view(1,3,3).repeat(num_frames,1,1).type(torch.float)
+    model.set_gt_joint_positions(torch.bmm(bvh_joint_local_coord,rot_batch.transpose(1,2)))
+    # model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
-
     
+    # Set the fingertip pos 
+    left_rel_pos = torch.zeros([num_frames,5,3])
+    right_rel_pos = torch.zeros([num_frames, 5,3])
+    left_root_id = BBDB_LEFT_HAND_LINK["base_link"]
+    left_tip_id_list = BBDB_LEFT_HAND_LINK["tip_link"]
+    right_root_id = BBDB_RIGHT_HAND_LINK["base_link"]
+    right_tip_id_list = BBDB_RIGHT_HAND_LINK["tip_link"]
+    left_rot_batch = torch.from_numpy(left_hand_to_inspire).view(1,3,3).repeat(num_frames,1,1).type(torch.float)
+    right_rot_batch = torch.from_numpy(right_hand_to_inspire).view(1,3,3).repeat(num_frames,1,1).type(torch.float)
+        
+    for i,tip_id in enumerate(left_tip_id_list):
+        pos, rot = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot, left_root_id, tip_id)
+        left_rel_pos[:,i,:] = torch.bmm(left_rot_batch,pos).squeeze(2)
+    for i,tip_id in enumerate(right_tip_id_list):
+        pos, rot = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot, right_root_id, tip_id)
+        right_rel_pos[:,i,:] = torch.bmm(right_rot_batch,pos).squeeze(2)
+        
+    model.set_hand_optimizer(config_file_path=config_file_path, default_urdf_dir=default_urdf_dir)
+    model.set_hand_tip_positions(left_rel_pos,right_rel_pos)
+    
+    # Set the hand rotations
+    left_forearm = BBDB_LINKS.index("LeftForeArm")
+    left_hand = BBDB_LINKS.index("LeftHand")
+    right_forearm = BBDB_LINKS.index("RightForeArm")
+    right_hand = BBDB_LINKS.index("RightHand")
+    _ , left_hand_rotations = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot,left_forearm, left_hand)
+    _ , right_hand_rotations = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot,right_forearm, right_hand)
+
+    model.set_hand_rotations(left_hand_rotations, right_hand_rotations)
+    
+
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-2)
     model.train()
 
@@ -145,86 +130,17 @@ if __name__ == "__main__":
         loss.backward()
         optimizer.step()
 
-        
-
+    # 最后统一计算灵巧手的角度  
+    
+    model.refine_hand_angle() 
     with torch.no_grad():
-        
         pred_joint_angles = model.joint_angles.detach().cpu().numpy()
+        pred_joint_angles[:,22:34] = model.left_qpos_list
+        pred_joint_angles[:,41:53] = model.right_qpos_list
         global_rotation = model.global_rot.detach().cpu().numpy()
         global_translation = model.global_trans.detach().cpu().numpy()
         scale = model.scale.detach().cpu().numpy()
         
-    # 2025.04.28 HIT-xiaowangzi 
-    # Second step : refine the hand position using dex-retargeting
-    left_rel_pos = torch.zeros([num_frames,5,3])
-    right_rel_pos = torch.zeros([num_frames, 5,3])
-    left_root_id = BBDB_LEFT_HAND_LINK["base_link"]
-    left_tip_id_list = BBDB_LEFT_HAND_LINK["tip_link"]
-    right_root_id = BBDB_RIGHT_HAND_LINK["base_link"]
-    right_tip_id_list = BBDB_RIGHT_HAND_LINK["tip_link"]
-    left_rot_batch = torch.from_numpy(left_hand_to_inspire).view(1,3,3).repeat(num_frames,1,1).type(torch.float)
-    right_rot_batch = torch.from_numpy(right_hand_to_inspire).view(1,3,3).repeat(num_frames,1,1).type(torch.float)
-        
-    for i,tip_id in enumerate(left_tip_id_list):
-        pos, rot = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot, left_root_id, tip_id)
-        # pos[:,0,:] = -pos[:,0,:]
-        left_rel_pos[:,i,:] = torch.bmm(left_rot_batch,pos).squeeze(2)
-    for i,tip_id in enumerate(right_tip_id_list):
-        pos, rot = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot, right_root_id, tip_id)
-        # pos[:,0,:] = -pos[:,0,:]
-        right_rel_pos[:,i,:] = torch.bmm(right_rot_batch,pos).squeeze(2)
-    
-    left_qpos_list = np.zeros((num_frames,12))
-    right_qpos_list = np.zeros((num_frames,12))
-    left_last_qpos = np.zeros((12,1))
-    right_last_qpos = np.zeros((12,1))
-    for i in range(num_frames):
-        left_ref = left_rel_pos[i,:,:].numpy()
-        right_ref = right_rel_pos[i,:,:].numpy()
-        left_qpos = left_retargeting.retarget(left_ref)
-        right_qpos = right_retargeting.retarget(right_ref)
-        # left_qpos_list[i,:] = left_qpos[[8,9,10,11,0,1,2,3,6,7,4,5]]
-        # right_qpos_list[i,:] = right_qpos
-        pred_joint_angles[i,22:34] = fingerpos_clip(left_qpos[[1,2,3,4,5,6,7,8,9,10,11,12]])
-        pred_joint_angles[i,41:53] = fingerpos_clip(right_qpos[[1,2,3,4,5,6,7,8,9,10,11,12]])
-    # print("left_qpos_list: ", left_qpos_list)
-    # print("left_qpos_list shape: ", left_qpos_list.shape)      
-    # print("right_qpos_list: ", right_qpos_list) 
-    # print("right_qpos_list shape: ", right_qpos_list.shape) 
-    
-    left_df = pd.DataFrame(left_qpos_list)
-    right_df = pd.DataFrame(right_qpos_list)
-    left_ref_df = pd.DataFrame(left_rel_pos.reshape(-1,15))
-    right_ref_df = pd.DataFrame(right_rel_pos.reshape(-1,15))
-    # left_df.columns = ['L_thumb_proximal_yaw_joint', 'L_thumb_proximal_pitch_joint',
-    #                    'L_thumb_intermediate_joint', 'L_thumb_distal_joint',
-    #                    'L_index_proximal_joint', 'L_index_intermediate_joint',
-    #                    'L_middle_proximal_joint', 'L_middle_intermediate_joint',
-    #                    'L_ring_proximal_joint', 'L_ring_intermediate_joint',
-    #                    'L_pinky_proximal_joint', 'L_pinky_intermediate_joint',
-    #                    ]
-    # right_df.columns = ['R_thumb_proximal_yaw_joint', 'R_thumb_proximal_pitch_joint',
-    #                     'R_thumb_intermediate_joint', 'R_thumb_distal_joint',
-    #                     'R_index_proximal_joint', 'R_index_intermediate_joint',
-    #                     'R_middle_proximal_joint', 'R_middle_intermediate_joint',
-    #                     'R_ring_proximal_joint', 'R_ring_intermediate_joint',
-    #                     'R_pinky_proximal_joint', 'R_pinky_intermediate_joint',
-    #                     ]
-    # left_ref_df.columns = ["thumb_x","thumb_y","thumb_z",
-    #                        "index_x","index_y","index_z",
-    #                        "middle_x","middle_y","middle_z",
-    #                        "ring_x","ring_y","ring_z",
-    #                        "pinky_x","pinky_y","pinky_z"]
-    # right_ref_df.columns = ["thumb_x","thumb_y","thumb_z",
-    #                         "index_x","index_y","index_z",
-    #                         "middle_x","middle_y","middle_z",
-    #                         "ring_x","ring_y","ring_z",
-    #                         "pinky_x","pinky_y","pinky_z"]
-    # left_df.to_csv(os.path.join(ROOT,"log","left_finger_joints.csv"))
-    # right_df.to_csv(os.path.join(ROOT,"log","right_finger_joints.csv"))
-    # left_ref_df.to_csv(os.path.join(ROOT,"log","left_fingertip_pos.csv"))
-    # right_ref_df.to_csv(os.path.join(ROOT,"log","right_fingertip_pos.csv"))
-    
 
     data_dict = {
         "fps": 120,
@@ -235,6 +151,7 @@ if __name__ == "__main__":
         "global_translation": global_translation,
         "scale": scale,
     }
+    
 
     with open(os.path.join(DATA_ROOT,"motion/g1/BBDB", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
         pickle.dump(data_dict, file)

@@ -379,17 +379,17 @@ def Get_bvh_joint_local_coord_parallel(filename, link_list=SG_LINKS):
     joints_rotations_batch = torch.from_numpy(joints_rotations).view([frame_num,-1,3])
     
     # 3. send the batch joint rotations to the func
-    # joint_coords_full = _calculate_frame_joint_positions_in_local_space_parallel(
-    #     joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
-    # )
-    joint_coords_full, joint_rot_full = _calculate_local_pos_and_Rot(
+    joint_coords_full = _calculate_frame_joint_positions_in_local_space_parallel(
         joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
     )
+    # joint_coords_full, joint_rot_full = _calculate_local_pos_and_Rot(
+    #     joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    # )
     
     joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
 
     link_indices = [joint_name_to_index[name] for name in link_list]
-    return joint_coords_full[:, link_indices, :] / 100, joint_rot_full[:, link_indices, :, :]
+    return joint_coords_full[:, link_indices, :] / 100
     # return joint_coords_full / 100
     
     
@@ -489,6 +489,38 @@ def Draw_bvh_frame(joints, joints_offsets, joints_hierarchy, root_positions, joi
     plt.pause(0.001)
 
     ax.cla()
+    
+def Get_bvh_joint_pos_and_Rot(filename, link_list=SG_LINKS):
+    # 1. preprocess
+    skeleton_data = ProcessBVH(filename)
+
+    joints = skeleton_data[0]
+    joints_offsets = skeleton_data[1]
+    joints_hierarchy = skeleton_data[2]
+    root_positions = skeleton_data[3]
+    joints_rotations = skeleton_data[4] #this contains the angles in degrees
+    joints_saved_angles = skeleton_data[5]
+    print("joints: ", joints)
+    
+    # 2. convert joints_rotations to torch, and reshape it to (batch, link_num,3)
+    frame_skips = 1
+    joints_rotations = joints_rotations[::frame_skips,:]
+    frame_num = joints_rotations.shape[0]
+    joints_rotations_batch = torch.from_numpy(joints_rotations).view([frame_num,-1,3])
+    
+    # 3. send the batch joint rotations to the func
+    # joint_coords_full = _calculate_frame_joint_positions_in_local_space_parallel(
+    #     joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    # )
+    joint_coords_full, joint_rot_full = _calculate_local_pos_and_Rot(
+        joints, joints_offsets, joints_rotations_batch, joints_saved_angles, joints_hierarchy
+    )
+    
+    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
+
+    link_indices = [joint_name_to_index[name] for name in link_list]
+    return joint_coords_full[:, link_indices, :] / 100, joint_rot_full[:, link_indices, :, :]
+    # return joint_coords_full / 100
     
     
 # 2025.04.28
