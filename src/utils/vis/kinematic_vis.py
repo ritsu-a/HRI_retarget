@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import pytorch_kinematics as pk
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 sys.path.append(SRC_ROOT)
+import textwrap
 
 from config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS, G1_INSPIREHANDS_LINKS, SG_LINKS, SEG_LINKS, SMPL_LINKS, BEAT_LINKS, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
 from utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
@@ -24,6 +25,57 @@ from model.g1_inspirehands import G1_Inspirehands_Motion_Model
 
 from pynput import keyboard
 
+
+def Draw_Motiongpt_bvh(urdf_link_pos, urdf_chain, robot_link=G1_LINKS, text_prompt=""):
+    fig = plt.figure(figsize=(8, 6), dpi=80)
+    ax = fig.add_subplot(111, projection='3d')
+
+    figure_limit = 2 #used to set figure axis limits
+
+    
+    text_prompt = '\n'.join(textwrap.wrap(text_prompt, width=100))
+
+    idx = 0
+
+    # 检测键盘输入esc时退出
+    def on_press(key):
+        if key == keyboard.Key.esc:
+            # 停止监听
+            return False
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+
+    while listener.running:
+        idx += 1
+        i = idx % len(urdf_link_pos) 
+
+        # import ipdb;ipdb.set_trace()
+
+
+        ### visualizeing urdf 
+        frames_to_draw = [robot_link[0]]
+        urdf_pos = urdf_link_pos[i]
+
+        while frames_to_draw != []:
+            link = frames_to_draw[0]
+            frames_to_draw.pop(0)
+            for child_frame in urdf_chain.find_frame(link).children:
+                child_link = child_frame.name 
+                frames_to_draw.append(child_link)
+                ### by default apply rotation on robot frame
+                plt.plot(xs = [-urdf_pos[robot_link.index(link)][0], -urdf_pos[robot_link.index(child_link)][0]],
+                        zs = [-urdf_pos[robot_link.index(link)][1], -urdf_pos[robot_link.index(child_link)][1]],
+                        ys = [urdf_pos[robot_link.index(link)][2], urdf_pos[robot_link.index(child_link)][2]],c = 'red', lw = 2.5)
+
+        #Depending on the file, the axis limits might be too small or too big. Change accordingly.
+        ax.set_axis_off()
+        ax.set_xlim(-0.6*figure_limit, 0.6*figure_limit)
+        ax.set_ylim(-0.6*figure_limit, 0.6*figure_limit)
+        ax.set_zlim(-0.2*figure_limit, 1.*figure_limit)
+        plt.title(text_prompt + '\n' + 'frame: ' + str(i))
+        plt.pause(0.01)
+        ax.cla()
+    pass
 
 
 
@@ -215,6 +267,31 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
 
     Draw_bvh_urdf(bvh_joint_local_coord, skeleton_data, link_to_root_pos, model.chain, reference_link=reference_link, robot_link=robot_link, correspondence=correspondence)
 
+
+def vis_motiongpt_result(filename, robot="g1_29"):
+    
+    link_to_root_pos = np.load(filename)[0]
+    print("link_to_root_pos shape: ", link_to_root_pos.shape)
+    num_frames = link_to_root_pos.shape[0]
+    ### loading robot model 
+    match robot:
+        case "g1_29":
+            model = G1_29_Motion_Model(num_frames)
+            robot_link = G1_LINKS
+        case _:
+            print("wrong robot name in kinematic vis")
+            quit()
+
+    text_prompt_path = filename[:-7] + "in.txt"
+    with open(text_prompt_path, "r") as file:
+        text_prompt = file.read()
+        print("text_prompt: ", text_prompt)
+        
+
+    Draw_Motiongpt_bvh(link_to_root_pos, model.chain, robot_link=robot_link, text_prompt=text_prompt)
+    
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Call the function with the motion file')
@@ -222,7 +299,10 @@ if __name__ == '__main__':
 
     else:
         filename = sys.argv[1]
-    vis_kinematic_result(filename)
+    # vis_kinematic_result(filename)
+
+
+    vis_motiongpt_result(filename)
 
 
 
