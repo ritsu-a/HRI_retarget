@@ -603,7 +603,7 @@ def normalize_vec6d(x: torch.Tensor):  # TODO: Test
     second_col: torch.Tensor = torch.cross(-first_col, last_col, dim=-1)
     second_col: torch.Tensor = second_col / torch.linalg.norm(second_col, dim=-1, keepdims=True)
     
-    first_col: torch.Tensor = first_col / torch.linalg.norm(first_col, dim=-1, keepdims=True)
+    # first_col: torch.Tensor = first_col / torch.linalg.norm(first_col, dim=-1, keepdims=True)
 
     return first_col, second_col, last_col
 
