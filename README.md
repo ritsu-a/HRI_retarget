@@ -34,9 +34,11 @@
 
 # preparation
 write current folder path into bashrc, then
-    git clone git@github.com:ritsu-a/HRI_retarget.git        (dont change name of the git repository)
+    git clone git@github.com:ritsu-a/HRI_retarget.git       
     cd HRI_retarget
     git checkout g1
+    cd HRI_retarget 
+    pip install -e .
 
 
 the environment is tested with cuda12.1 with python=3.10
@@ -45,7 +47,7 @@ the environment is tested with cuda12.1 with python=3.10
 contact pengyang for data
 then create a soft link to HRI_retarget/data
 
-if you come up with issue "cannot import HRI_retarget", please check whether PYTHONPATH contains parent directory of HRI_retarget
+
 
 
     
