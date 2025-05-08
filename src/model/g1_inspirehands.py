@@ -128,13 +128,12 @@ class G1_Inspirehands_Motion_Model(G1_Base_Motion_Model):
 
         return: a tensor contains the global poses of 52 links
         """
-        # R = vec6d_to_matrix(self.global_rot) * self.scale.repeat(self.batch_size, 3, 1) # (N_frame, 3, 3)
-        R = vec6d_to_matrix(self.global_rot)# (N_frame, 3, 3)
+        ### TODO: adjust the place to multiply the scale
+        R = vec6d_to_matrix(self.global_rot) * self.scale.repeat(self.batch_size, 3, 1) # (N_frame, 3, 3)
         t = self.global_trans # (N_frame, 3, 1)
         root_to_world = torch.cat((torch.cat((R, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
         
-        # R_lower_body = vec6d_to_matrix(self.global_rot) * self.scale.repeat(self.batch_size, 3, 1) * self.lower_body_scale.repeat(self.batch_size, 3, 1)# (N_frame, 3, 3)
-        R_lower_body = vec6d_to_matrix(self.global_rot)
+        R_lower_body = vec6d_to_matrix(self.global_rot) * self.scale.repeat(self.batch_size, 3, 1) * self.lower_body_scale.repeat(self.batch_size, 3, 1)# (N_frame, 3, 3)
         lower_body_root_to_world = torch.cat((torch.cat((R_lower_body, t), dim=-1), torch.tensor([0, 0, 0, 1]).reshape(1, 1, 4).repeat(self.batch_size, 1, 1).to(self.device)), dim=1)  # (N_frame, 4, 4)
         
 

@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     # filename = sys.argv[1]
     filename = os.path.join(DATA_ROOT, "motion/human/misc/suisei_vivideba_motion_.bvh")
-    bvh_joint_local_coord,_ = Get_bvh_joint_local_coord_parallel(filename, link_list=BBDB_LINKS)
+    bvh_joint_local_coord = Get_bvh_joint_local_coord_parallel(filename, link_list=BBDB_LINKS)
 
    
     num_frames = len(bvh_joint_local_coord)
