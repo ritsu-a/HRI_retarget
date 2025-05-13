@@ -24,6 +24,7 @@ from src.utils.motion_lib.qpose_denoiser import low_pass_filter, plot_qpose
 from utils.io.motion_pkl_to_csv import load_motion_pkl_as_csv_data
 from config.joint_mapping import G1_INSPIREHANDS_DOFS 
 from datetime import datetime
+from copy import deepcopy
 
 
 class RerunURDF():
@@ -273,7 +274,16 @@ if __name__ == "__main__":
         data = joblib.load(file)
         robot_type = data["robot_name"]
     csv_data = load_motion_pkl_as_csv_data(args.file_name)
+    
+    print("csv_data shape: ", csv_data.shape)
+    csv_data_copy = deepcopy(csv_data)
     csv_data = low_pass_filter(csv_data)
+    
+    # restrain the filter in left wrist and right wrist
+    csv_data[:,26:29] = csv_data_copy[:,26:29]
+    csv_data[:,45:48] = csv_data_copy[:,45:48]
+    
+    
 
     csv_data = csv_data[::downsample_rate, :]
     print(csv_data.shape)

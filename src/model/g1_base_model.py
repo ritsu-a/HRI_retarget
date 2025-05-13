@@ -179,6 +179,7 @@ class G1_Base_Motion_Model(nn.Module):
             loss += (penetrate_dist ** 2).sum(dim=-1).mean()
         
         return loss
+    
 
 
 

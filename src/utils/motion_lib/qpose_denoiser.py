@@ -6,7 +6,7 @@ import os
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
 
 
-def low_pass_filter(data, cutoff_freq=0.1, order=4):
+def low_pass_filter(data, cutoff_freq=0.2, order=4):
     """
     Apply a low-pass Butterworth filter to the data.
     

@@ -9,6 +9,7 @@ import pytorch_kinematics as pk
 from utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from config.joint_mapping import G1_INSPIREHANDS_LINKS, BEAT_G1_INSPIREHANDS_CORRESPONDENCE, G1_LOWERBODY_LINKS
+from config.joint_mapping import BBDB_LEFT_HAND_LINK, BBDB_RIGHT_HAND_LINK
 # from config.joint_mapping import G1_COLLISION_CAPSULE, G1_COLLISION
 ### TODO replace with g1_inspirehand collision
 from HRI_retarget import ROOT,SRC_ROOT,DATA_ROOT
@@ -52,18 +53,18 @@ class G1_Inspirehands_Motion_Model(G1_Base_Motion_Model):
                 [-1.972222054, 1.972222054], ## left_wrist_roll
                 [-1.614429558, 1.614429558], ##left_wrist_pitch
                 [-1.614429558, 1.614429558], ## left_wrist_yaw
-                [0, 1.7], ##L_index_proximal_joint
-                [0, 1.7], ##L_index_intermediate_joint
-                [0, 1.7], ##L_middle_proximal_joint
-                [0, 1.7], ##L_middle_intermediate_joint
-                [0, 1.7], ##L_pinky_proximal_joint
-                [0, 1.7], ##L_pinky_intermediate_joint
-                [0, 1.7], ##L_ring_proximal_joint
-                [0, 1.7], ##L_ring_intermediate_joint
-                [-0.1, 1.3], ## L_thumb_proximal_yaw_joint
-                [-0.1, 0.6], ##L_thumb_proximal_pitch_joint
-                [0, 0.8], ##L_thumb_intermediate_joint
-                [0, 1.2], ##L_thumb_distal_joint
+                [0, 1.7], ##L_index_proximal_joint 22
+                [0, 1.7], ##L_index_intermediate_joint 23
+                [0, 1.7], ##L_middle_proximal_joint 24
+                [0, 1.7], ##L_middle_intermediate_joint 25
+                [0, 1.7], ##L_pinky_proximal_joint 26
+                [0, 1.7], ##L_pinky_intermediate_joint 27
+                [0, 1.7], ##L_ring_proximal_joint 28
+                [0, 1.7], ##L_ring_intermediate_joint 29
+                [-0.1, 1.3], ## L_thumb_proximal_yaw_joint 30
+                [-0.1, 0.6], ##L_thumb_proximal_pitch_joint 31
+                [0, 0.8], ##L_thumb_intermediate_joint 32
+                [0, 1.2], ##L_thumb_distal_joint 33
                 [-3.0892, 2.6704], ## right_shoulder_pitch
                 [-2.2515, 1.5882], ## right_should_roll
                 [-2.618, 2.618], ## right_shoulder_yaw
@@ -71,8 +72,9 @@ class G1_Inspirehands_Motion_Model(G1_Base_Motion_Model):
                 [-1.972222054, 1.972222054], ## right_wrist_roll
                 [-1.614429558, 1.614429558], ## right_wrist_pitch
                 [-1.614429558, 1.614429558], ## right_wrist_yaw
-                [0, 1.7], ##R_index_proximal_joint
-                [0, 1.7], ##R_index_intermediate_joint
+                [0, 1.7], ##R_index_proximal_joint 41
+                [0, 1.7], ##R_index_intermediate_joint 42
+                
                 [0, 1.7], ##R_middle_proximal_joint
                 [0, 1.7], ##R_middle_intermediate_joint
                 [0, 1.7], ##R_pinky_proximal_joint
@@ -232,3 +234,41 @@ class G1_Inspirehands_Motion_Model(G1_Base_Motion_Model):
         qpos[qpos < limits[:,0]] = limits[:,0][qpos < limits[:,0]]
         qpos[qpos > limits[:,1]] = limits[:,1][qpos > limits[:,1]]
         return qpos 
+    
+    # add the constraints for wrist angle
+    def set_hand_rotations_world(self,left_hand_rotations, right_hand_rotations):
+        """
+        hand_rotations:(N_frammes ,3 ,3)
+        the relative rotation from LeftHand to Hip; from RightHand to Hip
+        """
+        self.left_hand_rotations_world = left_hand_rotations.to(self.device)
+        self.right_hand_rotations_world = right_hand_rotations.to(self.device)
+
+    def calc_dist_between_rotations(self,rot1,rot2):
+        """
+        It's a mapping from SO(3)XSO(3)->R+. quantify the distance between two rotations
+        rot1: (N_frames, 3, 3)
+        rot2: (N_frames, 3, 3)
+        return: (N_frames,)
+        """
+        diff_rot = torch.bmm(rot1.transpose(1,2),rot2) # (N_frames, 3, 3)
+        trace = torch.clamp(diff_rot[:,0,0] + diff_rot[:,1,1] + diff_rot[:,2,2], -1.0+1e-6, 3.0-1e-6)
+        angle = torch.acos((trace - 1) / 2.0)
+        # print("angle: ",angle)
+        dist = angle.mean()
+        # print("dist: ",dist)
+        return dist
+    
+    def hand_orientation_loss(self):
+        # extract the orientation of left_hand, right_hand from the kinematic chain
+        left_id = G1_INSPIREHANDS_LINKS.index("L_hand_base_link")
+        right_id = G1_INSPIREHANDS_LINKS.index("R_hand_base_link")
+        pred_link_global = self.forward_kinematics() # (N_frames, 52, 4, 4)
+        loss = 0
+        pred_left_hand_rot = pred_link_global[:,left_id][:,:3,:3]
+        pred_right_hand_rot = pred_link_global[:,right_id][:,:3,:3]
+        
+        left_loss = self.calc_dist_between_rotations(pred_left_hand_rot, self.left_hand_rotations_world)
+        right_loss = self.calc_dist_between_rotations(pred_right_hand_rot, self.right_hand_rotations_world)
+        loss = left_loss + right_loss
+        return loss

@@ -78,14 +78,25 @@ if __name__ == "__main__":
     
     # Set the hand rotations
     left_forearm = BBDB_LINKS.index("LeftForeArm")
-    left_hand = BBDB_LINKS.index("LeftHand")
+    left_hand = BBDB_LINKS.index("Phy_LeftWrist_Root_end")
     right_forearm = BBDB_LINKS.index("RightForeArm")
-    right_hand = BBDB_LINKS.index("RightHand")
+    right_hand = BBDB_LINKS.index("Phy_RightWrist_Root_end")
     _ , left_hand_rotations = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot,left_forearm, left_hand)
     _ , right_hand_rotations = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot,right_forearm, right_hand)
 
     model.set_hand_rotations(left_hand_rotations, right_hand_rotations)
     
+    # Calculate the desired hand orientations from inspire hand to pelvis
+    hip = BBDB_LINKS.index("Hip")
+    # left_wrist = BBDB_LINKS.index("Phy_LeftWrist_Root_end")
+    # right_wrist = BBDB_LINKS.index("Phy_RightWrist_Root_end")
+    left_wrist = BBDB_LINKS.index("Phy_LeftWrist_Root_end")
+    right_wrist = BBDB_LINKS.index("RightHand")
+    _,left_hand_to_hip = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot, hip, left_wrist)
+    _,right_hand_to_hip = calc_relative_transform(bvh_joint_local_coord, bvh_joint_local_rot, hip, right_wrist)
+    left_inspire_to_pelvis = torch.bmm(torch.bmm(rot_batch,left_hand_to_hip),left_rot_batch.transpose(1,2))
+    right_inspire_to_pelvis = torch.bmm(torch.bmm(rot_batch,right_hand_to_hip),right_rot_batch.transpose(1,2))
+    model.set_hand_rotations_world(left_inspire_to_pelvis, right_inspire_to_pelvis)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-2)
     model.train()
@@ -97,21 +108,25 @@ if __name__ == "__main__":
         
         ### normalize
         with torch.no_grad():
+            # model.refine_wrist_angle()
             model.normalize()
     
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
+        hand_orientation_loss = model.hand_orientation_loss()
         # collision_loss = model.collision_loss()
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
+        
 
 
         loss_dict = {
             "joint_global_position_loss": [1.0, joint_global_position_loss],
             "joint_local_velocity_loss": [1.0, joint_local_velocity_loss],
-            "joint_local_accel_loss": [0.0, joint_local_accel_loss],
+            "joint_local_accel_loss": [0.1, joint_local_accel_loss],
             "dof_limit_loss": [1.0, dof_limit_loss],
+            "hand_orientation_loss": [0.3, hand_orientation_loss],
             # "collision_loss": [1.0, collision_loss],
         }
 
@@ -123,6 +138,7 @@ if __name__ == "__main__":
         # pbar.set_description(log_str)  
         # print("dof_limit_loss", dof_limit_loss.item())
         # print("collision_loss", collision_loss.item())
+        print("hand_orientation_loss: ", hand_orientation_loss.item())
 
         pbar.set_description(f"loss:, {loss.item()}")
         history_losses.append(loss.item())
