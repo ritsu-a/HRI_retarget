@@ -271,3 +271,38 @@ class G1_Inspirehands_Motion_Model(G1_Base_Motion_Model):
         right_loss = self.calc_dist_between_rotations(pred_right_hand_rot, self.right_hand_rotations_world)
         loss = left_loss + right_loss
         return loss
+    
+    def copy_qpos_from_bvh(self,left_hand_joints, right_hand_joints):
+        left_qpos = torch.zeros((self.batch_size,12))
+        right_qpos = torch.zeros((self.batch_size,12))
+        
+        left_qpos[:,0] = torch.mean(left_hand_joints["index"],dim = 1)
+        left_qpos[:,1] = torch.mean(left_hand_joints["index"],dim = 1)
+        left_qpos[:,2] = torch.mean(left_hand_joints["middle"],dim = 1)
+        left_qpos[:,3] = torch.mean(left_hand_joints["middle"],dim = 1)
+        left_qpos[:,4] = torch.mean(left_hand_joints["pinky"],dim = 1)
+        left_qpos[:,5] = torch.mean(left_hand_joints["pinky"],dim = 1)
+        left_qpos[:,6] = torch.mean(left_hand_joints["ring"],dim = 1)
+        left_qpos[:,7] = torch.mean(left_hand_joints["ring"],dim = 1)
+        left_qpos[:,8] = left_hand_joints["thumb"][:,0]
+        left_qpos[:,9] = (left_hand_joints["thumb"][:,1] + left_hand_joints["thumb"][:,2]) / 5.0
+        left_qpos[:,10] = left_qpos[:,9] * 1.6
+        left_qpos[:,11] = left_qpos[:,9] * 2.4
+        
+        right_qpos[:,0] = torch.mean(right_hand_joints["index"],dim = 1)
+        right_qpos[:,1] = torch.mean(right_hand_joints["index"],dim = 1)
+        right_qpos[:,2] = torch.mean(right_hand_joints["middle"],dim = 1)
+        right_qpos[:,3] = torch.mean(right_hand_joints["middle"],dim = 1)
+        right_qpos[:,4] = torch.mean(right_hand_joints["pinky"],dim = 1)
+        right_qpos[:,5] = torch.mean(right_hand_joints["pinky"],dim = 1)
+        right_qpos[:,6] = torch.mean(right_hand_joints["ring"],dim = 1)
+        right_qpos[:,7] = torch.mean(right_hand_joints["ring"],dim = 1)
+        right_qpos[:,8] = right_hand_joints["thumb"][:,0]
+        right_qpos[:,9] = (right_hand_joints["thumb"][:,1] + right_hand_joints["thumb"][:,2]) / 5.0
+        right_qpos[:,10] = right_qpos[:,9] * 1.6
+        right_qpos[:,11] = right_qpos[:,9] * 2.4
+        
+        self.left_hand_qpos = left_qpos
+        self.right_hand_qpos = right_qpos
+        
+        

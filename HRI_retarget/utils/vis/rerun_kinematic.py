@@ -67,7 +67,7 @@ class RerunURDF():
             print(f'{name}\n')
         print(self.robot.model.names)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-        self.log_path = os.path.join(ROOT, "log", timestamp + "_" + robot_type + "_collision.txt")
+        self.log_path = os.path.join(ROOT,"..", "log", timestamp + "_" + robot_type + "_collision.txt")
         self.last_collision_set= set()
         self.curr_collision_set = set()
         
@@ -258,7 +258,7 @@ class RerunURDF():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/BBDB/suisei_vivideba_motion_.pickle'))
+    parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/SG_with_hand/049_clip_semantic_results.pickle'))
     parser.add_argument('--downsample_rate', type=int, help="Downsample rate", default=1)
 
     args = parser.parse_args()

@@ -521,6 +521,24 @@ def Get_bvh_joint_pos_and_Rot(filename, link_list=SG_LINKS):
     link_indices = [joint_name_to_index[name] for name in link_list]
     return joint_coords_full[:, link_indices, :] / 100, joint_rot_full[:, link_indices, :, :]
     # return joint_coords_full / 100
+   
+def Get_bvh_joint_angles(filename, link_list=SG_LINKS):
+     # 1. preprocess
+    skeleton_data = ProcessBVH(filename)
+
+    joints = skeleton_data[0]
+    joints_offsets = skeleton_data[1]
+    joints_hierarchy = skeleton_data[2]
+    root_positions = skeleton_data[3]
+    joints_rotations = skeleton_data[4] #this contains the angles in degrees
+    joints_saved_angles = skeleton_data[5]
+    
+    frame_num = joints_rotations.shape[0]
+    joints_rotations_batch = torch.from_numpy(joints_rotations).view([frame_num,-1,3])
+    return joints, joints_rotations_batch
+    
+    
+    
     
     
 # 2025.04.28
