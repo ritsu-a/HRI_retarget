@@ -126,22 +126,40 @@ G1_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_ro
             'left_rubber_hand', 'left_mid_finger_link', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 'right_shoulder_yaw_link', 
             'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 'right_wrist_yaw_link', 'right_rubber_hand', 'right_mid_finger_link']
 
-G1_INSPIREHANDS_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_roll_link', 
-                       'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
-                       'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
-                       'right_ankle_pitch_link', 'right_ankle_roll_link', 'waist_yaw_link', 'waist_roll_link', 
-                       'torso_link', 'logo_link', 'head_link', 'waist_support_link', 'imu_in_torso', 'd435_link', 
-                       'mid360_link', 'left_shoulder_pitch_link', 'left_shoulder_roll_link', 'left_shoulder_yaw_link', 
-                       'left_elbow_link', 'left_wrist_roll_link', 'left_wrist_pitch_link', 'left_wrist_yaw_link', 
-                       'L_hand_base_link', 'L_thumb_proximal_base', 'L_thumb_proximal', 'L_thumb_intermediate', 
-                       'L_thumb_distal', 'L_index_proximal', 'L_index_intermediate', 'L_middle_proximal', 
-                       'L_middle_intermediate', 'L_ring_proximal', 'L_ring_intermediate', 'L_pinky_proximal', 
-                       'L_pinky_intermediate', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 
-                       'right_shoulder_yaw_link', 'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 
-                       'right_wrist_yaw_link', 'R_hand_base_link', 'R_thumb_proximal_base', 'R_thumb_proximal', 
-                       'R_thumb_intermediate', 'R_thumb_distal', 'R_index_proximal', 'R_index_intermediate', 
-                       'R_middle_proximal', 'R_middle_intermediate', 'R_ring_proximal', 'R_ring_intermediate', 
-                       'R_pinky_proximal', 'R_pinky_intermediate', 'imu_in_pelvis']
+# G1_INSPIREHANDS_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_roll_link', 
+#                        'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
+#                        'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
+#                        'right_ankle_pitch_link', 'right_ankle_roll_link', 'waist_yaw_link', 'waist_roll_link', 
+#                        'torso_link', 'logo_link', 'head_link', 'waist_support_link', 'imu_in_torso', 'd435_link', 
+#                        'mid360_link', 'left_shoulder_pitch_link', 'left_shoulder_roll_link', 'left_shoulder_yaw_link', 
+#                        'left_elbow_link', 'left_wrist_roll_link', 'left_wrist_pitch_link', 'left_wrist_yaw_link', 
+#                        'L_hand_base_link', 'L_thumb_proximal_base', 'L_thumb_proximal', 'L_thumb_intermediate', 
+#                        'L_thumb_distal', 'L_index_proximal', 'L_index_intermediate', 'L_middle_proximal', 
+#                        'L_middle_intermediate', 'L_ring_proximal', 'L_ring_intermediate', 'L_pinky_proximal', 
+#                        'L_pinky_intermediate', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 
+#                        'right_shoulder_yaw_link', 'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 
+#                        'right_wrist_yaw_link', 'R_hand_base_link', 'R_thumb_proximal_base', 'R_thumb_proximal', 
+#                        'R_thumb_intermediate', 'R_thumb_distal', 'R_index_proximal', 'R_index_intermediate', 
+#                        'R_middle_proximal', 'R_middle_intermediate', 'R_ring_proximal', 'R_ring_intermediate', 
+#                        'R_pinky_proximal', 'R_pinky_intermediate', 'imu_in_pelvis']
+G1_INSPIREHANDS_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_roll_link',
+                         'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link',
+                         'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link',
+                         'right_ankle_pitch_link', 'right_ankle_roll_link', 'waist_yaw_link', 'waist_roll_link',
+                         'torso_link', 'logo_link', 'head_link', 'waist_support_link', 'imu_in_torso', 'd435_link',
+                         'mid360_link', 'left_shoulder_pitch_link', 'left_shoulder_roll_link', 'left_shoulder_yaw_link',
+                         'left_elbow_link', 'left_wrist_roll_link', 'left_wrist_pitch_link', 'left_wrist_yaw_link', 
+                         'L_hand_base_link', 'L_thumb_proximal_base', 'L_thumb_proximal', 'L_thumb_intermediate',
+                         'L_thumb_distal', 'L_thumb_tip', 'L_index_proximal', 'L_index_intermediate', 'L_index_tip',
+                         'L_middle_proximal', 'L_middle_intermediate', 'L_middle_tip', 'L_ring_proximal',
+                         'L_ring_intermediate', 'L_ring_tip', 'L_pinky_proximal', 'L_pinky_intermediate', 
+                         'L_pinky_tip', 'right_shoulder_pitch_link', 'right_shoulder_roll_link',
+                         'right_shoulder_yaw_link', 'right_elbow_link', 'right_wrist_roll_link', 
+                         'right_wrist_pitch_link', 'right_wrist_yaw_link', 'R_hand_base_link', 'R_thumb_proximal_base', 
+                         'R_thumb_proximal', 'R_thumb_intermediate', 'R_thumb_distal', 'R_thumb_tip',
+                         'R_index_proximal', 'R_index_intermediate', 'R_index_tip', 'R_middle_proximal',
+                         'R_middle_intermediate', 'R_middle_tip', 'R_ring_proximal', 'R_ring_intermediate',
+                         'R_ring_tip', 'R_pinky_proximal', 'R_pinky_intermediate', 'R_pinky_tip', 'imu_in_pelvis']
 
 G1_LOWERBODY_LINKS = [
     'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
@@ -479,6 +497,107 @@ SG_RIGHT_HAND_LINK = {
                   SG_LINKS.index('RightHandPinky3')
                   ]
 }
+
+### 2025.05.14
+# Full self-collision config for G1 robot
+
+G1_INSPIREHANDS_COLLISION_CAPSULE = {
+    ### name: link1, link2, radius
+    # left leg collision group
+    "group1":{
+    "left_thigh": [G1_INSPIREHANDS_LINKS.index("left_hip_roll_link"), G1_INSPIREHANDS_LINKS.index("left_knee_link"), 0.12],
+    "left_lowerleg": [G1_INSPIREHANDS_LINKS.index("left_knee_link"), G1_INSPIREHANDS_LINKS.index("left_ankle_roll_link"), 0.12]},
+    
+    # right leg collision group
+    "group2":{
+    "right_thigh": [G1_INSPIREHANDS_LINKS.index("right_hip_roll_link"), G1_INSPIREHANDS_LINKS.index("right_knee_link"), 0.10],
+    "right_lower_leg": [G1_INSPIREHANDS_LINKS.index("right_knee_link"), G1_INSPIREHANDS_LINKS.index("right_ankle_roll_link"), 0.10]},
+    
+    # left arm collision group
+    "group3":{
+    "left_upperarm":[G1_INSPIREHANDS_LINKS.index("left_shoulder_roll_link"), G1_INSPIREHANDS_LINKS.index("left_elbow_link"), 0.08],
+    "left_lowerarm":[G1_INSPIREHANDS_LINKS.index("left_elbow_link"), G1_INSPIREHANDS_LINKS.index("left_wrist_pitch_link"), 0.08],
+    "left_wrist_2":[G1_INSPIREHANDS_LINKS.index("left_wrist_pitch_link"), G1_INSPIREHANDS_LINKS.index("left_wrist_yaw_link"), 0.06],
+    "left_wrist_3":[G1_INSPIREHANDS_LINKS.index("left_wrist_yaw_link"), G1_INSPIREHANDS_LINKS.index("L_hand_base_link"), 0.06],
+    "left_thumb1":[G1_INSPIREHANDS_LINKS.index("L_thumb_proximal"), G1_INSPIREHANDS_LINKS.index("L_thumb_intermediate"), 0.032*2],
+    "left_thumb2":[G1_INSPIREHANDS_LINKS.index("L_thumb_intermediate"), G1_INSPIREHANDS_LINKS.index("L_thumb_distal"), 0.024*2],
+    "left_thumb3":[G1_INSPIREHANDS_LINKS.index("L_thumb_distal"), G1_INSPIREHANDS_LINKS.index("L_thumb_tip"), 0.020*2],
+    "left_index1":[G1_INSPIREHANDS_LINKS.index("L_index_proximal"), G1_INSPIREHANDS_LINKS.index("L_index_intermediate"), 0.015*2],
+    "left_index2":[G1_INSPIREHANDS_LINKS.index("L_index_intermediate"), G1_INSPIREHANDS_LINKS.index("L_index_tip"), 0.012*2],
+    "left_middle1":[G1_INSPIREHANDS_LINKS.index("L_middle_proximal"), G1_INSPIREHANDS_LINKS.index("L_middle_intermediate"), 0.015*2],
+    "left_middle2":[G1_INSPIREHANDS_LINKS.index("L_middle_intermediate"), G1_INSPIREHANDS_LINKS.index("L_middle_tip"), 0.012*2],
+    "left_ring1":[G1_INSPIREHANDS_LINKS.index("L_ring_proximal"), G1_INSPIREHANDS_LINKS.index("L_ring_intermediate"), 0.015*2],
+    "left_ring2":[G1_INSPIREHANDS_LINKS.index("L_ring_intermediate"), G1_INSPIREHANDS_LINKS.index("L_ring_tip"), 0.012*2],
+    "left_pinky1":[G1_INSPIREHANDS_LINKS.index("L_pinky_proximal"), G1_INSPIREHANDS_LINKS.index("L_pinky_intermediate"), 0.015*2],
+    "left_pinky2":[G1_INSPIREHANDS_LINKS.index("L_pinky_intermediate"), G1_INSPIREHANDS_LINKS.index("L_pinky_tip"), 0.012*2],},
+    
+    # right arm collision group
+    "group4":{
+    "right_upperarm":[G1_INSPIREHANDS_LINKS.index("right_shoulder_roll_link"), G1_INSPIREHANDS_LINKS.index("right_elbow_link"), 0.08],
+    "right_lowerarm":[G1_INSPIREHANDS_LINKS.index("right_elbow_link"), G1_INSPIREHANDS_LINKS.index("right_wrist_pitch_link"), 0.08],
+    "right_wrist_2":[G1_INSPIREHANDS_LINKS.index("right_wrist_pitch_link"), G1_INSPIREHANDS_LINKS.index("right_wrist_yaw_link"), 0.06],
+    "right_wrist_3":[G1_INSPIREHANDS_LINKS.index("right_wrist_yaw_link"), G1_INSPIREHANDS_LINKS.index("R_hand_base_link"), 0.06],
+    "right_thumb1":[G1_INSPIREHANDS_LINKS.index("R_thumb_proximal"), G1_INSPIREHANDS_LINKS.index("R_thumb_intermediate"), 0.032*2],
+    "right_thumb2":[G1_INSPIREHANDS_LINKS.index("R_thumb_intermediate"), G1_INSPIREHANDS_LINKS.index("R_thumb_distal"), 0.024*2],
+    "right_thumb3":[G1_INSPIREHANDS_LINKS.index("R_thumb_distal"), G1_INSPIREHANDS_LINKS.index("R_thumb_tip"), 0.020*2],
+    "right_index1":[G1_INSPIREHANDS_LINKS.index("R_index_proximal"), G1_INSPIREHANDS_LINKS.index("R_index_intermediate"), 0.015*2],
+    "right_index2":[G1_INSPIREHANDS_LINKS.index("R_index_intermediate"), G1_INSPIREHANDS_LINKS.index("R_index_tip"), 0.012*2],
+    "right_middle1":[G1_INSPIREHANDS_LINKS.index("R_middle_proximal"), G1_INSPIREHANDS_LINKS.index("R_middle_intermediate"), 0.015*2],
+    "right_middle2":[G1_INSPIREHANDS_LINKS.index("R_middle_intermediate"), G1_INSPIREHANDS_LINKS.index("R_middle_tip"), 0.012*2],
+    "right_ring1":[G1_INSPIREHANDS_LINKS.index("R_ring_proximal"), G1_INSPIREHANDS_LINKS.index("R_ring_intermediate"), 0.015*2],
+    "right_ring2":[G1_INSPIREHANDS_LINKS.index("R_ring_intermediate"), G1_INSPIREHANDS_LINKS.index("R_ring_tip"), 0.012*2],
+    "right_pinky1":[G1_INSPIREHANDS_LINKS.index("R_pinky_proximal"), G1_INSPIREHANDS_LINKS.index("R_pinky_intermediate"), 0.015*2],
+    "right_pinky2":[G1_INSPIREHANDS_LINKS.index("R_pinky_intermediate"), G1_INSPIREHANDS_LINKS.index("R_pinky_tip"), 0.012*2],},
+
+
+    
+   
+}
+
+G1_INSPIREHANDS_COLLISION_CUBOID = {
+    "torso":[G1_INSPIREHANDS_LINKS.index("waist_support_link"),
+             (-0.07,0.07), # x range
+             (-0.105,0.105), # y range
+             (0,0.33)], # z range
+    "pelvis":[G1_INSPIREHANDS_LINKS.index("pelvis"),
+             (-0.06,0.06), # x range
+             (-0.065,0.065), # y range
+             (-0.15,0)], # z range
+    "Lhand":[G1_INSPIREHANDS_LINKS.index("L_hand_base_link"),
+             (-0.03,0.03), # x range
+             (-0.13,0), # y range
+             (-0.04,0.04)], # z range
+    "Rhand":[G1_INSPIREHANDS_LINKS.index("R_hand_base_link"),
+             (-0.03,0.03), # x range
+             (-0.13,0), # y range
+             (-0.04,0.04)], # z range
+}
+
+G1_INSPIREHANDS_ALLOWED_COLLISION_CFG = {
+    "seg2seg":[
+        ["group1","group2"],
+        ["group1","group3"],
+        ["group1","group4"],
+        ["group2","group3"],
+        ["group2","group4"],
+        ["group3","group4"],
+    ],
+    "seg2cuboid":[
+        ["group3","torso"],
+        ["group3","pelvis"],
+        ["group3","Rhand"],
+        ["group4","torso"],
+        ["group4","pelvis"],
+        ["group4","Lhand"],
+    ]
+    
+}
+
+G1_INSPIREHANDS_COLLISION = [
+    ["left_thigh", "left_hand"],
+    ["right_thigh", "right_hand"],
+    ["left_hand", "right_hand"],
+]
 
 
 

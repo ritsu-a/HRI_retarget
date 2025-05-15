@@ -87,7 +87,7 @@ if __name__ == "__main__":
     #     quit()
 
     # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT, "motion/human/SG/049_clip_semantic_results.bvh")
+    filename = os.path.join(DATA_ROOT, "motion/human/SG/volcengine_394813b9b5eb7174d442b63a7b809463_original_motion.bvh")
     bvh_joint_local_coord, bvh_joint_local_rot = Get_bvh_joint_pos_and_Rot(filename, link_list = SG_LINKS)
     
     # bvh_joint_local_coord = bvh_joint_local_coord[0:100,...]
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
         hand_orientation_loss = model.hand_orientation_loss()
-        # collision_loss = model.collision_loss()
+        collision_loss = model.collision_loss()
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
         
@@ -187,7 +187,7 @@ if __name__ == "__main__":
             "joint_local_accel_loss": [0.3, joint_local_accel_loss],
             "dof_limit_loss": [1.0, dof_limit_loss],
             "hand_orientation_loss": [0.3, hand_orientation_loss],
-            # "collision_loss": [1.0, collision_loss],
+            "collision_loss": [0.1, collision_loss],
         }
 
         loss = 0
@@ -197,8 +197,8 @@ if __name__ == "__main__":
             log_str += f"{loss_name}: {loss_dict[loss_name][0] * loss_dict[loss_name][1].item()}" + "\n"
         # pbar.set_description(log_str)  
         # print("dof_limit_loss", dof_limit_loss.item())
-        # print("collision_loss", collision_loss.item())
-        print("hand_orientation_loss: ", hand_orientation_loss.item())
+        print("collision_loss", collision_loss.item())
+        # print("hand_orientation_loss: ", hand_orientation_loss.item())
 
         pbar.set_description(f"loss:, {loss.item()}")
         history_losses.append(loss.item())

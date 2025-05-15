@@ -258,7 +258,7 @@ class RerunURDF():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/SG_with_hand/049_clip_semantic_results.pickle'))
+    parser.add_argument('--file_name', type=str, help="File name", default=os.path.join(DATA_ROOT,'motion/g1/SG_with_hand/volcengine_394813b9b5eb7174d442b63a7b809463_original_motion.pickle'))
     parser.add_argument('--downsample_rate', type=int, help="Downsample rate", default=1)
 
     args = parser.parse_args()
@@ -279,8 +279,8 @@ if __name__ == "__main__":
     csv_data = low_pass_filter(csv_data)
     
     # restrain the filter in left wrist and right wrist
-    csv_data[:,26:29] = csv_data_copy[:,26:29]
-    csv_data[:,45:48] = csv_data_copy[:,45:48]
+    # csv_data[:,26:29] = csv_data_copy[:,26:29]
+    # csv_data[:,45:48] = csv_data_copy[:,45:48]
     
     
 
