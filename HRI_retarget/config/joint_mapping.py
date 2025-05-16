@@ -482,6 +482,23 @@ BBDB_RIGHT_HAND_LINK = {
                   ]
 }
 
+BEAT_LEFT_HAND_LINK = {
+    "base_link" : BEAT_LINKS.index("LeftHand"),
+    "tip_link" : [ BEAT_LINKS.index('LeftHandThumb3'), BEAT_LINKS.index('LeftHandIndex3'),
+                  BEAT_LINKS.index('LeftHandMiddle3'), BEAT_LINKS.index('LeftHandRing3')
+                  , BEAT_LINKS.index('LeftHandPinky3'), 
+                  ]
+}
+
+BEAT_RIGHT_HAND_LINK = {
+    "base_link" : BEAT_LINKS.index("RightHand"),
+    "tip_link" : [BEAT_LINKS.index('RightHandThumb3'),BEAT_LINKS.index('RightHandIndex3'), 
+                  BEAT_LINKS.index('RightHandMiddle3'),BEAT_LINKS.index('RightHandRing3'),
+                  BEAT_LINKS.index('RightHandPinky3')
+                  ]
+}
+
+
 SG_LEFT_HAND_LINK = {
     "base_link" : SG_LINKS.index("LeftHand"),
     "tip_link" : [ SG_LINKS.index('LeftHandThumb3'), SG_LINKS.index('LeftHandIndex3'),
@@ -497,6 +514,8 @@ SG_RIGHT_HAND_LINK = {
                   SG_LINKS.index('RightHandPinky3')
                   ]
 }
+
+
 
 ### 2025.05.14
 # Full self-collision config for G1 robot

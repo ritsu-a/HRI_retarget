@@ -1,6 +1,6 @@
 ### usage:
 ### python beat_g1_inspirehands.py {path_to_npy_file}
-### python src/retarget/hand_retarget.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
+### python HRI_retarget/retarget/bbdb_hand_retarget.py data/motion/human/misc/bbdb.bvh
 # 2025.05.03
 # retarget body motion + hand motion
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     #     quit()
 
     # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT, "motion/human/misc/suisei_vivideba_motion_.bvh")
+    filename = os.path.join(DATA_ROOT, "motion/human/misc/bbdb.bvh")
     bvh_joint_local_coord, bvh_joint_local_rot = Get_bvh_joint_pos_and_Rot(filename, link_list = BBDB_LINKS)
 
     num_frames = len(bvh_joint_local_coord)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         # pbar.set_description(log_str)  
         # print("dof_limit_loss", dof_limit_loss.item())
         # print("collision_loss", collision_loss.item())
-        print("hand_orientation_loss: ", hand_orientation_loss.item())
+        # print("hand_orientation_loss: ", hand_orientation_loss.item())
 
         pbar.set_description(f"loss:, {loss.item()}")
         history_losses.append(loss.item())
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     
 
-    # ### visualize results.
+    ### visualize results.
 
     # ### draw loss curve
     # plt.plot(history_losses[len(history_losses) // 10:], label='Training Loss')

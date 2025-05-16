@@ -235,7 +235,7 @@ if __name__ == "__main__":
         
 
     data_dict = {
-        "fps": 120,
+        "fps": 60,
         "reference_motion_pth": filename,
         "robot_name": "g1_inspirehands",
         "angles": pred_joint_angles,
