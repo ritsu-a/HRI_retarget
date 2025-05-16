@@ -5,7 +5,7 @@ from scipy import signal
 import os
 
 
-def low_pass_filter(data, cutoff_freq=0.1, order=4):
+def low_pass_filter(data, cutoff_freq=0.2, order=4):
     """
     Apply a low-pass Butterworth filter to the data.
     
