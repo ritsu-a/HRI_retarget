@@ -43,7 +43,7 @@
         write readme, usage of files, or even docs. Keep them updated.
 - online version of retarget
 - rewrite model to use solvers instead of optimization
-    maybe we only need a modified version of ik-solver
+    maybe we only need a modified version of ik-solver (for faster retarget)
 - use different scale parameter for upperbody and lower body
     there is commented experimental code in model/g1_29.py
     but learning on xyz scale of lowerbody will lead to robot foot floating

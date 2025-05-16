@@ -8,7 +8,7 @@ from queue import Queue
 from threading import Thread
 
 # 文件夹路径
-folder_path = os.path.join(DATA_ROOT,"motion/human/BEAT_ZIP/beat_english_v0.2.1")
+folder_path = os.path.join(DATA_ROOT,"motion/human/beat_english_v0.2.1")
 starting_time = time.time()
 
 
@@ -36,15 +36,19 @@ for root, dirs, files in os.walk(folder_path):
             # if result.returncode != 0:
             #     print("Error:", result.stderr)    
             todo_files.append(file_path) 
-            task_queue.put(file_path)
+            task_queue.put((len(todo_files),file_path))
+
+total_num = len(todo_files)
 
 
 def worker(id):
     gpu_id = id % 8
     while not task_queue.empty():
-        file_path = task_queue.get()
+        idx, file_path = task_queue.get()
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+        print("#"*50)
+        print(f"Current Progress: {idx}/{total_num}", f" Elapsed time: {str(timedelta(seconds=time.time() - starting_time)).split('.')[0]}")
         # env["PYTHONPATH"] = os.pathsep.join([os.path.join(ROOT, "src"), os.path.join(ROOT, "utils")])
         try:
             cmd = f"~/miniconda3/envs/retarget/bin/python {os.path.join(ROOT,'retarget/beat_g1_inspirehands.py')} {file_path}"
@@ -70,4 +74,4 @@ threads = [Thread(target=worker, args=(i,)) for i in range(16)]
 for t in threads:
     t.start()
 for t in threads:
-    t.join()    
+    t.join() 
