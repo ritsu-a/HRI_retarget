@@ -1,6 +1,6 @@
 ### usage:
 ### python beat_g1_inspirehands.py {path_to_npy_file}
-### python src/retarget/beat_g1_inspirehands.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
+### python HRI_retarget/retarget/beat_g1_inspirehands.py data/motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh
 
 import sys
 import os

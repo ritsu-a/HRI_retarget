@@ -1,6 +1,6 @@
 ### usage:
 ### python humanml3d_g1_29.py {path_to_npy_file}
-### python src/retarget/humanml3d_g1_29.py data/motion/human/HumanML3D/new_joints/000000.npy
+### python HRI_retarget/retarget/humanml3d_g1_29.py data/motion/human/HumanML3D/new_joints/000000.npy
 
 import sys
 import os
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     history_losses = []
     
-    pbar = tqdm(range(200))
+    pbar = tqdm(range(2000))
     for epoch in pbar:
         
         ### normalize
@@ -134,4 +134,4 @@ if __name__ == "__main__":
     # ### vis motion
     # ### press esc to quit plt visualization
 
-    # vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/HumanML3D", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
+    vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/HumanML3D", filename.split("/")[-1][:-4] + ".pickle"), dataset="HumanML3D", robot="g1_29", correspondence=SMPL_G1_FULLBODY_CORRESPONDENCE)
