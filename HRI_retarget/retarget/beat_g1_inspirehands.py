@@ -30,7 +30,7 @@ import yaml
 import pandas as pd
 
 # rot = torch.eye(3)
-rot = np.array([[0,-1,0],[1,0,0],[0,0,1]])
+rot = np.array([[0,0,1],[1,0,0],[0,1,0]])
 left_hand_to_inspire = np.array([[1,0,0],[0,0,1],[0,-1,0]])
 right_hand_to_inspire = np.array([[-1,0,0],[0,0,1],[0,1,0]])
 config_file_path = os.path.join(DATA_ROOT, "resources/robots/g1_inspirehands/inspire_hand.yml")
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     #     quit()
 
     # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT, "motion/human/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
+    filename = os.path.join(DATA_ROOT, "motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
     bvh_joint_local_coord, bvh_joint_local_rot = Get_bvh_joint_pos_and_Rot(filename, link_list = BEAT_LINKS)
     print(bvh_joint_local_coord.shape)
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
         joint_local_velocity_loss, joint_local_accel_loss = model.joint_local_velocity_loss()
         joint_global_position_loss = model.retarget_joint_loss()
         dof_limit_loss = model.dof_limit_loss()
-        hand_orientation_loss = model.hand_orientation_loss()
+        # hand_orientation_loss = model.hand_orientation_loss()
         # collision_loss = model.collision_loss()
         # init_angle_loss = model.init_angle_loss()
         # elbow_loss = model.elbow_loss()
@@ -181,7 +181,7 @@ if __name__ == "__main__":
             "joint_local_velocity_loss": [1.0, joint_local_velocity_loss],
             "joint_local_accel_loss": [0.1, joint_local_accel_loss],
             "dof_limit_loss": [1.0, dof_limit_loss],
-            "hand_orientation_loss": [0.3, hand_orientation_loss],
+            # "hand_orientation_loss": [0.3, hand_orientation_loss],
             # "collision_loss": [1.0, collision_loss],
         }
 
