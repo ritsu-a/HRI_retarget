@@ -267,6 +267,26 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
     Draw_bvh_urdf(bvh_joint_local_coord, skeleton_data, link_to_root_pos, model.chain, reference_link=reference_link, robot_link=robot_link, correspondence=correspondence)
 
 
+def vis_solami_result(filename, robot='g1_29'):
+    data_dict = np.load(filename, allow_pickle=True)['t2m'].item()
+    link_to_root_pos = data_dict['pred']
+    print("link_to_root_pos shape: ", link_to_root_pos.shape)
+    num_frames = link_to_root_pos.shape[0]
+    ### loading robot model 
+    match robot:
+        case "g1_29":
+            model = G1_29_Motion_Model(num_frames)
+            robot_link = G1_LINKS
+        case _:
+            print("wrong robot name in kinematic vis")
+            quit()
+
+    text_prompt = data_dict['text']
+        
+
+    Draw_Motiongpt_bvh(link_to_root_pos, model.chain, robot_link=robot_link, text_prompt=text_prompt)
+
+
 def vis_motiongpt_result(filename, robot="g1_29"):
     
     link_to_root_pos = np.load(filename)[0]
@@ -301,7 +321,8 @@ if __name__ == '__main__':
     # vis_kinematic_result(filename)
 
 
-    vis_motiongpt_result(filename)
+    # vis_motiongpt_result(filename)
+    vis_solami_result(filename)
 
 
 
