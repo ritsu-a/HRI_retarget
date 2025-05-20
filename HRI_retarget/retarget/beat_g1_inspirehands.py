@@ -83,12 +83,12 @@ LEFT_HAND_JOINTS = {
 
 if __name__ == "__main__":
 
-    # if len(sys.argv) != 2:
-    #     print('Call the function with the BVH file')
-    #     quit()
+    if len(sys.argv) != 2:
+        print('Call the function with the BVH file')
+        quit()
 
-    # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT, "motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
+    filename = sys.argv[1]
+    # filename = os.path.join(DATA_ROOT, "motion/human/BEAT_ZIP/beat_english_v0.2.1/1/1_wayne_0_1_1.bvh")
     bvh_joint_local_coord, bvh_joint_local_rot = Get_bvh_joint_pos_and_Rot(filename, link_list = BEAT_LINKS)
     print(bvh_joint_local_coord.shape)
 
