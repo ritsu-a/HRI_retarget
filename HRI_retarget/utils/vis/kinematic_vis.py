@@ -15,7 +15,7 @@ import pytorch_kinematics as pk
 from HRI_retarget import DATA_ROOT
 import textwrap
 
-from HRI_retarget.config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS, G1_INSPIREHANDS_LINKS, SG_LINKS, SEG_LINKS, SMPL_LINKS, BEAT_LINKS, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
+from HRI_retarget.config.joint_mapping import GALBOT_CHARLIE_LINKS, G1_LINKS, G1_INSPIREHANDS_LINKS, MOTION_CAPTURE_G1_INSPIREHANDS_CORRESPONDENCE, MOTION_CAPTURE_LINKS, SG_LINKS, SEG_LINKS, SMPL_LINKS, BEAT_LINKS, SG_G1_CORRESPONDENCE, SMPL_G1_CORRESPONDENCE
 from HRI_retarget.utils.vis.bvh_vis import Draw_bvh_frame, ProcessBVH, Get_bvh_joint_local_coord
 from HRI_retarget.model.galbot_charlie import Galbot_Charlie_Motion_Model
 from HRI_retarget.model.g1_15 import G1_15_Motion_Model
@@ -191,12 +191,15 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
             reference_link = SMPL_LINKS
         case "BEAT":
             reference_link = BEAT_LINKS
+        case "motion_capture":
+            reference_link = MOTION_CAPTURE_LINKS
+        
 
 
     ### loading bvh data
 
     ### bvh data
-    if dataset in ["SG", "SeG", "BEAT"]:
+    if dataset in ["SG", "SeG", "BEAT", "motion_capture"]:
         # match dataset:
         #     case "SG":
         #         bvh_path = os.path.join(DATA_ROOT, f"motion/human/{dataset}", filename.split("/")[-1][:-7] + ".bvh")
@@ -209,6 +212,8 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
         
         skeleton_data = ProcessBVH(bvh_path)
         bvh_joint_local_coord = Get_bvh_joint_local_coord(bvh_path, link_list=reference_link)
+
+
         num_frames = len(bvh_joint_local_coord)
         print("Num of frames: ", num_frames)
 
@@ -256,7 +261,6 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
             quit()
    
     
-
     model.set_angles(torch.tensor(joints_angle))
     model.set_global_matrix(data_dict)
 
@@ -318,11 +322,11 @@ if __name__ == '__main__':
 
     else:
         filename = sys.argv[1]
-    # vis_kinematic_result(filename)
+    vis_kinematic_result(filename, dataset="motion_capture", robot="g1_inspirehands", correspondence=MOTION_CAPTURE_G1_INSPIREHANDS_CORRESPONDENCE)
 
 
     # vis_motiongpt_result(filename)
-    vis_solami_result(filename)
+    # vis_solami_result(filename)
 
 
 
