@@ -14,7 +14,7 @@ from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from HRI_retarget.config.joint_mapping import G1_LINKS, SG_G1_CORRESPONDENCE
 from HRI_retarget.config.joint_mapping import G1_COLLISION_CAPSULE, G1_COLLISION
-from HRI_retarget import DATA_ROOT
+from HRI_mllm import DATA_ROOT
 from HRI_retarget.utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
 
 from HRI_retarget.collision.segment_dist_lib import calc_seg2seg_dist,calc_point2seg_dist
