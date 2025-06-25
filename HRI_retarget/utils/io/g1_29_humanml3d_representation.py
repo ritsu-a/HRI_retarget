@@ -22,7 +22,7 @@ import os
 from HRI_retarget.model.g1_29 import G1_29_Motion_Model
 from HRI_retarget.config.joint_mapping import G1_LINKS
 from HRI_retarget.utils.motion_lib.quaternion import qbetween_np, qinv_np, qmul_np, qrot_np
-from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_matrix, vec6d_to_quat
+from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_matrix, vec6d_to_quat, quat_to_vec6d
 
 import torch
 from tqdm import tqdm
@@ -206,16 +206,67 @@ def data_pkl_to_vec(data_dict):
     data = np.concatenate([data, local_vel], axis=-1)
     data = np.concatenate([data, feet_l, feet_r], axis=-1)
 
+
     return data
 
-def vec_to_data_pkl(vec):
+def vec_to_data_pkl(vec, fps=20, reference_motion_pth=None, robot_name="g1_29", scale=np.ones(3)):
     """
     Convert the vec representation to data_dict
     :param vec: vec, the vec representation
     :return: data_dict, the data_dict
     """
     ### TODO
-    data_dict = {}
+    seq_len = vec.shape[0]
+    angles = vec[:, 124:124+29]
+
+    ### recover global translation: 
+
+    global_translation = np.zeros((seq_len + 1, 3, 1))
+
+    # 初始位置（假设初始 XZ 为原点）
+    r_velocity = vec[:, 0]
+    l_velocity = vec[:, 1:3]
+    root_y = vec[:, 3]
+    global_translation[0, :, 0] = [0, root_y[0], 0]
+    
+    # 通过积分 l_velocity 恢复 XZ 坐标
+    for t in range(1, seq_len+1):
+        global_translation[t, 0, 0] = global_translation[t-1, 0, 0] + l_velocity[t-1, 0]  # X
+        global_translation[t, 1, 0] = root_y[t-1]                                     # Y
+        global_translation[t, 2, 0] = global_translation[t-1, 2, 0] + l_velocity[t-1, 1]  # Z
+
+    ### recover global rotation:
+    global_rotation = torch.zeros((seq_len+1, 3, 2))
+    
+    # 初始旋转（假设初始朝向 Z+）
+    global_rotation[0, 0, 0] = 1  # 6D 表示的 Z+ 朝向
+    global_rotation[0, 1, 1] = 1  # 6D 表示的 Z+ 朝向
+    
+    # 通过积分 r_velocity 恢复旋转
+    for t in range(1, seq_len+1):
+        # 计算当前帧的旋转四元数（绕 Y 轴）
+        delta_angle = r_velocity[t-1]
+        delta_quat = np.array([0, np.sin(delta_angle/2), 0, np.cos(delta_angle/2)])
+        
+        # 更新全局旋转
+        prev_quat = vec6d_to_quat(global_rotation[t-1])
+        curr_quat = qmul_np(delta_quat, prev_quat.numpy())
+        global_rotation[t] = quat_to_vec6d(torch.from_numpy(curr_quat))
+
+
+    data_dict = {
+        "fps": fps,
+        "reference_motion_pth": reference_motion_pth,
+        "robot_name": robot_name,
+        "angles": angles,
+        "global_rotation": global_rotation[1:].numpy(),
+        "global_translation": global_translation[1:],
+        "scale": scale,
+    }
+
+
+
+    ### rot_data = data_dict["angles"]
     return data_dict
 
 
@@ -230,6 +281,10 @@ if __name__ == "__main__":
         data_dict = pickle.load(file)
 
     vec = data_pkl_to_vec(data_dict)
+
+    data = vec_to_data_pkl(vec)
+
+
     
 
 
