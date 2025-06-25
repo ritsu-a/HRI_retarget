@@ -239,14 +239,13 @@ def vec_to_data_pkl(vec, fps=20, reference_motion_pth=None, robot_name="g1_29", 
     global_rotation = torch.zeros((seq_len+1, 3, 2))
     
     # 初始旋转（假设初始朝向 Z+）
-    global_rotation[0, 0, 0] = 1  # 6D 表示的 Z+ 朝向
-    global_rotation[0, 1, 1] = 1  # 6D 表示的 Z+ 朝向
+    global_rotation[0] = torch.eye(3, dtype=torch.float32)[:, :2]
     
     # 通过积分 r_velocity 恢复旋转
     for t in range(1, seq_len+1):
         # 计算当前帧的旋转四元数（绕 Y 轴）
         delta_angle = r_velocity[t-1]
-        delta_quat = np.array([0, np.sin(delta_angle/2), 0, np.cos(delta_angle/2)])
+        delta_quat = np.array([np.cos(delta_angle/2), 0, np.sin(delta_angle/2), 0])
         
         # 更新全局旋转
         prev_quat = vec6d_to_quat(global_rotation[t-1])
@@ -283,7 +282,7 @@ if __name__ == "__main__":
     vec = data_pkl_to_vec(data_dict)
 
     data = vec_to_data_pkl(vec)
-
+   
 
     
 
