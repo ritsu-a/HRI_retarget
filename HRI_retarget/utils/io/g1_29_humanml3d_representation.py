@@ -21,8 +21,8 @@ import sys
 import os
 from HRI_retarget.model.g1_29 import G1_29_Motion_Model
 from HRI_retarget.config.joint_mapping import G1_LINKS
-from HRI_retarget.utils.motion_lib.quaternion import qbetween_np, qinv_np, qmul_np, qrot_np
-from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_matrix, vec6d_to_quat
+from HRI_retarget.utils.motion_lib.quaternion import qbetween_np, qinv, qinv_np, qmul_np, qrot, qrot_np
+from HRI_retarget.utils.torch_utils.diff_quat import quat_to_matrix, vec6d_to_matrix, vec6d_to_quat, quat_to_vec6d
 
 import torch
 from tqdm import tqdm
@@ -64,12 +64,12 @@ def data_pkl_to_vec(data_dict):
 
 
     link_to_root_dict = model.forward_kinematics()
-    link_to_root_pos = link_to_root_dict[:, :, :3, 3] @ rot
+    link_to_root_pos = link_to_root_dict[:, :, :3, 3]
     local_positions = link_to_root_pos.detach().cpu().numpy()
 
     model.set_global_matrix(data_dict)
     link_to_root_dict = model.forward_kinematics()
-    link_to_root_pos = link_to_root_dict[:, :, :3, 3] @ rot
+    link_to_root_pos = link_to_root_dict[:, :, :3, 3]
     positions = link_to_root_pos.detach().cpu().numpy()
 
     
@@ -78,63 +78,71 @@ def data_pkl_to_vec(data_dict):
 
     ### data normalization from humanml3d motion_representation.ipynb
     '''Put on Floor'''
-    floor_height = positions.min(axis=0).min(axis=0)[1]
-    positions[:, :, 1] -= floor_height
+    floor_height = positions.min(axis=0).min(axis=0)[2]  # Now Z is height
+    positions[:, :, 2] -= floor_height
 
-    local_floor_height = local_positions.min(axis=0).min(axis=0)[1]
-    local_positions[:, :, 1] -= local_floor_height
+    local_floor_height = local_positions.min(axis=0).min(axis=0)[2]
+    local_positions[:, :, 2] -= local_floor_height
 
-
-    '''XZ at origin'''
+    '''XY at origin'''  # Now we work in XY plane (Z is up)
     root_pos_init = positions[0]
-    root_pose_init_xz = root_pos_init[0] * np.array([1, 0, 1])
-    positions = positions - root_pose_init_xz
+    root_pose_init_xy = root_pos_init[0] * np.array([1, 1, 0])
+    positions = positions - root_pose_init_xy
 
     local_root_pos_init = local_positions[0]
-    local_root_pose_init_xz = local_root_pos_init[0] * np.array([1, 0, 1])
-    local_positions = local_positions - local_root_pose_init_xz
+    local_root_pose_init_xy = local_root_pos_init[0] * np.array([1, 1, 0])
+    local_positions = local_positions - local_root_pose_init_xy
 
-    '''All initially face Z+'''
+    '''All initially face X+'''
     r_hip, l_hip, sdr_r, sdr_l = [G1_LINKS.index(link) for link in ["right_hip_pitch_link", "left_hip_pitch_link", "right_shoulder_pitch_link", "left_shoulder_pitch_link"]]
     across1 = root_pos_init[r_hip] - root_pos_init[l_hip]
     across2 = root_pos_init[sdr_r] - root_pos_init[sdr_l]
     across = across1 + across2
     across = across / np.sqrt((across ** 2).sum(axis=-1))[..., np.newaxis]
 
-    # forward (3,), rotate around y-axis
-    forward_init = np.cross(np.array([[0, 1, 0]]), across, axis=-1)
-    # forward (3,)
+    # forward (3,), now pointing to X+
+    forward_init = np.cross(np.array([[0, 0, 1]]), across, axis=-1)  # Z-up cross product
     forward_init = forward_init / np.sqrt((forward_init ** 2).sum(axis=-1))[..., np.newaxis]
 
-    #     print(forward_init)
-
-    target = np.array([[0, 0, 1]])
+    target = np.array([[1, 0, 0]])  # Target is now X+
     root_quat_init = qbetween_np(forward_init, target)
     root_quat_init = np.ones(positions.shape[:-1] + (4,)) * root_quat_init
 
-    positions_b = positions.copy()
-
     positions = qrot_np(root_quat_init, positions)
 
-    ### local_
+    # local
     local_across1 = local_root_pos_init[r_hip] - local_root_pos_init[l_hip]
     local_across2 = local_root_pos_init[sdr_r] - local_root_pos_init[sdr_l]
     local_across = local_across1 + local_across2
     local_across = local_across / np.sqrt((local_across ** 2).sum(axis=-1))[..., np.newaxis]
 
     # forward (3,), rotate around y-axis
-    local_forward_init = np.cross(np.array([[0, 1, 0]]), local_across, axis=-1)
+    local_forward_init = np.cross(np.array([[0, 0, 1]]), local_across, axis=-1)
     # forward (3,)
     local_forward_init = local_forward_init / np.sqrt((local_forward_init ** 2).sum(axis=-1))[..., np.newaxis]
 
     #     print(forward_init)
 
-    local_target = np.array([[0, 0, 1]])
+    local_target = np.array([[1, 0, 0]])
     local_root_quat_init = qbetween_np(local_forward_init, local_target)
     local_root_quat_init = np.ones(local_positions.shape[:-1] + (4,)) * local_root_quat_init
 
 
     local_positions = qrot_np(local_root_quat_init, local_positions)
+    
+    
+    '''Root height'''
+    root_z = data_dict["global_translation"][:, 2:3, 0]  # Now using Z for height
+
+    '''Root rotation and linear velocity'''
+    r_rot = vec6d_to_quat(torch.from_numpy(data_dict["global_rotation"])).numpy()
+    r_velocity = qmul_np(r_rot[1:], qinv_np(r_rot[:-1]))
+    r_velocity = np.arcsin(r_velocity[:, 3:4])  # Now using Z-axis rotation (quat[3])
+    
+    velocity = data_dict["global_translation"][1:, :, 0] - data_dict["global_translation"][:-1, :, 0]
+    l_velocity = velocity[:, [0, 1]]  # Now using XY velocity
+
+    root_data = np.concatenate([r_velocity, l_velocity, root_z[:-1]], axis=-1)
 
 
 
@@ -167,25 +175,6 @@ def data_pkl_to_vec(data_dict):
 
     
 
-
-    '''Root height'''
-    root_y = data_dict["global_translation"][:, 1:2, 0]
-
-    '''Root rotation and linear velocity'''
-    # (seq_len-1, 1) rotation velocity along y-axis
-    # (seq_len-1, 2) linear velovity on xz plane
-    # todo : discrepancy here
-
-    r_rot =  vec6d_to_quat(torch.from_numpy(data_dict["global_rotation"])).numpy() 
-    r_velocity = qmul_np(r_rot[1:], qinv_np(r_rot[:-1]))
-    r_velocity = np.arcsin(r_velocity[:, 2:3])
-    velocity = data_dict["global_translation"][1:, :, 0] - data_dict["global_translation"][:-1, :, 0]
-    l_velocity = velocity[:, [0, 2]]
-    #     print(r_velocity.shape, l_velocity.shape, root_y.shape)
-
-
-    root_data = np.concatenate([r_velocity, l_velocity, root_y[:-1]], axis=-1)
-
     '''Get Joint Rotation Representation'''
     # (seq_len, dof) dof for skeleton joints
     rot_data = data_dict["angles"]
@@ -206,30 +195,116 @@ def data_pkl_to_vec(data_dict):
     data = np.concatenate([data, local_vel], axis=-1)
     data = np.concatenate([data, feet_l, feet_r], axis=-1)
 
+
     return data
 
-def vec_to_data_pkl(vec):
+
+def recover_root_rot_pos(data):
+    """
+    Recover root rotation and position from encoded data in X+ forward, Z-up coordinate system
+    
+    Args:
+        data: [..., n_features] tensor where:
+            data[..., 0] = rotation velocity (around Z-axis)
+            data[..., 1:3] = XY linear velocity
+            data[..., 3] = Z height
+    
+    Returns:
+        r_rot_quat: [..., 4] quaternion rotation (w,x,y,z)
+        r_pos: [..., 3] 3D position
+    """
+    # Extract components from input data
+    rot_vel = data[..., 0]  # 绕Z轴的旋转速度
+    
+    # 累积旋转角度（注意符号方向）
+    r_rot_ang = torch.zeros_like(rot_vel).to(data.device)
+    r_rot_ang[..., 1:] = rot_vel[..., :-1]
+    r_rot_ang = torch.cumsum(r_rot_ang, dim=-1)
+    
+    # 正确的Z轴旋转四元数 (右手系，正旋转方向)
+    r_rot_quat = torch.zeros(data.shape[:-1] + (4,)).to(data.device)
+    r_rot_quat[..., 0] = torch.cos(r_rot_ang / 2)  # w
+    r_rot_quat[..., 3] = torch.sin(r_rot_ang / 2)  # z
+
+    # 2. 处理位置部分
+    r_pos = torch.zeros(data.shape[:-1] + (3,)).to(data.device)
+    
+    # 速度分量 (注意坐标系)
+    xy_vel = data[..., 1:3]  # X和Y速度
+    
+    # 应用速度 (注意时间偏移)
+    r_pos[..., 1:, 0] = xy_vel[..., :-1, 0]  # X速度
+    r_pos[..., 1:, 1] = xy_vel[..., :-1, 1]  # Y速度
+    
+    # 旋转速度到全局坐标系 (使用四元数旋转)
+    r_pos = qrot(r_rot_quat, r_pos)  # 注意这里用正向旋转
+    
+    # 累积位置
+    r_pos = torch.cumsum(r_pos, dim=-2)
+    
+    # 3. 设置Z高度 (确保方向正确)
+    r_pos[..., 2] = data[..., 3]  # Z高度
+    
+    return r_rot_quat, r_pos
+
+def vec_to_data_pkl(vec, fps=20, reference_motion_pth=None, robot_name="g1_29", scale=np.ones(3)):
     """
     Convert the vec representation to data_dict
     :param vec: vec, the vec representation
     :return: data_dict, the data_dict
     """
-    ### TODO
-    data_dict = {}
+    r_rot_quat, r_pos = recover_root_rot_pos(torch.from_numpy(vec))
+
+    device = vec.device
+
+
+    joints_num = 29 
+    links_num = 41
+    batch_size = vec.shape[0]
+    num_frames = vec.shape[1]
+
+    global_positions = r_pos.reshape(-1, 3, 1)
+    global_rotations = quat_to_matrix(r_rot_quat)[..., :3, :2].reshape(-1, 3, 2)
+    dof_angles = vec[..., 4 + (links_num - 1) * 3: 4 + (links_num - 1) * 3 + joints_num].reshape(-1, joints_num)
+
+
+    data_dict = {
+        "fps": fps,
+        "reference_motion_pth": reference_motion_pth,
+        "robot_name": robot_name,
+        "angles": dof_angles,
+        "global_rotation": global_rotations,
+        "global_translation": global_positions,
+        "scale": scale,
+    }
+
+
+
+    ### rot_data = data_dict["angles"]
     return data_dict
 
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print('Call the function with the Pickle file')
-        quit()
+    # if len(sys.argv) != 2:
+    #     print('Call the function with the Pickle file')
+    #     quit()
     
-    filename = sys.argv[1]
+    # filename = sys.argv[1]
+    filename = "/home/pengyang/codebase/HRI_retarget/HumanML3D/000093.pickle"
     with open(filename, "rb") as file:
         data_dict = pickle.load(file)
 
     vec = data_pkl_to_vec(data_dict)
+
+    data = vec_to_data_pkl(vec)
+    print(data)
+
+
+    with open("/home/pengyang/codebase/HRI_retarget/g1_motion/test.pickle", "wb") as file:
+        pickle.dump(data, file)
+
+
     
 
 

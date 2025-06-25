@@ -272,6 +272,7 @@ if __name__ == "__main__":
     with open(file_name, "rb") as file:
         data = joblib.load(file)
         robot_type = data["robot_name"]
+
     csv_data = load_motion_pkl_as_csv_data(args.file_name)
     
     print("csv_data shape: ", csv_data.shape)
