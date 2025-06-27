@@ -1,12 +1,12 @@
 ### converting 29 dof g1 to humanml3d vec representation 
 ### for g1_29, dof=29, num_links=41
-### shape (num_frames - 1, 277)
-###     root_rot_velocity 1
+### shape (num_frames - 1, 280)
+###     root_rot_quat 4(wxyz)
 ###     root_linear_velocity 2
 ###     root_y 1
 ###     link_local_position (41 - 1) * 3
 ###     dof_angle 29
-###     link_local_velocity (41)* 3  ## TODO: this is an error, should be (41 - 1) * 3
+###     link_local_velocity (41 - 1) * 3  
 ###     foot_contact 4
 
 ### reference: https://github.com/EricGuo5513/HumanML3D/blob/main/motion_representation.ipynb
@@ -31,12 +31,6 @@ import pickle
 import ipdb
 
 import numpy as np
-
-rot = torch.tensor([
-    [0, 0, 1],
-    [1, 0, 0],
-    [0, 1, 0],
-], dtype=torch.float).to("cuda:0")
 
 
 def data_pkl_to_vec(data_dict):
@@ -86,6 +80,7 @@ def data_pkl_to_vec(data_dict):
 
     '''XY at origin'''  # Now we work in XY plane (Z is up)
     root_pos_init = positions[0]
+
     root_pose_init_xy = root_pos_init[0] * np.array([1, 1, 0])
     positions = positions - root_pose_init_xy
 
@@ -116,7 +111,7 @@ def data_pkl_to_vec(data_dict):
     local_across = local_across1 + local_across2
     local_across = local_across / np.sqrt((local_across ** 2).sum(axis=-1))[..., np.newaxis]
 
-    # forward (3,), rotate around y-axis
+    # forward (3,), rotate around z-axis
     local_forward_init = np.cross(np.array([[0, 0, 1]]), local_across, axis=-1)
     # forward (3,)
     local_forward_init = local_forward_init / np.sqrt((local_forward_init ** 2).sum(axis=-1))[..., np.newaxis]
@@ -136,9 +131,9 @@ def data_pkl_to_vec(data_dict):
 
     '''Root rotation and linear velocity'''
     r_rot = vec6d_to_quat(torch.from_numpy(data_dict["global_rotation"])).numpy()
+    import ipdb;ipdb.set_trace()
     r_velocity = qmul_np(r_rot[1:], qinv_np(r_rot[:-1]))
-    r_velocity = np.arcsin(r_velocity[:, 3:4])  # Now using Z-axis rotation (quat[3])
-    
+ 
     velocity = data_dict["global_translation"][1:, :, 0] - data_dict["global_translation"][:-1, :, 0]
     l_velocity = velocity[:, [0, 1]]  # Now using XY velocity
 
@@ -186,7 +181,7 @@ def data_pkl_to_vec(data_dict):
     '''Get Joint Velocity Representation'''
     # (seq_len-1, (link-1)*3)
     local_vel = local_positions[1:] - local_positions[:-1]
-    local_vel = local_vel.reshape(len(local_vel), -1)
+    local_vel = local_vel[:, 1:].reshape(len(local_vel), -1)
 
     data = root_data
     data = np.concatenate([data, ric_data[:-1]], axis=-1)
@@ -213,39 +208,27 @@ def recover_root_rot_pos(data):
         r_rot_quat: [..., 4] quaternion rotation (w,x,y,z)
         r_pos: [..., 3] 3D position
     """
-    # Extract components from input data
-    rot_vel = data[..., 0]  # 绕Z轴的旋转速度
-    
-    # 累积旋转角度（注意符号方向）
-    r_rot_ang = torch.zeros_like(rot_vel).to(data.device)
-    r_rot_ang[..., 1:] = rot_vel[..., :-1]
-    r_rot_ang = torch.cumsum(r_rot_ang, dim=-1)
-    
-    # 正确的Z轴旋转四元数 (右手系，正旋转方向)
-    r_rot_quat = torch.zeros(data.shape[:-1] + (4,)).to(data.device)
-    r_rot_quat[..., 0] = torch.cos(r_rot_ang / 2)  # w
-    r_rot_quat[..., 3] = torch.sin(r_rot_ang / 2)  # z
 
-    # 2. 处理位置部分
-    r_pos = torch.zeros(data.shape[:-1] + (3,)).to(data.device)
+
+    r_velocity = data[:, 0:4]  # 旋转速度 (sin(θ/2))
+    l_velocity = data[:, 4:6]  # XY速度
+    root_z = data[:, 6:7]       # 高度
     
-    # 速度分量 (注意坐标系)
-    xy_vel = data[..., 1:3]  # X和Y速度
+    # 还原translation
+    restored_translation = np.zeros((len(data)+1, 3))
+    restored_translation[0, :] = [0, 0, root_z[0,0]]
+    restored_translation[1:, 0:2] = np.cumsum(l_velocity, axis=0) + restored_translation[0, 0:2]
+    restored_translation[1:, 2] = root_z[:, 0]
     
-    # 应用速度 (注意时间偏移)
-    r_pos[..., 1:, 0] = xy_vel[..., :-1, 0]  # X速度
-    r_pos[..., 1:, 1] = xy_vel[..., :-1, 1]  # Y速度
+    # 还原rotation
+    restored_rotation = np.zeros((len(data)+1, 4))
+    restored_rotation[0] = np.array([0, 0, 0, 1])  # 初始四元数 (w, x, y, z)
     
-    # 旋转速度到全局坐标系 (使用四元数旋转)
-    r_pos = qrot(r_rot_quat, r_pos)  # 注意这里用正向旋转
+    for i in range(1, len(restored_rotation)):
+        delta_q = r_velocity[i-1]
+        restored_rotation[i] = qmul_np(delta_q, restored_rotation[i-1])
     
-    # 累积位置
-    r_pos = torch.cumsum(r_pos, dim=-2)
-    
-    # 3. 设置Z高度 (确保方向正确)
-    r_pos[..., 2] = data[..., 3]  # Z高度
-    
-    return r_rot_quat, r_pos
+    return restored_translation[1:], restored_rotation[1:]
 
 def vec_to_data_pkl(vec, fps=20, reference_motion_pth=None, robot_name="g1_29", scale=np.ones(3)):
     """
@@ -253,7 +236,10 @@ def vec_to_data_pkl(vec, fps=20, reference_motion_pth=None, robot_name="g1_29", 
     :param vec: vec, the vec representation
     :return: data_dict, the data_dict
     """
-    r_rot_quat, r_pos = recover_root_rot_pos(torch.from_numpy(vec))
+    global_positions, global_rotations_quat = recover_root_rot_pos(vec)
+
+    global_positions = global_positions.reshape(-1, 3, 1)
+    global_rotations = quat_to_matrix(torch.from_numpy(global_rotations_quat))[..., :3, :2].reshape(-1, 3, 2).numpy()
 
     device = vec.device
 
@@ -263,9 +249,7 @@ def vec_to_data_pkl(vec, fps=20, reference_motion_pth=None, robot_name="g1_29", 
     batch_size = vec.shape[0]
     num_frames = vec.shape[1]
 
-    global_positions = r_pos.reshape(-1, 3, 1)
-    global_rotations = quat_to_matrix(r_rot_quat)[..., :3, :2].reshape(-1, 3, 2)
-    dof_angles = vec[..., 4 + (links_num - 1) * 3: 4 + (links_num - 1) * 3 + joints_num].reshape(-1, joints_num)
+    dof_angles = vec[..., 7 + (links_num - 1) * 3: 7 + (links_num - 1) * 3 + joints_num].reshape(-1, joints_num)
 
 
     data_dict = {
@@ -301,7 +285,7 @@ if __name__ == "__main__":
     print(data)
 
 
-    with open("/home/pengyang/codebase/HRI_retarget/g1_motion/test.pickle", "wb") as file:
+    with open("/home/pengyang/codebase/HRI_retarget/HumanML3D/test.pickle", "wb") as file:
         pickle.dump(data, file)
 
 
