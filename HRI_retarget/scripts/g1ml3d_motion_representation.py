@@ -12,8 +12,8 @@ import numpy as np
 from HRI_retarget.utils.io.g1_29_humanml3d_representation import data_pkl_to_vec
 
 # 文件夹路径
-folder_path = os.path.join(DATA_ROOT,"motion/g1/HumanML3D")
-tgt_dir = os.path.join("/root/pengyang/codebase/HRI_retarget/data/G1ML3D/new_joint_vecs")
+folder_path = os.path.join(DATA_ROOT,"G1ML3D_v1/joints")
+tgt_dir = os.path.join(DATA_ROOT,"G1ML3D_v1/new_joint_vecs")
 starting_time = time.time()
 
 source_list = os.listdir(folder_path)

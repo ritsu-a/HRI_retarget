@@ -131,7 +131,6 @@ def data_pkl_to_vec(data_dict):
 
     '''Root rotation and linear velocity'''
     r_rot = vec6d_to_quat(torch.from_numpy(data_dict["global_rotation"])).numpy()
-    import ipdb;ipdb.set_trace()
     r_velocity = qmul_np(r_rot[1:], qinv_np(r_rot[:-1]))
  
     velocity = data_dict["global_translation"][1:, :, 0] - data_dict["global_translation"][:-1, :, 0]
@@ -210,7 +209,7 @@ def recover_root_rot_pos(data):
     """
 
 
-    r_velocity = data[:, 0:4]  # 旋转速度 (sin(θ/2))
+    r_velocity = data[:, 0:4]  
     l_velocity = data[:, 4:6]  # XY速度
     root_z = data[:, 6:7]       # 高度
     
