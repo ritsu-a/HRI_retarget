@@ -61,10 +61,10 @@ if __name__ == '__main__':
 
     with open(pjoin(save_dir, 'train.txt'), 'w') as f:
         for file in file_list[:int(len(file_list) * train_ratio)]:
-            f.write(file + '\n')
+            f.write(file[:-4] + '\n')
     with open(pjoin(save_dir, 'val.txt'), 'w') as f:
         for file in file_list[int(len(file_list) * train_ratio):int(len(file_list) * (train_ratio + val_ratio))]:
-            f.write(file + '\n')
+            f.write(file[:-4] + '\n')
     with open(pjoin(save_dir, 'test.txt'), 'w') as f:
         for file in file_list[int(len(file_list) * (train_ratio + val_ratio)):]:
-            f.write(file + '\n')
+            f.write(file[:-4] + '\n')

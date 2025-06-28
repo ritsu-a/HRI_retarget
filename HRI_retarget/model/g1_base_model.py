@@ -96,9 +96,9 @@ class G1_Base_Motion_Model(nn.Module):
         }
 
     def set_global_matrix(self, data_dict):
-        self.global_trans = nn.Parameter(torch.tensor(data_dict["global_translation"]).to(self.device), requires_grad=True)
-        self.global_rot = nn.Parameter(torch.tensor(data_dict["global_rotation"]).to(self.device), requires_grad=True)
-        self.scale = nn.Parameter(torch.tensor(data_dict["scale"]).to(self.device), requires_grad=True)
+        self.global_trans = nn.Parameter(data_dict["global_translation"].clone().detach().to(self.device), requires_grad=True)
+        self.global_rot = nn.Parameter(data_dict["global_rotation"].clone().detach().to(self.device), requires_grad=True)
+        self.scale = nn.Parameter(data_dict["scale"].clone().detach().to(self.device), requires_grad=True)
 
     def set_gt_joint_positions(self, gt_joint_positions):
         self.gt_joint_positions = gt_joint_positions.to(self.device)

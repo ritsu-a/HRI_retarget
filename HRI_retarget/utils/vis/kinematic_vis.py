@@ -22,10 +22,15 @@ from HRI_retarget.model.g1_15 import G1_15_Motion_Model
 from HRI_retarget.model.g1_29 import G1_29_Motion_Model
 from HRI_retarget.model.g1_inspirehands import G1_Inspirehands_Motion_Model
 
-from pynput import keyboard
+import platform
+if platform.system() != 'Windows':
+    from pynput import keyboard
 
 
 def Draw_Motiongpt_bvh(urdf_link_pos, urdf_chain, robot_link=G1_LINKS, text_prompt=""):
+    if platform.system() == 'Windows':
+        return
+
     fig = plt.figure(figsize=(8, 6), dpi=80)
     ax = fig.add_subplot(111, projection='3d')
 
