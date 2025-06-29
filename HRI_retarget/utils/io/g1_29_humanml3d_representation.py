@@ -61,7 +61,13 @@ def data_pkl_to_vec(data_dict):
     link_to_root_pos = link_to_root_dict[:, :, :3, 3]
     local_positions = link_to_root_pos.detach().cpu().numpy()
 
-    model.set_global_matrix(data_dict)
+    torch_data_dict = {}
+    for key in data_dict:
+        if isinstance(data_dict[key], np.ndarray):
+            torch_data_dict[key] = torch.tensor(data_dict[key])
+        else:
+            torch_data_dict[key] = data_dict[key]
+    model.set_global_matrix(torch_data_dict)
     link_to_root_dict = model.forward_kinematics()
     link_to_root_pos = link_to_root_dict[:, :, :3, 3]
     positions = link_to_root_pos.detach().cpu().numpy()
