@@ -42,6 +42,8 @@ def load_motion_pkl_as_csv_data(input_pkl_path):
             csv_data[:, 3:7] = vec6d_to_quat(torch.tensor(data['global_rotation'])).numpy()
             csv_data[:, 7:] = data["angles"]
 
+        case "galbot_charlie":
+            csv_data = np.array(data["angles"])
    
         case "_":
             print("Undefined robot type: ", robot_name)

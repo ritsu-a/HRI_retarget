@@ -10,7 +10,7 @@ physicsClient = p.connect(p.GUI)  # 使用 GUI 模式
 
 
 ### galbot charlie urdf
-urdf_rel_path = "resources/robots/g1_inspirehands/G1_inspire_hands.urdf"
+urdf_rel_path = "resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf"
 robotId = p.loadURDF(os.path.join(DATA_ROOT,urdf_rel_path), [0, 0, 0], [0, 0, 0, 1])
 
 

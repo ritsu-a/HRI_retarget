@@ -244,7 +244,7 @@ def vis_kinematic_result(filename, dataset="SG", robot="g1_15", correspondence=S
 
     ### loading robot model 
     match robot:
-        case "galbot":
+        case "galbot_charlie":
             model = Galbot_Charlie_Motion_Model(num_frames)
             robot_link = GALBOT_CHARLIE_LINKS
         case "g1_15":

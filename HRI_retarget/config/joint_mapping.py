@@ -420,6 +420,19 @@ MOTION_CAPTURE_G1_INSPIREHANDS_CORRESPONDENCE = [
 ]
 
 
+MOTION_CAPTURE_GALBOT_CHARLIE_CORRESPONDENCE = [
+    [MOTION_CAPTURE_LINKS.index("Spine"), GALBOT_CHARLIE_LINKS.index("leg_link3"), 5],
+    [MOTION_CAPTURE_LINKS.index("Head"), GALBOT_CHARLIE_LINKS.index("head_link1"), 5],
+   
+    [MOTION_CAPTURE_LINKS.index("LeftArm"), GALBOT_CHARLIE_LINKS.index("left_arm_link1"), 5],
+    [MOTION_CAPTURE_LINKS.index("LeftForeArm"), GALBOT_CHARLIE_LINKS.index("left_arm_link3"), 5],
+    [MOTION_CAPTURE_LINKS.index("LeftHand"), GALBOT_CHARLIE_LINKS.index("left_arm_link5"), 5],
+
+    [MOTION_CAPTURE_LINKS.index("RightArm"), GALBOT_CHARLIE_LINKS.index("right_arm_link1"), 5],
+    [MOTION_CAPTURE_LINKS.index("RightForeArm"), GALBOT_CHARLIE_LINKS.index("right_arm_link3"), 5],
+    [MOTION_CAPTURE_LINKS.index("RightHand"), GALBOT_CHARLIE_LINKS.index("right_arm_link5"), 5],
+]
+
 
 SG_G1_CORRESPONDENCE = [
     [SG_LINKS.index("Spine"), G1_LINKS.index("pelvis"), 1],

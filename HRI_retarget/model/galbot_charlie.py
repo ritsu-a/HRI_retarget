@@ -1,5 +1,4 @@
-### TODO: estimate global rotation and translation
-###     split locomotion and manipulation vel and accel loss
+
 import math
 import numpy as np
 import torch
@@ -12,6 +11,7 @@ from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_matrix
 
 from HRI_retarget.config.joint_mapping import GALBOT_CHARLIE_LINKS, SG_GALBOT_CHARLIE_CORRESPONDENCE
 from HRI_retarget import DATA_ROOT
+from HRI_retarget.utils.motion_lib.strechable_chain import load_urdf_as_stretchable_chain
 
 
 class Galbot_Charlie_Motion_Model(nn.Module):
@@ -24,16 +24,45 @@ class Galbot_Charlie_Motion_Model(nn.Module):
 
         self.dof = 21
         ### TODO: update init angles
-        self.init_angle = torch.tensor([
+        self.init_angles = torch.tensor([
             0.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0
         ]).to(self.device)
 
+        self.dof_max_limits = torch.from_numpy(np.array([
+               [-25.0, 25.0], # mobile_x
+               [-25.0, 25.0], # mobile_y
+               [-6.0, 6.0], # mobile_yaw
+               [0.0, 0.995], # leg_joint1
+               [0.0, 3.050], # leg_joint2
+               [0.0, 2.356], # leg_joint3
+               [-1.571, 1.571], # leg_joint4
+               [-3.050, 3.050], # right_arm_joint1
+               [-1.571, 1.700], # right_arm_joint2
+               [-2.900, 2.900], # right_arm_joint3
+               [-2.100, 2.100], # right_arm_joint4
+               [-2.900, 2.900], # right_arm_joint5
+               [-0.785, 0.785], # right_arm_joint6
+               [-1.400, 1.400], # right_arm_joint7
+               [-3.050, 3.050], # left_arm_joint1
+               [-1.571, 1.700], # left_arm_joint2
+               [-2.900, 2.900], # left_arm_joint3
+               [-2.100, 2.100], # left_arm_joint4
+               [-2.900, 2.900], # left_arm_joint5
+               [-0.785, 0.785], # left_arm_joint6
+               [-1.400, 1.400], # left_arm_joint7
+            ])).repeat(self.batch_size, 1, 1).to(dtype=torch.float32, device=self.device)
 
+        ### soft threshold
+        self.dof_limits = self.dof_max_limits * 0.9
+        ### joint scales upper and lower bound 
+        self.joint_scales_min = 0.8
+        self.joint_scales_max = 1.2
+        
         self.joint_angles = nn.Parameter(torch.zeros(batch_size, self.dof).to(device), requires_grad=True)  # (N, dof)
+        self.joint_scales = nn.Parameter(torch.ones(self.dof).to(device), requires_grad=True)  # (dof)
 
         self.joint_correspondence = joint_correspondence
 
-        self.chain = None
 
         self.links = GALBOT_CHARLIE_LINKS
 
@@ -42,18 +71,13 @@ class Galbot_Charlie_Motion_Model(nn.Module):
         self.global_trans = nn.Parameter(torch.zeros(3).to(device), requires_grad=True)
 
         urdf_rel_path = "resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf"
-        self.load_urdf_as_chain(os.path.join(DATA_ROOT,urdf_rel_path))
+        self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
         
     
     def forward(self):
         return {
             "joint_angles": self.joint_angles,    
         }
-
-    def load_urdf_as_chain(self, filename):
-        with open(filename, 'rb') as file:
-            self.chain = pk.build_chain_from_urdf(file.read())
-        self.chain = self.chain.to(dtype=torch.float32, device=self.device)
 
     def set_global_matrix(self, data_dict):
         self.global_trans = nn.Parameter(torch.tensor(data_dict["global_translation"]).to(self.device), requires_grad=True)
@@ -110,6 +134,12 @@ class Galbot_Charlie_Motion_Model(nn.Module):
         for joint_corr in self.joint_correspondence:
             joint_global_position_loss += ((pred_link_global[:, joint_corr[1]][:, :3, 3] - self.gt_joint_positions[:, joint_corr[0]])**2).sum(dim=-1).mean() * joint_corr[2]
         return joint_global_position_loss
+    
+    def dof_limit_loss(self):
+
+        loss =  (self.joint_angles < self.dof_limits[:, :, 0]) * (self.dof_limits[:, :, 0] - self.joint_angles) +\
+                (self.joint_angles > self.dof_limits[:, :, 1]) * (self.joint_angles - self.dof_limits[:, :, 1])
+        return loss.sum(dim=-1).mean()
 
     def elbow_loss(self):
         ### robot specific loss
@@ -124,6 +154,18 @@ class Galbot_Charlie_Motion_Model(nn.Module):
         elbow_loss += (left_elbow_x[left_elbow_x > -threshold] + threshold).sum()
 
         return elbow_loss
+    
+    def normalize(self):
+        ### clip angles within max limits
+        ### TODO: torch.clamp on nn.parameter and rename
+        self.joint_angles[self.joint_angles < self.dof_max_limits[:, :, 0]] = self.dof_max_limits[:, :, 0][self.joint_angles < self.dof_max_limits[:, :, 0]]
+        self.joint_angles[self.joint_angles > self.dof_max_limits[:, :, 1]] = self.dof_max_limits[:, :, 1][self.joint_angles > self.dof_max_limits[:, :, 1]]
+
+        ### clip joint scales
+        self.joint_scales[self.joint_scales < self.joint_scales_min] = self.joint_scales_min    
+        self.joint_scales[self.joint_scales > self.joint_scales_max] = self.joint_scales_max
+
+
 
 
 

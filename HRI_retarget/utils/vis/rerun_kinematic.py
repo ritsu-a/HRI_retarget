@@ -57,7 +57,14 @@ class RerunURDF():
                 self.mesh_dir = os.path.join(DATA_ROOT,'resources/robots/g1_inspirehands/meshes')
                 self.srdf_path = os.path.join(DATA_ROOT,'resources/robots/g1_inspirehands/G1_inspire_hands.srdf')
            
-         
+
+
+            case 'galbot_charlie':
+                self.robot = pin.RobotWrapper.BuildFromURDF(os.path.join(DATA_ROOT,'resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf'), os.path.join(DATA_ROOT,'resources/robots/galbot_one_charlie_10'))
+                self.Tpose = np.array([0.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0, 1.0, -1.0, 0.3, 1.3, 0.0, 0.0, 0.0]).astype(np.float32)
+                self.urdf_path = os.path.join(DATA_ROOT, 'resources/robots/galbot_one_charlie_10/galbot_one_charlie_retarget.urdf')
+                self.mesh_dir = os.path.join(DATA_ROOT, 'resources/robots/galbot_one_charlie_10/meshes')
+                self.srdf_path = None
             case _:
                 print(robot_type)
                 raise ValueError('Invalid robot type')
@@ -171,22 +178,29 @@ class RerunURDF():
     
     def init_collision_checking(self):
         # Load model
-        self.model = pin.buildModelFromUrdf(self.urdf_path, pin.JointModelFreeFlyer())
+        match self.name:
+            case "galbot_charlie":
+                self.model = pin.buildModelFromUrdf(self.urdf_path)
+            case "g1_29", "g1_inspirehands":
+                self.model = pin.buildModelFromUrdf(self.urdf_path, pin.JointModelFreeFlyer())
+            case _:
+                print(robot_type)
+                raise ValueError('Invalid robot type')
         # Load collision geometries
-
         self.geom_model = pin.buildGeomFromUrdf( 
             self.model, self.urdf_path, pin.GeometryType.COLLISION, self.mesh_dir
         )
         # Add collisition pairs
         self.geom_model.addAllCollisionPairs()
         print("num collision pairs - initial:", len(self.geom_model.collisionPairs))
-        pin.removeCollisionPairs(self.model, self.geom_model, self.srdf_path)
-        print(
-            "num collision pairs - after removing useless collision pairs:",
-            len(self.geom_model.collisionPairs),
-        )
-        # Load reference configuration
-        pin.loadReferenceConfigurations(self.model, self.srdf_path)
+        if self.srdf_path is not None:
+            pin.removeCollisionPairs(self.model, self.geom_model, self.srdf_path)
+            print(
+                "num collision pairs - after removing useless collision pairs:",
+                len(self.geom_model.collisionPairs),
+            )
+            # Load reference configuration
+            pin.loadReferenceConfigurations(self.model, self.srdf_path)
             
         # Create data structures
         self.data = self.model.createData()
