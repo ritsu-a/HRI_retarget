@@ -30,7 +30,7 @@ import yaml
 import pandas as pd
 
 # rot = np.eye(3)
-rot = np.array([[0,-1,0],[1,0,0],[0,0,1]])
+rot = np.array([[0,0,1],[1,0,0],[0,1,0]])
 left_hand_to_inspire = np.array([[1,0,0],[0,0,1],[0,-1,0]])
 right_hand_to_inspire = np.array([[-1,0,0],[0,0,1],[0,1,0]])
 config_file_path = os.path.join(DATA_ROOT, "resources/robots/g1_inspirehands/inspire_hand.yml")
@@ -38,11 +38,12 @@ default_urdf_dir = os.path.join(DATA_ROOT,"resources/robots/g1_inspirehands")
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print('Call the function with the BVH file')
-        quit()
+    # if len(sys.argv) != 2:
+    #     print('Call the function with the BVH file')
+    #     quit()
 
-    filename = sys.argv[1]
+    # filename = sys.argv[1]
+    filename = os.path.join(DATA_ROOT, "motion/human/motion_capture/defense_Skeleton_1.bvh")
     bvh_joint_local_coord, _ = Get_bvh_joint_pos_and_Rot(filename, link_list = MOTION_CAPTURE_LINKS)
     # bvh_joint_global_coord = Get_bvh_joint_global_pos(filename, link_list=MOTION_CAPTURE_LINKS)
 
@@ -57,7 +58,6 @@ if __name__ == "__main__":
     # model.set_gt_joint_positions(bvh_joint_local_coord @ rot.T)
     print("Links of robot: ", model.chain.get_link_names())
     print(model.global_trans)
-    import ipdb;ipdb.set_trace()
 
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-2)
     model.train()
@@ -110,6 +110,11 @@ if __name__ == "__main__":
   
     with torch.no_grad():
         pred_joint_angles = model.joint_angles.detach().cpu().numpy()
+
+        ### FIX HAND
+        pred_joint_angles[:,22:34] = 0
+        pred_joint_angles[:,41:53] = 0
+
         global_rotation = model.global_rot.detach().cpu().numpy()
         global_translation = model.global_trans.detach().cpu().numpy()
         scale = model.scale.detach().cpu().numpy()
@@ -125,7 +130,6 @@ if __name__ == "__main__":
         "scale": scale,
     }
 
-    import ipdb;ipdb.set_trace()
     
 
     with open(os.path.join(DATA_ROOT,"motion/g1/motion_capture", filename.split("/")[-1][:-4] + ".pickle"), "wb") as file:
