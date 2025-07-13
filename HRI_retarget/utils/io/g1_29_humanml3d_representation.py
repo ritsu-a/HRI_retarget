@@ -136,7 +136,7 @@ def data_pkl_to_vec(data_dict):
     root_z = data_dict["global_translation"][:, 2:3, 0]  # Now using Z for height
 
     '''Root rotation and linear velocity'''
-    r_rot = vec6d_to_quat(torch.from_numpy(data_dict["global_rotation"])).numpy()
+    r_rot = vec6d_to_quat(data_dict["global_rotation"]).numpy()
     r_velocity = qmul_np(r_rot[1:], qinv_np(r_rot[:-1]))
  
     velocity = data_dict["global_translation"][1:, :, 0] - data_dict["global_translation"][:-1, :, 0]
