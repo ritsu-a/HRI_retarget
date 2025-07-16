@@ -4,22 +4,25 @@
 2. retarget for g1 15 & 29 dof from seg_dataset & SG(semantic gesticulator output) & humanml3d & mdm output 
 3. visualization of unitree motion csv via rerun 
 4. data conversion between motion pkl(ours) & humanml3d npy & SG bvh & ASAP reference motion
+5. dataset preparetion for Humanml3D feature format (buggy now)
+
+### TODO LIST:
 
 
 # preparation
 write current folder path into bashrc, then
-    git clone git@github.com:ritsu-a/HRI_retarget.git        (dont change name of the git repository)
+    git clone git@github.com:ritsu-a/HRI_retarget.git       
     cd HRI_retarget
-    git checkout g1
+    pip install -e .
 
 
 the environment is tested with cuda12.1 with python=3.10
     pip install -r requirements.txt
 
-contact pengyang for data
-then create a soft link to HRI_retarget/data
 
-if you come up with issue "cannot import HRI_retarget", please check whether PYTHONPATH contains parent directory of HRI_retarget
+create a soft link to HRI_retarget/data
+
+
 
 
     
@@ -43,7 +46,7 @@ visualize dynamic results via pybullet and position pd control:
 
 
 ### for g1:
-    python src/retarget/sg_g1.py data/motion/human/SG/output.bvh
+    python src/retarget/sg_g1_15.py data/motion/human/SG/output.bvh
 
 
     python src/utils/vis/pybullet_visualize_g1_dynamic.py data/motion/g1/SG/output.pickle
@@ -66,7 +69,7 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
 
 ### real deployment pipeline:
 1. retarget to generate the raw motion 
-    src/retarget/sg_g1.py 
+    src/retarget/sg_g1_15.py 
 2. apply clipping and filter of the raw motion
     src/deploy/filter_motion.py #TODO change IO
 3. visualize motion either via pybullet(dynamic) or rerun (kinamatic)
@@ -74,6 +77,17 @@ tips: you may need to change some paths for bvh and pickle files, it may take so
     src/utils/vis/pybullet_visualize_g1_dynamic.py  #TODO change IO
 4. deploy on real G1 
     src/deploy/deploy_g1.py
+
+
+### convert fbx to bvh
+blender -b -P src/utils/io/fbx_to_bvh.py
+
+### hand_retarget
+1. pip install dex_retarget
+2. ask HIT-xiaowangzi for inspire_hand_left_virtual.urdf, inspire_hand_right_virtual.urdf, inspire_hand.yml
+   and put them into data/resources/robots/g1_inspirehands
+3. python bbdb_hand_retarget.py
+4. to visualize: python rerun_kinematic.py
 
 
 
