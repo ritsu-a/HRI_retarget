@@ -572,34 +572,7 @@ def Get_bvh_joint_pos_and_Rot(filename, link_list=SG_LINKS):
     return joint_coords_full[:, link_indices, :] / 100, joint_rot_full[:, link_indices, :, :]
     # return joint_coords_full / 100
 
-def Get_bvh_joint_global_pos(filename, link_list=SG_LINKS):
-    # 1. preprocess
-    skeleton_data = ProcessBVH(filename)
 
-    joints = skeleton_data[0]
-    joints_offsets = skeleton_data[1]
-    joints_hierarchy = skeleton_data[2]
-    root_positions = skeleton_data[3]
-    joints_rotations = skeleton_data[4] #this contains the angles in degrees
-    joints_saved_angles = skeleton_data[5]
-    print("joints: ", joints)
-    
-    # 2. convert joints_rotations to torch, and reshape it to (batch, link_num,3)
-    frame_skips = 1
-    joints_rotations = joints_rotations[::frame_skips,:]
-    frame_num = joints_rotations.shape[0]
-    joints_rotations_batch = torch.from_numpy(joints_rotations).view([frame_num,-1,3])
-    
-    # 3. send the batch joint rotations to the func
- 
-    joint_coords_full = _calculate_global_pos(
-        joints, joints_offsets, joints_rotations_batch, joints_saved_angles, root_positions, joints_hierarchy
-    )
-    
-    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
-
-    link_indices = [joint_name_to_index[name] for name in link_list]
-    return joint_coords_full[:, link_indices, :] / 100
 
    
 def Get_bvh_joint_angles(filename, link_list=SG_LINKS):
@@ -675,55 +648,6 @@ def _calculate_local_pos_and_Rot(joints, joints_offsets, frame_joints_rotations,
 
     return local_positions, local_Rotations
 
-def _calculate_global_pos(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, root_positions, joints_hierarchy):
-
-    batch_num = frame_joints_rotations.shape[0]
-    link_num = frame_joints_rotations.shape[1]
-    local_positions = torch.zeros_like(frame_joints_rotations) # (batch * link_num * 3)
-    joint_name_to_index = {joint: idx for idx, joint in enumerate(joints)}
-
-    root_positions = root_positions - root_positions[0] # make the root position relative to the first frame
-
-    for joint_ind, joint in enumerate(joints):
-
-        if joint != joints[0]:
-            connected_joints = joints_hierarchy[joint]
-            
-            connected_joints = connected_joints[::-1]
-            connected_joints.append(joint) #this contains the chain of joints that finally end with the current joint that we want the coordinate of.
-            # Rot = np.eye(3)
-            # pos = np.array([0,0,0])
-            Rot = torch.eye(3).unsqueeze(0).repeat(batch_num,1,1) # (batch *3*3)
-            pos = torch.tensor([0,0,0]).view(1,-1,1).repeat(batch_num, 1, 1) # (batch * 3)
-            for i, con_joint in enumerate(connected_joints):
-                if i == 0:
-                    pass
-                else:
-                    parent_joint = connected_joints[i - 1]
-                    parent_joint_ind = joint_name_to_index[parent_joint]
-                    # parent_joint_ind = joints.index(parent_joint)
-                    # if parent_joint != joints[0]:
-                    # input is batch * 3
-                    
-                    Rot = torch.bmm(Rot,_get_rotation_chain_parallel
-                            (joints_saved_angles[parent_joint], frame_joints_rotations[:,parent_joint_ind,:]))
-                joint_pos = torch.from_numpy(joints_offsets[con_joint]).view(1,-1,1).repeat(batch_num,1,1).type(torch.float32)
-                
-                # print("joint_pos.shape: ", joint_pos.shape)
-                # print("Rot.shape: ", Rot.shape)
-                # joint_pos = Rot @ joint_pos
-                # joint_pos = torch.bmm(Rot, joint_pos) # (batch * 3)
-    
-                joint_pos = torch.bmm(Rot, joint_pos)
-                # print("joint_pos shape: ",joint_pos.shape)
-                # print("pos shape: ",pos.shape)
-                pos = pos + joint_pos + torch.from_numpy(root_positions).unsqueeze(2)
-               
-
-            # local_positions[joint] = pos
-            local_positions[:,joint_ind,:] = pos.squeeze(2)
-
-    return local_positions
 
 def calc_relative_transform(local_positions, local_Rotations, id1, id2):
     """

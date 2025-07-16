@@ -45,7 +45,6 @@ if __name__ == "__main__":
     # filename = sys.argv[1]
     filename = os.path.join(DATA_ROOT, "motion/human/misc/Jappelio_rays_Skeleton.bvh")
     bvh_joint_local_coord = Get_bvh_joint_global_coord(filename, link_list = MOTION_CAPTURE_LINKS)
-    # bvh_joint_global_coord = Get_bvh_joint_global_pos(filename, link_list=MOTION_CAPTURE_LINKS)
 
 
     num_frames = len(bvh_joint_local_coord)
