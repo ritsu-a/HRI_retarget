@@ -7,64 +7,20 @@
 5. dataset preparetion for Humanml3D feature format (buggy now)
 
 ### TODO LIST:
-- use better log:
-    create a log folder out of src folder; the log folder can be placed in data folder
-    stop using absolute path 
-    you can use from HRI_retarget import ROOT, from HRI_retarget import DATA_ROOT
-- fix fps error: 
-    fps should be in corespondence with source data; double check each file in HRI_retarget/retarget
-    stop abrupt copy functions from one file to another without double-checking. e.g. fps in sg_g1_inspirehands.py is wrong. I have fixed this.
-- sorting code
-    write a simplified and unified version of {dataset}_g1_inspirehands.py. Current code is hard to adjust to other datasets.
-        maybe split the hand part to an independent file
-        It's error-prone to rename so many dicts and keys like SG_LINKS.index('RightHandThumb3'). a small typo here may lead to many bugs that is hard to detect
-            e.g.    left_wrist = BBDB_LINKS.index("Phy_LeftWrist_Root_end")
-                    right_wrist = BBDB_LINKS.index("RightHand")   in bbdb_hand_retarget.py
-                why? which joint do you need?
-        maybe you need some abstraction
-    utils functions should come from a file in the correct utils folder. 
-        e.g. from HRI_retarget.utils.vis.bvh_vis import calc_relative_transform
-            self.calc_dist_between_rotations in g1_inspirehands.py
-        you can move them to a new file in utils/motion_lib
-    some file names are purely random or wrong:
-        stop naming files like 3_pinocchio_output_collision_links. importing python module with a number at the beginning is not supported
-            why you need a random filename with number in it?
-        bbdb_hand_retarget.py and sg_g1_inspirehand.py should have same functions, why are they named differently?
-            name it in a {dataset}_{robot}.py
-    deleting unused functions and files.
-        not commentting them. We can recover files from git history. Why do I need 200 lines of commented code that NOBODY REMEMBERS HOW TO USE THEM
-        basically I want to delete all the files in retarget/stale. Check if you still need some of them.
-        when you update some function in one file, rememeber to also update other retarget files(or simply move them to stale folder)
-    split configs/joint_mapping.py.
-        now there are so many stuff in this file. It's hard to edit now.
-        firstly maybe split it into several smaller configs.
-        learn to use hydra/dotmap for config management
-    stop making the codebase SHIT CODE if you still need others to use your code
-        write readme, usage of files, or even docs. Keep them updated.
-- online version of retarget
-- rewrite model to use solvers instead of optimization
-    maybe we only need a modified version of ik-solver (for faster retarget)
-- use different scale parameter for upperbody and lower body
-    there is commented experimental code in model/g1_29.py
-    but learning on xyz scale of lowerbody will lead to robot foot floating
-    i want to learn xy and fix z, but the code have some bug now
-- fix 277/280 feature dim error in humanml3d feature computation
 
 
 # preparation
 write current folder path into bashrc, then
     git clone git@github.com:ritsu-a/HRI_retarget.git       
     cd HRI_retarget
-    git checkout g1
-    cd HRI_retarget 
     pip install -e .
 
 
 the environment is tested with cuda12.1 with python=3.10
     pip install -r requirements.txt
 
-contact pengyang for data
-then create a soft link to HRI_retarget/data
+
+create a soft link to HRI_retarget/data
 
 
 
