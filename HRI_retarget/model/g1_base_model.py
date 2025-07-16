@@ -130,10 +130,10 @@ class G1_Base_Motion_Model(nn.Module):
         return link_to_world_dict
 
     def init_angle_loss(self):
-        return (self.joint_angles[0, 3:] - self.init_angle[3:]).abs().sum(dim=-1).mean()
+        return (self.joint_angles[0, :] - self.init_angle[:]).abs().sum(dim=-1).mean()
 
     def joint_local_velocity_loss(self):
-        pred_joint_velocities = self.joint_angles[1:, 3:] - self.joint_angles[:-1, 3:]
+        pred_joint_velocities = self.joint_angles[1:, :] - self.joint_angles[:-1, :]
         pred_joint_accel = pred_joint_velocities[1:] - pred_joint_velocities[:-1]
 
         ### only regulate on too large vel

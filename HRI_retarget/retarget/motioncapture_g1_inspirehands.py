@@ -16,7 +16,7 @@ import pickle
 import numpy as np
 
 from HRI_retarget import ROOT
-from HRI_retarget.utils.vis.bvh_vis import Get_bvh_joint_global_pos, Get_bvh_joint_pos_and_Rot, calc_relative_transform
+from HRI_retarget.utils.vis.bvh_vis import Get_bvh_joint_global_coord, Get_bvh_joint_pos_and_Rot, calc_relative_transform
 from HRI_retarget.utils.vis.kinematic_vis import vis_kinematic_result
 from HRI_retarget.model.g1_inspirehands import G1_Inspirehands_Motion_Model
 from HRI_retarget.config.joint_mapping import MOTION_CAPTURE_LINKS, MOTION_CAPTURE_G1_INSPIREHANDS_CORRESPONDENCE, \
@@ -43,8 +43,8 @@ if __name__ == "__main__":
     #     quit()
 
     # filename = sys.argv[1]
-    filename = os.path.join(DATA_ROOT, "motion/human/motion_capture/defense_Skeleton_1.bvh")
-    bvh_joint_local_coord, _ = Get_bvh_joint_pos_and_Rot(filename, link_list = MOTION_CAPTURE_LINKS)
+    filename = os.path.join(DATA_ROOT, "motion/human/misc/Jappelio_rays_Skeleton.bvh")
+    bvh_joint_local_coord = Get_bvh_joint_global_coord(filename, link_list = MOTION_CAPTURE_LINKS)
     # bvh_joint_global_coord = Get_bvh_joint_global_pos(filename, link_list=MOTION_CAPTURE_LINKS)
 
 
@@ -82,8 +82,8 @@ if __name__ == "__main__":
 
 
         loss_dict = {
-            "joint_global_position_loss": [1.0, joint_global_position_loss],
-            "joint_local_velocity_loss": [1.0, joint_local_velocity_loss],
+            "joint_global_position_loss": [10.0, joint_global_position_loss],
+            "joint_local_velocity_loss": [0.0, joint_local_velocity_loss],
             "joint_local_accel_loss": [0.0, joint_local_accel_loss],
             "dof_limit_loss": [1.0, dof_limit_loss],
             # "hand_orientation_loss": [0.3, hand_orientation_loss],
@@ -149,5 +149,6 @@ if __name__ == "__main__":
     
     # ### vis motion
     # ### press esc to quit plt visualization
+    import ipdb;ipdb.set_trace()
 
     vis_kinematic_result(os.path.join(DATA_ROOT,"motion/g1/motion_capture", filename.split("/")[-1][:-4] + ".pickle"), dataset="motion_capture", robot="g1_inspirehands", correspondence=MOTION_CAPTURE_G1_INSPIREHANDS_CORRESPONDENCE)

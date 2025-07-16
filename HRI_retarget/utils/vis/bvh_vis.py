@@ -313,6 +313,7 @@ def Draw_bvh(joints, joints_offsets, joints_hierarchy, root_positions, joints_ro
         ax.cla()
 
     pass
+
 def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
     skeleton_data = ProcessBVH(filename)
 
@@ -355,6 +356,53 @@ def Get_bvh_joint_local_coord(filename, link_list=SEG_LINKS):
         joints_coord = []
         for joint in link_list:
             joints_coord.append(torch.from_numpy(local_pos[joint]))
+        joints_coord_full[0 + i * frame_skips] = torch.stack(joints_coord, dim=0)
+        
+    return joints_coord_full / 100
+
+
+def Get_bvh_joint_global_coord(filename, link_list=SEG_LINKS):
+    skeleton_data = ProcessBVH(filename)
+
+    joints = skeleton_data[0]
+    print("BVH links: ", joints)
+    print("joint_num: ", len(joints))
+
+    joints_offsets = skeleton_data[1]
+    joints_hierarchy = skeleton_data[2]
+    root_positions = skeleton_data[3]
+    joints_rotations = skeleton_data[4] #this contains the angles in degrees
+    joints_saved_angles = skeleton_data[5] #this contains channel information. E.g ['Xrotation', 'Yrotation', 'Zrotation']
+
+    frame_joints_rotations = {en:[] for en in joints}
+
+    """
+    Number of frames skipped is controlled with this variable below. If you want all frames, set to 1.
+    """
+    frame_skips = 1
+
+    joints_coord_full = torch.zeros(len(joints_rotations) // frame_skips, len(link_list), 3)
+
+    print("Loading bvh data ... ")
+    for i in tqdm(range(0,len(joints_rotations), frame_skips)):
+
+        frame_data = joints_rotations[i]
+
+        #fill in the rotations dict
+        joint_index = 0
+        for joint in joints:
+            frame_joints_rotations[joint] = frame_data[joint_index:joint_index+3]
+            joint_index += 3
+
+        #this returns a dictionary of joint positions in local space. This can be saved to file to get the joint positions.
+        local_pos = _calculate_frame_joint_positions_in_local_space(joints, joints_offsets, frame_joints_rotations, joints_saved_angles, joints_hierarchy)
+
+        #calculate world positions
+        world_pos = _calculate_frame_joint_positions_in_world_space(local_pos, root_positions[i], frame_joints_rotations[joints[0]], joints_saved_angles[joints[0]])
+        
+        joints_coord = []
+        for joint in link_list:
+            joints_coord.append(torch.from_numpy(world_pos[joint]))
         joints_coord_full[0 + i * frame_skips] = torch.stack(joints_coord, dim=0)
         
     return joints_coord_full / 100
