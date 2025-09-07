@@ -8,27 +8,34 @@ from queue import Queue
 from threading import Thread
 import pickle
 import numpy as np
+from pathlib import Path
 
-from HRI_retarget.utils.io.g1_29_humanml3d_representation import data_pkl_to_vec
+from HRI_retarget.utils.io.inspirehand_representation import data_pkl_to_vec
 
 # 文件夹路径
-folder_path = os.path.join(DATA_ROOT,"G1ML3D_v1/joints")
-tgt_dir = os.path.join(DATA_ROOT,"G1ML3D_v1/new_joint_vecs")
+folder_path = "/root/pengyang/codebase/HRI_MLLM/data/BEAT_v1"
+tgt_dir = "/root/pengyang/codebase/HRI_MLLM/data/BEAT_v1_kimi/new_joint_vecs"
 starting_time = time.time()
 
-source_list = os.listdir(folder_path)
+
+def find_pickle_files(root_dir):
+    root_path = Path(root_dir)
+    pickle_files = list(root_path.rglob('*.pickle'))
+    return [str(file) for file in pickle_files]
+
+pickle_files = find_pickle_files(folder_path)
 
 
-for source_file in tqdm(source_list):
+for source_file in tqdm(pickle_files):
     try:
 
-        with open(os.path.join(folder_path, source_file), "rb") as file:
+        with open(source_file, "rb") as file:
             data_dict = pickle.load(file)
 
         vec = data_pkl_to_vec(data_dict)
 
-        save_file = source_file.split(".")[0] + ".npy"
-        np.save(os.path.join(tgt_dir, save_file), vec)
+        save_name = os.path.basename(source_file).replace(".pickle", ".npy")
+        np.save(os.path.join(tgt_dir, save_name), vec)
     except Exception as e:
         print(source_file)
         print(e)
