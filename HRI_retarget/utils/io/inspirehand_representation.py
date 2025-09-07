@@ -57,12 +57,41 @@ def data_pkl_to_vec(data_dict):
     :return: vec, the vec representation
     """
 
-    angles = torch.tensor(data_dict["angles"])
+    angles = np.unwrap(data_dict["angles"])
     num_frames = angles.shape[0]
 
+    source_fps = data_dict["fps"]
+    target_fps = 50
 
-    
+    ### resample if fps is not equal
 
+
+
+    if source_fps != target_fps:
+        print(f"source fps {source_fps} is not equal to target fps {target_fps}, resampling...")
+        from scipy import interpolate
+        ### resample 
+        num_target_frames = int(num_frames * target_fps / source_fps)
+
+        interpolated_data = np.zeros((num_target_frames, angles.shape[1]))
+        t_original = np.linspace(0, num_frames - 1, num_frames) 
+        t_target = np.linspace(0, num_frames - 1, num_target_frames)     
+
+        # 4. 对每个自由度（每一列）进行插值
+        for dof_idx in range(angles.shape[1]):
+            # 获取这个DOF的原始80个数据点
+            y_original = angles[:, dof_idx]
+            
+            # 创建线性插值函数
+            f = interpolate.interp1d(t_original, y_original, kind='cubic', fill_value='extrapolate')
+            
+            # 在目标时间轴上计算插值后的值
+            y_interpolated = f(t_target)
+            
+            # 将结果存入数组
+            interpolated_data[:, dof_idx] = y_interpolated
+        angles = interpolated_data
+        num_frames = angles.shape[0]
 
     match data_dict["robot_name"]:
         case "g1_inspirehands":
@@ -73,6 +102,7 @@ def data_pkl_to_vec(data_dict):
             quit()
 
     ### set unused dofs to zero
+    angles = torch.from_numpy(angles).float()
     angles[:, :12] *= 0
     
     angles_29dof = torch.cat([angles[:, :22], angles[:, 34:41]], dim=-1)
@@ -114,7 +144,7 @@ def data_pkl_to_vec(data_dict):
 
 
 
-def vec_to_data_pkl(body_vec, fps=60, reference_motion_pth=None, robot_name="g1_inspirehands", scale=np.ones(3)):
+def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_inspirehands", scale=np.ones(3)):
     """
     Convert the vec representation to data_dict
     :param vec: vec, the vec representation
