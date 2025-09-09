@@ -157,9 +157,10 @@ def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_
     assert isinstance(body_vec, np.ndarray), f"body_vec 应该是 NumPy 数组，但实际类型是 {type(body_vec)}"
 
     num_frames = body_vec.shape[0]
-    global_positions = np.zeros((num_frames, 3, 1))
+    global_positions = np.zeros((num_frames, 3))
     global_positions[:, 2] += 0.8 # height
-    global_rotations = quat_to_matrix(torch.from_numpy(np.broadcast_to(np.eye(3), (num_frames, 3, 3)).copy()))[..., :3, :2].reshape(-1, 3, 2).numpy()
+
+    global_rotations = torch.from_numpy(np.broadcast_to(np.eye(3), (num_frames, 3, 3)).copy())[..., :3, :2].reshape(-1, 3, 2).numpy()
 
 
 
