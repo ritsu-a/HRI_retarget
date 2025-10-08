@@ -15,6 +15,14 @@ from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_quat
 from HRI_retarget.config.joint_mapping import G1_29_DOFS, G1_15_DOFS
 
 
+def load_npz_as_csv_data(input_npz_path):
+    data = np.load(input_npz_path)
+    csv_data = data['qpos']
+    
+
+    return csv_data
+
+
 def load_motion_pkl_as_csv_data(input_pkl_path):
     with open(input_pkl_path, "rb") as file:
         data = joblib.load(file)

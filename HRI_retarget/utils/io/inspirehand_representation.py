@@ -15,6 +15,18 @@
 ### 23-31: left arm and left hand links
 ### 32-40: right arm and right hand links
 
+
+### for G1_inspirehand_links
+### 0-13 lower body
+### 14-22 torso and head links
+### 23-30 left arm
+### 31-47 left hand
+### 48-55 right arm
+### 56-72 right hand
+### 73 imu_in_pelvis
+### 
+### 
+
 ### body features
 ### shape (num_frames - 1, 54*3+17=179)
 ###     link_local_position (9+9+9=27) * 3
@@ -22,8 +34,16 @@
 ###     dof_angle 3+7+7=17
 
 
-### hand features
-### ignore now
+### full body features
+### shape (num_frame - 1, 395)
+###     body_link_local_position (9+8+8=25) * 3
+###     hand_link_local_position (17+17=34) * 3
+###     body_link_local_velocity 25 * 3  
+###     hand_link_local_velocity 34 * 3  
+###     body_dof_angle 3+7+7=17
+###     hand_dof_angle 12 + 12 = 24
+
+
 
 
 ### reference: https://github.com/EricGuo5513/HumanML3D/blob/main/motion_representation.ipynb
@@ -36,8 +56,9 @@
 
 import sys
 import os
-from HRI_mllm.external.HRI_retarget.HRI_retarget.config.joint_mapping import G1_LINKS
+from HRI_mllm.external.HRI_retarget.HRI_retarget.config.joint_mapping import G1_LINKS, G1_INSPIREHANDS_LINKS
 from HRI_retarget.model.g1_29 import G1_29_Motion_Model
+from HRI_retarget.model.g1_inspirehands import G1_Inspirehands_Motion_Model
 from HRI_retarget.utils.motion_lib.quaternion import qbetween_np, qinv, qinv_np, qmul_np, qrot, qrot_np
 from HRI_retarget.utils.torch_utils.diff_quat import quat_to_matrix, vec6d_to_matrix, vec6d_to_quat, quat_to_vec6d
 
@@ -95,8 +116,8 @@ def data_pkl_to_vec(data_dict):
 
     match data_dict["robot_name"]:
         case "g1_inspirehands":
-            model = G1_29_Motion_Model(num_frames)
-            robot_link = G1_LINKS
+            model = G1_Inspirehands_Motion_Model(num_frames)
+            robot_link = G1_INSPIREHANDS_LINKS
         case _:
             print("wrong robot name in kinematic vis")
             quit()
@@ -105,8 +126,7 @@ def data_pkl_to_vec(data_dict):
     angles = torch.from_numpy(angles).float()
     angles[:, :12] *= 0
     
-    angles_29dof = torch.cat([angles[:, :22], angles[:, 34:41]], dim=-1)
-    model.set_angles(angles_29dof)
+    model.set_angles(angles)
   
 
 
@@ -131,14 +151,26 @@ def data_pkl_to_vec(data_dict):
 
 
     body_vec = np.concatenate([
-        local_positions[:-1, 14:41, :].reshape(num_frames-1, -1),  # (seq_len-1, (link-1)*3)
-        local_vel[:, 14:41, :].reshape(num_frames-1, -1),  # (seq_len-1, (link-1)*3)
+        local_positions[:-1, 14:31, :].reshape(num_frames-1, -1),  # body_link
+        local_positions[:-1, 48:56, :].reshape(num_frames-1, -1),  # body_link
+        local_positions[:-1, 31:48, :].reshape(num_frames-1, -1),  # left_hand_link
+        local_positions[:-1, 56:73, :].reshape(num_frames-1, -1),  # right_hand_link
+
+        local_vel[:, 14:31, :].reshape(num_frames-1, -1),  # body_vel
+        local_vel[:, 48:56, :].reshape(num_frames-1, -1),  # body_vel
+        local_vel[:, 31:48, :].reshape(num_frames-1, -1),  # left_hand_vel
+        local_vel[:, 56:73, :].reshape(num_frames-1, -1),  # right_hand_vel
+
         rot_data[:-1, 12:22], # waist and left arm
         rot_data[:-1, 34:41], # right arm
+        rot_data[:-1, 22:34], # left hand
+        rot_data[:-1, 41:53], # right hand
     ], axis=-1)
 
 
     ### todo: hand vec
+
+    import ipdb;ipdb.set_trace()
 
     return body_vec
 
@@ -153,7 +185,7 @@ def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_
     
     ### TODO:
     assert body_vec.ndim == 2
-    assert body_vec.shape[1] == 179
+    assert body_vec.shape[1] == 395
     assert isinstance(body_vec, np.ndarray), f"body_vec 应该是 NumPy 数组，但实际类型是 {type(body_vec)}"
 
     num_frames = body_vec.shape[0]
@@ -166,8 +198,10 @@ def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_
 
 
     dof_angles = np.zeros((num_frames, 53))
-    dof_angles[:, 12:22] = body_vec[:, 162:172]  # waist and left arm
-    dof_angles[:, 34:41] = body_vec[:, 172:179]  # right arm
+    dof_angles[:, 12:22] = body_vec[:, 354:364]  # waist and left arm
+    dof_angles[:, 34:41] = body_vec[:, 364:371]  # right arm
+    dof_angles[:, 22:34] = body_vec[:, 371:383] # left hand 
+    dof_angles[:, 41:53] = body_vec[:, 383:395] # right handx
 
     data_dict = {
         "fps": fps,
