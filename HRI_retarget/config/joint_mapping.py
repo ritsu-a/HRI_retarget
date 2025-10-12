@@ -177,6 +177,25 @@ G1_INSPIREHANDS_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link',
                          'R_middle_intermediate', 'R_middle_tip', 'R_ring_proximal', 'R_ring_intermediate',
                          'R_ring_tip', 'R_pinky_proximal', 'R_pinky_intermediate', 'R_pinky_tip', 'imu_in_pelvis']
 
+G1_BRAINCO_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'left_hip_roll_link', 
+                    'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
+                    'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
+                    'right_ankle_pitch_link', 'right_ankle_roll_link', 'waist_yaw_link', 'waist_roll_link', 
+                    'torso_link', 'logo_link', 'head_link', 'waist_support_link', 'imu_in_torso', 'd435_link', 
+                    'mid360_link', 'left_shoulder_pitch_link', 'left_shoulder_roll_link', 'left_shoulder_yaw_link', 
+                    'left_elbow_link', 'left_wrist_roll_link', 'left_wrist_pitch_link', 'left_wrist_yaw_link', 
+                    'left_base_link', 'left_thumb_metacarpal_Link', 'left_thumb_proximal_Link', 'left_thumb_distal_Link', 
+                    'left_thumb_tip_Link', 'left_index_proximal_Link', 'left_index_distal_Link', 'left_index_tip_Link', 
+                    'left_middle_proximal_Link', 'left_middle_distal_Link', 'left_middle_tip_Link', 
+                    'left_ring_proximal_Link', 'left_ring_distal_Link', 'left_ring_tip_Link', 'left_pinky_proximal_Link', 
+                    'left_pinky_distal_Link', 'left_pinky_tip_Link', 'right_shoulder_pitch_link', 'right_shoulder_roll_link', 
+                    'right_shoulder_yaw_link', 'right_elbow_link', 'right_wrist_roll_link', 'right_wrist_pitch_link', 
+                    'right_wrist_yaw_link', 'right_base_link', 'right_thumb_metacarpal_link', 'right_thumb_proximal_link', 
+                    'right_thumb_distal_link', 'right_thumb_tip', 'right_index_proximal_link', 'right_index_distal_link', 
+                    'right_index_tip', 'right_middle_proximal_link', 'right_middle_distal_link', 'right_middle_tip', 
+                    'right_ring_proximal_link', 'right_ring_distal_link', 'right_ring_tip', 'right_pinky_proximal_link', 
+                    'right_pinky_distal_link', 'right_pinky_tip', 'imu_in_pelvis']
+
 G1_LOWERBODY_LINKS = [
     'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
     'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
@@ -185,6 +204,25 @@ G1_LOWERBODY_LINKS = [
 
 
 ### robot DOF names
+
+G1_BRAINCO_DOFS = ['left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 
+                   'left_knee_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint', 
+                   'right_hip_pitch_joint', 'right_hip_roll_joint', 'right_hip_yaw_joint', 
+                   'right_knee_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint', 
+                   'waist_yaw_joint', 'waist_roll_joint', 'waist_pitch_joint', 
+                   'left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 
+                   'left_elbow_joint', 'left_wrist_roll_joint', 'left_wrist_pitch_joint', 
+                   'left_wrist_yaw_joint', 'left_thumb_metacarpal_joint', 'left_thumb_proximal_joint', 
+                   'left_thumb_distal_joint', 'left_thumb_tip_joint', 'left_index_proximal_joint', 
+                   'left_index_distal_joint', 'left_middle_proximal_joint', 'left_middle_distal_joint', 
+                   'left_ring_proximal_joint', 'left_ring_distal_joint', 'left_pinky_proximal_joint', 
+                   'left_pinky_distal_joint', 'right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 
+                   'right_shoulder_yaw_joint', 'right_elbow_joint', 'right_wrist_roll_joint', 
+                   'right_wrist_pitch_joint', 'right_wrist_yaw_joint', 'right_thumb_metacarpal_joint', 
+                   'right_thumb_proximal_joint', 'right_thumb_distal_joint', 'right_thumb_tip_joint', 
+                   'right_index_proximal_joint', 'right_index_distal_joint', 'right_middle_proximal_joint', 
+                   'right_middle_distal_joint', 'right_ring_proximal_joint', 'right_ring_distal_joint', 
+                   'right_pinky_proximal_joint', 'right_pinky_distal_joint']
 
 G1_INSPIREHANDS_DOFS = ['left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 
                         'left_knee_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint', 
