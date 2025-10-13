@@ -8,7 +8,7 @@ import pytorch_kinematics as pk
 
 from HRI_retarget.utils.torch_utils.diff_quat import vec6d_to_matrix
 
-from HRI_retarget.config.joint_mapping import G1_BRAINCO_LINKS
+from HRI_retarget.config.joint_mapping import G1_BRAINCO_LINKS, G1_LINKS, G1_BRAINCO_LEFT_HAND_LINKS, G1_BRAINCO_RIGHT_HAND_LINKS
 
 from HRI_retarget import DATA_ROOT
 
@@ -116,9 +116,36 @@ class G1_Brainco_Motion_Model(G1_Base_Motion_Model):
         self.lower_body_scale = torch.ones(3).requires_grad_(False).to(device)
 
         urdf_rel_path = "resources/robots/g1_brainco/G1_brainco_hands.urdf"
+        body_urdf_rel_path = "resources/robots/g1_asap/g1_29dof.urdf"
+        left_hand_urdf_rel_path = "resources/robots/g1_brainco/brainco_left_hand.urdf"
+        right_hand_urdf_rel_path = "resources/robots/g1_brainco/brainco_right_hand.urdf"
+
+
         self.chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,urdf_rel_path)).to(dtype=torch.float32, device=self.device)
-        
+        self.body_chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,body_urdf_rel_path)).to(dtype=torch.float32, device=self.device)
+        self.left_hand_chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,left_hand_urdf_rel_path)).to(dtype=torch.float32, device=self.device)
+        self.right_hand_chain = load_urdf_as_stretchable_chain(os.path.join(DATA_ROOT,right_hand_urdf_rel_path)).to(dtype=torch.float32, device=self.device)
     
+
+    def forward_kinematics_split(self):
+        body_dict = self.body_chain.forward_kinematics(torch.cat([self.joint_angles[:, :22], self.joint_angles[:, 34:41]], dim=1))  # link to root
+        left_hand_dict = self.left_hand_chain.forward_kinematics(torch.cat([self.joint_angles[:, 22:25], self.joint_angles[:, 26:34]], dim=1))
+        right_hand_dict = self.right_hand_chain.forward_kinematics(torch.cat([self.joint_angles[:, 41:44], self.joint_angles[:, 45:53]], dim=1))
+        link_to_root_dict = []
+
+        for link_name in G1_LINKS:
+            link_to_root_dict.append(body_dict[link_name].get_matrix())
+        for link_name in G1_BRAINCO_LEFT_HAND_LINKS:
+            link_to_root_dict.append(left_hand_dict[link_name].get_matrix())
+        for link_name in G1_BRAINCO_RIGHT_HAND_LINKS:   
+            link_to_root_dict.append(right_hand_dict[link_name].get_matrix())
+
+        link_to_root_dict = torch.stack(link_to_root_dict, dim=1) # (N_frame, 41+17+17=75, 4, 4)
+
+
+        return link_to_root_dict
+
+
 
     def forward_kinematics(self):
         """

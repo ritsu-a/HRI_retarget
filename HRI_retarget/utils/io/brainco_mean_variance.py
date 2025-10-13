@@ -32,13 +32,12 @@ def body_mean_variance(data_dir, save_dir):
     Mean = data.mean(axis=0)
     Std = data.std(axis=0)
 
-    Std[:75] = Std[:75].mean() / 1.0
-    Std[75:171] = Std[75:171].mean() / 1.0
-    Std[171:246] = Std[171:246].mean() / 1.0
-    Std[246:342] = Std[246:342].mean() / 1.0
-    Std[342:] = Std[342:].mean() / 1.0
+    Std[:246] = Std[:246].mean() / 1.0
+    Std[246:263] = Std[246:263].mean() / 1.0
+    Std[263:467] = Std[263:467].mean() / 1.0
+    Std[467:] = Std[467:].mean() / 1.0
 
-    assert Std.shape[-1] == 383
+    assert Std.shape[-1] == 491
     np.save(pjoin(save_dir, 'Mean.npy'), Mean)
     np.save(pjoin(save_dir, 'Std.npy'), Std)
 

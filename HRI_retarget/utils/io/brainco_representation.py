@@ -28,16 +28,25 @@
 ### 
 
 
+### for split G1_brainco_links
+### body links: 0-40
+### left hand links: 41-57
+### right hand links: 58-74
 
 
-### full body features
-### shape (num_frame - 1, 383)
-###     body_link_local_position (9+8+8=25) * 3
-###     hand_link_local_position (16+16=32) * 3
-###     body_link_local_velocity 25 * 3  
-###     hand_link_local_velocity 32 * 3  
+### body features
+### shape (num_frame - 1, 263)
+###     body_link_local_position 41 * 3
+###     body_link_local_velocity 41 * 3  
 ###     body_dof_angle 3+7+7=17
+
+### hand features
+### shape (num_frame - 1, 228)
+###     hand_link_local_position 34 * 3
+###     hand_link_local_velocity 34 * 3  
 ###     hand_dof_angle 12 + 12 = 24
+
+
 
 
 
@@ -68,6 +77,7 @@ import numpy as np
 from HRI_mllm import DATA_ROOT
 hparams_mean = np.load(os.path.join(f"{DATA_ROOT}/BEAT_v2_kimi", "Mean.npy"))
 hparams_std = np.load(os.path.join(f"{DATA_ROOT}/BEAT_v2_kimi", "Std.npy"))
+target_fps = 25
 
 def data_pkl_to_vec(data_dict):
     """
@@ -80,7 +90,7 @@ def data_pkl_to_vec(data_dict):
     num_frames = angles.shape[0]
 
     source_fps = data_dict["fps"]
-    target_fps = 50
+
 
     ### resample if fps is not equal
 
@@ -130,10 +140,9 @@ def data_pkl_to_vec(data_dict):
 
 
 
-    link_to_root_dict = model.forward_kinematics()
+    link_to_root_dict = model.forward_kinematics_split()
     link_to_root_pos = link_to_root_dict[:, :, :3, 3]
     local_positions = link_to_root_pos.detach().cpu().numpy()
-
 
 
     
@@ -149,31 +158,35 @@ def data_pkl_to_vec(data_dict):
 
 
     body_vec = np.concatenate([
-        local_positions[:-1, 14:30, :].reshape(num_frames-1, -1),  # body_link
-        local_positions[:-1, 47:55, :].reshape(num_frames-1, -1),  # body_link
-        local_positions[:-1, 30:47, :].reshape(num_frames-1, -1),  # left_hand_link
-        local_positions[:-1, 55:71, :].reshape(num_frames-1, -1),  # right_hand_link
+        local_positions[:-1, :41, :].reshape(num_frames-1, -1),  # body_link
 
-        local_vel[:, 14:30, :].reshape(num_frames-1, -1),  # body_vel
-        local_vel[:, 47:55, :].reshape(num_frames-1, -1),  # body_vel
-        local_vel[:, 30:47, :].reshape(num_frames-1, -1),  # left_hand_vel
-        local_vel[:, 55:71, :].reshape(num_frames-1, -1),  # right_hand_vel
+        local_vel[:, :41, :].reshape(num_frames-1, -1),  # body_vel
 
         rot_data[:-1, 12:22], # waist and left arm
         rot_data[:-1, 34:41], # right arm
-        rot_data[:-1, 22:34], # left hand
-        rot_data[:-1, 41:53], # right hand
     ], axis=-1)
 
+
+    hand_vec = np.concatenate([
+      
+        local_positions[:-1, 41:58, :].reshape(num_frames-1, -1),  # left_hand_link
+        local_positions[:-1, 58:75, :].reshape(num_frames-1, -1),  # right_hand_link
+
+        local_vel[:, 41:58, :].reshape(num_frames-1, -1),  # left_hand_vel
+        local_vel[:, 58:75, :].reshape(num_frames-1, -1),  # right_hand_vel
+
+        rot_data[:-1, 22:34], # left hand
+        rot_data[:-1, 41:53], # right hand
+    ], axis=-1)                                     
 
     ### todo: hand vec
 
 
-    return body_vec
+    return np.concatenate([body_vec, hand_vec], axis=-1)  # (num_frame - 1, 263 + 228 = 491)
 
 
 
-def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_brainco", scale=np.ones(3)):
+def vec_to_data_pkl(body_vec, fps=target_fps, reference_motion_pth=None, robot_name="g1_brainco", scale=np.ones(3)):
     """
     Convert the vec representation to data_dict
     :param vec: vec, the vec representation
@@ -182,7 +195,7 @@ def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_
     
     ### TODO:
     assert body_vec.ndim == 2
-    assert body_vec.shape[1] == 383
+    assert body_vec.shape[1] == 491
     assert isinstance(body_vec, np.ndarray), f"body_vec 应该是 NumPy 数组，但实际类型是 {type(body_vec)}"
 
     num_frames = body_vec.shape[0]
@@ -195,10 +208,10 @@ def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_
 
 
     dof_angles = np.zeros((num_frames, 53))
-    dof_angles[:, 12:22] = body_vec[:, 342:352]  # waist and left arm
-    dof_angles[:, 34:41] = body_vec[:, 352:359]  # right arm
-    dof_angles[:, 22:34] = body_vec[:, 359:371] # left hand 
-    dof_angles[:, 41:53] = body_vec[:, 371:383] # right handx
+    dof_angles[:, 12:22] = body_vec[:, 246:256]  # waist and left arm
+    dof_angles[:, 34:41] = body_vec[:, 256:263]  # right arm
+    dof_angles[:, 22:34] = body_vec[:, 467:479] # left hand 
+    dof_angles[:, 41:53] = body_vec[:, 479:491] # right handx
 
     data_dict = {
         "fps": fps,
@@ -231,10 +244,10 @@ def vec_to_joints(body_vec, robot_name="g1_brainco"):
     dof_angles = torch.zeros((total_frames, 53))
 
 
-    dof_angles[:, 12:22] = body_vec_expanded[:, 342:352]  # waist and left arm
-    dof_angles[:, 34:41] = body_vec_expanded[:, 352:359]  # right arm
-    dof_angles[:, 22:34] = body_vec_expanded[:, 359:371] # left hand 
-    dof_angles[:, 41:53] = body_vec_expanded[:, 371:383] # right handx
+    dof_angles[:, 12:22] = body_vec_expanded[:, 246:256]  # waist and left arm
+    dof_angles[:, 34:41] = body_vec_expanded[:, 256:263]  # right arm
+    dof_angles[:, 22:34] = body_vec_expanded[:, 467:479] # left hand 
+    dof_angles[:, 41:53] = body_vec_expanded[:, 479:491] # right handx
 
    
 

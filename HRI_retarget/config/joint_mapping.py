@@ -196,6 +196,20 @@ G1_BRAINCO_LINKS = ['pelvis', 'pelvis_contour_link', 'left_hip_pitch_link', 'lef
                     'right_ring_proximal_link', 'right_ring_distal_link', 'right_ring_tip', 'right_pinky_proximal_link', 
                     'right_pinky_distal_link', 'right_pinky_tip', 'imu_in_pelvis']
 
+G1_BRAINCO_LEFT_HAND_LINKS = ['left_base_link', 'left_thumb_metacarpal_Link', 'left_thumb_proximal_Link', 
+                               'left_thumb_distal_Link', 'left_thumb_tip_Link', 'left_index_proximal_Link', 
+                               'left_index_distal_Link', 'left_index_tip_Link', 'left_middle_proximal_Link', 
+                               'left_middle_distal_Link', 'left_middle_tip_Link', 'left_ring_proximal_Link', 
+                               'left_ring_distal_Link', 'left_ring_tip_Link', 'left_pinky_proximal_Link', 
+                               'left_pinky_distal_Link', 'left_pinky_tip_Link']
+
+G1_BRAINCO_RIGHT_HAND_LINKS = ['right_base_link', 'right_thumb_metacarpal_link', 'right_thumb_proximal_link', 
+                               'right_thumb_distal_link', 'right_thumb_tip', 'right_index_proximal_link', 
+                               'right_index_distal_link', 'right_index_tip', 'right_middle_proximal_link', 
+                               'right_middle_distal_link', 'right_middle_tip', 'right_ring_proximal_link', 
+                               'right_ring_distal_link', 'right_ring_tip', 'right_pinky_proximal_link', 
+                               'right_pinky_distal_link', 'right_pinky_tip']
+
 G1_LOWERBODY_LINKS = [
     'left_hip_yaw_link', 'left_knee_link', 'left_ankle_pitch_link', 'left_ankle_roll_link', 
     'right_hip_pitch_link', 'right_hip_roll_link', 'right_hip_yaw_link', 'right_knee_link', 
