@@ -197,7 +197,7 @@ def vec_to_data_pkl(body_vec, fps=50, reference_motion_pth=None, robot_name="g1_
 
 
 
-    dof_angles = np.zeros((num_frames, 53))
+    dof_angles = np.zeros((num_frames, 53)) 
     dof_angles[:, 12:22] = body_vec[:, 354:364]  # waist and left arm
     dof_angles[:, 34:41] = body_vec[:, 364:371]  # right arm
     dof_angles[:, 22:34] = body_vec[:, 371:383] # left hand 

@@ -13,8 +13,8 @@ from pathlib import Path
 from HRI_retarget.utils.io.brainco_representation import data_pkl_to_vec
 
 # 文件夹路径
-folder_path = "/root/workspace/HRI_MLLM/data/BEAT_v2"
-tgt_dir = "/root/workspace/HRI_MLLM/data/BEAT_v2_kimi/new_joint_vecs"
+folder_path = "/root/workspace/HRI_MLLM/data/internet_data_1021"
+tgt_dir = "/root/workspace/HRI_MLLM/data/internet_data_v1/new_joint_vecs"
 starting_time = time.time()
 
 
@@ -32,7 +32,7 @@ for source_file in tqdm(pickle_files):
     dof = np.load(source_file)['qpos'][:, 7:]
     data_dict = {"angles":dof, 
                 "robot_name": "g1_brainco",
-                "fps":60}
+                "fps":30}
 
     vec = data_pkl_to_vec(data_dict)
 

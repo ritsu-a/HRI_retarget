@@ -47,8 +47,8 @@ def body_mean_variance(data_dir, save_dir):
 
 
 if __name__ == '__main__':
-    data_dir = '/root/workspace/HRI_MLLM/data/BEAT_v2_kimi/new_joint_vecs'
-    save_dir = '/root/workspace/HRI_MLLM/data/BEAT_v2_kimi'
+    data_dir = '/root/workspace/HRI_MLLM/data/internet_data_v1_kimi/new_joint_vecs'
+    save_dir = '/root/workspace/HRI_MLLM/data/internet_data_v1_kimi'
     mean, std = body_mean_variance(data_dir, save_dir)
     train_ratio = 0.8 
     val_ratio = 0.1
