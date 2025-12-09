@@ -13,8 +13,8 @@ from pathlib import Path
 from HRI_retarget.utils.io.brainco_representation import data_pkl_to_vec
 
 # 文件夹路径
-folder_path = "/root/workspace/HRI_MLLM/data/single_motion_sentence_version2"
-tgt_dir = "/root/workspace/HRI_MLLM/data/single_motion_sentence_version2_kimi/new_joint_vecs"
+folder_path = "/root/workspace/HRI_MLLM/data/SeG_v2"
+tgt_dir = "/root/workspace/HRI_MLLM/data/SeG_v2_kimi/new_joint_vecs"
 starting_time = time.time()
 
 
