@@ -186,19 +186,14 @@ def data_pkl_to_vec(data_dict):
 
 
 
-def vec_to_data_pkl(body_vec, fps=target_fps, reference_motion_pth=None, robot_name="g1_brainco", scale=np.ones(3), use_ik=True, ik_iterations=10, ik_lr=0.01, position_weight=1.0, angle_weight=0.1):
+def vec_to_data_pkl(body_vec, fps=target_fps, reference_motion_pth=None, robot_name="g1_brainco", scale=np.ones(3)):
     """
-    Convert the vec representation to data_dict using IK optimization
+    Convert the vec representation to data_dict using direct mapping (no IK optimization)
     :param body_vec: vec, the vec representation (num_frames, 491)
     :param fps: target fps
     :param reference_motion_pth: path to reference motion
     :param robot_name: robot name
     :param scale: scale factor
-    :param use_ik: whether to use IK optimization (default: True)
-    :param ik_iterations: number of IK optimization iterations (default: 10)
-    :param ik_lr: learning rate for IK optimization (default: 0.01)
-    :param position_weight: weight for position loss (default: 1.0)
-    :param angle_weight: weight for angle regularization (default: 0.1)
     :return: data_dict, the data_dict
     """
     
@@ -227,42 +222,17 @@ def vec_to_data_pkl(body_vec, fps=target_fps, reference_motion_pth=None, robot_n
     # We need to handle the last frame by duplicating or interpolating
     actual_frames = body_vec.shape[0]  # This is num_frames - 1
     
-    # Extract positions for available frames
-    body_local_positions = body_vec[:, :123].reshape(actual_frames, 41, 3)  # body links
-    left_hand_local_positions = body_vec[:, 263:314].reshape(actual_frames, 17, 3)  # left hand links (17 * 3 = 51)
-    right_hand_local_positions = body_vec[:, 314:365].reshape(actual_frames, 17, 3)  # right hand links (17 * 3 = 51)
-    
     # Extract initial dof angles from body_vec (also num_frames-1)
-    initial_dof_angles = np.zeros((actual_frames, 53))
-    initial_dof_angles[:, 12:22] = body_vec[:, 246:256]  # waist and left arm
-    initial_dof_angles[:, 34:41] = body_vec[:, 256:263]  # right arm
-    initial_dof_angles[:, 22:34] = body_vec[:, 467:479] # left hand 
-    initial_dof_angles[:, 41:53] = body_vec[:, 479:491] # right hand
+    dof_angles = np.zeros((actual_frames, 53))
+    dof_angles[:, 12:22] = body_vec[:, 246:256]  # waist and left arm
+    dof_angles[:, 34:41] = body_vec[:, 256:263]  # right arm
+    dof_angles[:, 22:34] = body_vec[:, 467:479] # left hand 
+    dof_angles[:, 41:53] = body_vec[:, 479:491] # right hand
     
     # If we need num_frames frames, pad the last frame by duplicating
     if num_frames > actual_frames:
         # Duplicate the last frame
-        body_local_positions = np.concatenate([body_local_positions, body_local_positions[-1:]], axis=0)
-        left_hand_local_positions = np.concatenate([left_hand_local_positions, left_hand_local_positions[-1:]], axis=0)
-        right_hand_local_positions = np.concatenate([right_hand_local_positions, right_hand_local_positions[-1:]], axis=0)
-        initial_dof_angles = np.concatenate([initial_dof_angles, initial_dof_angles[-1:]], axis=0)
-
-    if use_ik:
-        # Use IK optimization to refine joint angles based on position constraints
-        dof_angles = _optimize_ik_with_positions(
-            initial_dof_angles=initial_dof_angles,
-            body_local_positions=body_local_positions,
-            left_hand_local_positions=left_hand_local_positions,
-            right_hand_local_positions=right_hand_local_positions,
-            robot_name=robot_name,
-            num_iterations=ik_iterations,
-            lr=ik_lr,
-            position_weight=position_weight,
-            angle_weight=angle_weight
-        )
-    else:
-        # Use direct mapping (original method)
-        dof_angles = initial_dof_angles
+        dof_angles = np.concatenate([dof_angles, dof_angles[-1:]], axis=0)
 
     data_dict = {
         "fps": fps,
